@@ -1,0 +1,47 @@
+\documentclass{beamer}
+
+\usepackage{beamerthemesplit}
+
+\title{PgLoader, the parallel ETL for PostgreSQL}
+\author{Dimitri Fontaine}
+\date{\today}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section[Outline]{}
+\frame{\tableofcontents}
+
+\section{Introduction}
+\subsection{pgloader, the what?}
+
+\frame
+{
+  \frametitle{ETL}
+
+  \begin{definition}
+    An \alert{ETL} process data to load into the database from a flat
+    file.
+  \end{definition}
+
+  \begin{itemize}
+  \item<1-> Extract
+  \item<2-> Transform
+  \item<3-> Load
+  \end{itemize}
+}
+
+\frame
+{
+  \frametitle{pgloader's features}
+
+  \begin{itemize}
+  \item<1-> Load CSV data
+  \item<2-> Load pretend-to-be CSV data
+  \item<3-> Continue loading when confronted to errors
+  \item<4-> Apply user define transformation to data, on the fly
+  \item<5-> Optionaly have all your cores participate into processing
+  \end{itemize}
+}
+\end{document}
