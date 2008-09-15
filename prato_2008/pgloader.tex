@@ -1,6 +1,7 @@
 \documentclass{beamer}
 
 \usepackage{beamerthemesplit}
+\usetheme{Warsaw}
 
 \title{PgLoader, the parallel ETL for PostgreSQL}
 \author{Dimitri Fontaine}
@@ -10,8 +11,11 @@
 
 \frame{\titlepage}
 
-\section[Outline]{}
-\frame{\tableofcontents}
+\section*{Outline}
+\frame{
+  \frametitle{Table of contents}
+  \tableofcontents
+}
 
 \section{Introduction}
 \subsection{pgloader, the what?}
@@ -26,9 +30,9 @@
   \end{definition}
 
   \begin{itemize}
-  \item<1-> Extract
-  \item<2-> Transform
-  \item<3-> Load
+   \item<1-> Extract
+   \item<2-> Transform
+   \item<3-> Load
   \end{itemize}
 }
 
@@ -37,11 +41,250 @@
   \frametitle{pgloader's features}
 
   \begin{itemize}
-  \item<1-> Load CSV data
-  \item<2-> Load pretend-to-be CSV data
-  \item<3-> Continue loading when confronted to errors
-  \item<4-> Apply user define transformation to data, on the fly
-  \item<5-> Optionaly have all your cores participate into processing
+   \item<1-> Load CSV data
+   \item<2-> Load pretend-to-be CSV data
+   \item<3-> Continue loading when confronted to errors
+   \item<4-> Apply user define transformation to data, on the fly
+   \item<5-> Optionaly have all your cores participate into processing
   \end{itemize}
 }
+
+\section{Architecture}
+\subsection{Main components}
+
+\frame{
+  \frametitle{Configuration}
+
+  We first parse the configuration, with templating system
+}
+
+\frame{
+  \frametitle{Loading: file reading}
+
+  \begin{itemize}
+   \item<1-> Read files one line at a time
+   \item<2-> Parse physical lines into logical lines
+   \item<3-> Supports several readers
+    \begin{itemize}
+     \item<4-> textreader
+     \item<3-> csvreader
+     \item<5-> fixedreader
+    \end{itemize}
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Processing lines}
+
+  \begin{itemize}
+   \item<1-> columns restrictions
+   \item<2-> columns reordering
+   \item<3-> user defined columns (constants)
+   \item<4-> user defined reformating modules
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{COPYing to PostgreSQL}
+
+  \begin{itemize}
+   \item<1-> cStringIO buffers
+   \item<2-> configurable size (copy\_every)
+   \item<3-> using copy\_expert() when available (CVS)
+   \item<4-> dichotomic error search
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Handling of erroneous data input}
+
+  \begin{itemize}
+   \item<1-> reject data file
+   \item<2-> 
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Error logging}
+
+  \begin{itemize}
+   \item<1-> log file
+   \item<2-> console log level: \texttt{client\_min\_messages}
+   \item<3-> logfile log level: \texttt{log\_min\_messages}
+  \end{itemize}
+}
+
+\subsection{Parallel Organisation}
+
+\frame{
+  \frametitle{Why going parallel?}
+
+  Loading is IO bound, not CPU bound, right?
+
+  \begin{itemize}
+   \item <2-> for large disks array, \textit{not so much}
+   \item <3-> with complex parsing, \textit{not so much}
+   \item <4-> with heavy user rewritting, \textit{not so much}
+  \end{itemize}
+}
+
+\begin{frame}[fragile]
+  \frametitle{Ok... How?}
+
+  \begin{itemize}
+   \item <1-> mutli-threading is easy to start with in python
+   \item <2-> then you add in dequeues and semaphores (critical sections) and signals
+   \item <3-> Giant Interpreter Lock
+   \item <4-> fork() based reimplementation could be of interrest
+  \end{itemize}
+
+  \begin{example}
+  \begin{verbatim}
+    class PGLoader(threading.Thread):
+  \end{verbatim}
+  \end{example}
+
+\end{frame}
+
+\frame{
+  \frametitle{Parallelism choices}
+
+  Has beed asked by some \-hackers, their use cases dictated two different modes.
+
+  The idea is to have a parallel pg\_restore testbed, interresting with large input
+  files (100GB to several TB). Perfs on on core can't be as good as server one, due
+  to client\-server roundtrips compared to local file reading, but with some more CPUs
+  feeding the disk array, should show up nice improvements.
+
+  Testing and feebback more than welcome\!
+}
+
+\frame{
+  \frametitle{Round robin reader}
+
+  \begin{example}
+   split\_file\_reading = False
+  \end{example}
+}
+
+
+\frame{
+  \frametitle{Split file reader}
+
+  \begin{example}
+   split\_file\_reading = True
+  \end{example}
+}
+
+\section{Configuration file format}
+\subsection{INI files with user friendly parsing}
+
+\frame{
+  \frametitle{How to set configuration knobs}
+
+   \begin{itemize}
+    \item <1-> brackets sections
+    \item <2-> \texttt{variable = value}
+    \item <3-> templates
+   \end{itemize}
+}
+
+\frame{
+   \frametitle{User friendly and flexible}
+
+   \begin{itemize}
+    \item <1-> Error messages (try to be nice to users)
+    \item <2-> Flexible input (only\_cols \= 1\-3, 5)
+   \end{itemize}
+}
+
+\subsection{User level extensions}
+
+\begin{frame}[fragile]
+  \frametitle{User defined columns}
+
+  Constant columns added at parsing time.
+
+  Use case: adding an origin\_server\_id field depending on the file
+  to get loaded, for data aggregation.
+
+  \begin{example}
+  \begin{verbatim}
+   columns        = b:2, d:1, x:3, y:4
+   udc_c          = constant value
+   copy_columns   = b, c, d
+  \end{verbatim}
+  \end{example}
+\end{frame}
+
+\frame
+{
+  \frametitle{User defined Reformating modules}
+
+  The basic idea is not to use any sed-like preprocessing scripts.
+}
+
+\frame
+{
+  \frametitle{User defined Reformating modules}
+
+}
+
+\subsection{Configuration Examples}
+
+\begin{frame}[fragile]
+  \frametitle{simple}
+
+  \begin{example}
+  \begin{verbatim}
+[simple]
+table        = simple
+filename     = simple/simple.data
+format       = text
+datestyle    = dmy
+field_sep    = |
+trailing_sep = True
+columns      = *
+  \end{verbatim}
+  \end{example}
+\end{frame}
+
+\frame{
+  \frametitle{others}
+
+  csv, fixed, user defined columns, columns reordering, user defined modules, parralel loading
+  cluttered data
+}
+
+\section{Usage}
+
+\section{Incoming features}
+
+\frame{
+  \frametitle{TODO}
+
+  TODO is published at http://pgloader.projects.postgresql.org/dev/TODO.html
+
+  \begin{itemize}
+   \item <1-> Constraint Exclusion support
+   \item <2-> Reject Behaviour
+   \item <3-> XML support with user defined XSLT StyleSheet
+   \item <4-> Facilities
+  \end{itemize}
+
+  Don't be shy and just ask for new features!
+}
+
+\section{Project management}
+
+\frame{
+  \frametitle{Resources and Users}
+
+  pgfoundry, 1 developper, some users, no mailing list yet, some mails sometime
+
+  \#postgresql and \#postgresqlfr
+
+  packages for debian, freebsd, openbsd
+}
+
 \end{document}
