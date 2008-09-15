@@ -1,0 +1,87 @@
+\documentclass{beamer}
+
+\usepackage{beamerthemesplit}
+\usetheme{Warsaw}
+
+\title{The prefix PostgreSQL module and custom GiST indexing}
+\author{Dimitri Fontaine}
+\date{\today}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section*{Outline}
+\frame{
+  \frametitle{Table of contents}
+  \tableofcontents
+}
+
+\section{Introduction}
+\subsection{Telling about the need}
+
+\frame{
+  \frametitle{prefix queries}
+
+  The \alert{prefix} project is about solving prefix queries where the literal is not
+  the literal but the column data.
+
+  \begin{example}
+    SELECT ... FROM prefixes WHERE prefix @> 'abcdef';
+  \end{example}
+
+  You want to find rows where prefix is 'a', 'abc', 'abcd', etc.
+}
+
+\subsection{Available solutions}
+
+\frame {
+  \frametitle{SQL or procedural approches}
+}
+
+\section{First version, text indexing}
+
+\frame{
+  \frametitle{Developping a GiST indexing module}
+}
+
+\section{Optimisation: prefix ranges}
+
+\frame{
+  \frametitle{A new \textit{varlena} datatype}
+}
+
+\section{Going "live"}
+
+\frame{
+  \frametitle{Current CVS version, 0.3, is running "live"}
+}
+
+\section{Next versions}
+
+\begin{frame}[fragile]
+  \frametitle{Some more optimisation}
+  
+  \texttt{prefix} next version will provide some more optimisation
+  by having its internal data structure accept wider ranges of prefixes.
+  The user visible part of this will the the input format of the \texttt{prefix\_range}
+  datatype:
+  
+  \begin{example}
+  \begin{verbatim}
+    SELECT 'abc[def-xyz]'::prefix_range;
+  \end{verbatim}
+  \end{example}
+\end{frame}
+
+\section{project organisation}
+
+\frame{
+  \frametitle{Yet Another Single Man Project}
+  
+  \texttt{prefix} project is using pgfoundry hosting facilities, has no mailing-list
+  and currently only onde maintainer, contributions and usage feedbacks are
+  welcome.
+}
+
+\end{document}
