@@ -18,7 +18,7 @@
 }
 
 \section{Introduction}
-\subsection{Telling about the need}
+\subsection{Once upon a time}
 
 \frame{
   \frametitle{prefix queries}
@@ -35,9 +35,22 @@
 
 \subsection{Available solutions}
 
-\frame {
+\begin{frame}[fragile]
   \frametitle{SQL or procedural approches}
-}
+  
+  depesz (both active on the IRC \texttt{#postgresql} channel and the lists, has a blog entry
+  about it: http://www.depesz.com/index.php/2008/03/04/searching-for-longest-prefix/
+  
+  It requires creating a lot of specific indexes
+  
+  \begin{example}
+  \begin{verbatim}
+     CREATE INDEX pa3_1 on prefixes_andrewsn_3 (prefix) WHERE length(prefix) = 1;
+     CREATE INDEX pa3_2 on prefixes_andrewsn_3 (prefix) WHERE length(prefix) = 2;
+     CREATE INDEX pa3_3 on prefixes_andrewsn_3 (substring(prefix for 3)) WHERE length(prefix) >= 3;
+  \end{verbatim}
+  \end{example}
+\end{frame}
 
 \section{First version, text indexing}
 
