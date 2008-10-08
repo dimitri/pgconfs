@@ -44,7 +44,7 @@ processing to get done, and probably are using cron batches and home made
   Of course you want them 
   \begin{itemize}
    \item<3-> reliable, easy to monitor and control (logs)
-   \item<4-> out of a developper \texttt{screen} session
+   \item<4-> out of a developer \texttt{screen} session
    \item<5-> easy to stop \& restart
    \item<6-> to reuse existing models
   \end{itemize}
@@ -65,7 +65,7 @@ processing to get done, and probably are using cron batches and home made
   \pause
   PGQ is
   \begin{itemize}
-   \item<2-> performant (maintening 3 tables, using \texttt{TRUNCATE})
+   \item<2-> performant (maintaining 3 tables, using \texttt{TRUNCATE})
    \item<3-> easy to install and monitor
    \item<4-> robust
   \end{itemize}
@@ -78,7 +78,7 @@ processing to get done, and probably are using cron batches and home made
 
   Skytools comes with two \textit{middleware} for you to abuse to make
   daemons with, the \texttt{python} \textit{DBScript} facility and the
-  \texttt{PHP} \textit{libphp-pgq} one.
+  \texttt{PHP} \textit{libphp-pgq} one. \linebreak
 
   \pause
   For the \texttt{python} version see resources on the internet. Here we're
@@ -105,6 +105,7 @@ processing to get done, and probably are using cron batches and home made
     PGQ_EVENT_OK
     PGQ_EVENT_FAILED
     PGQ_EVENT_RETRY
+    PGQ_ABORT_BATCH
   \end{verbatim}
 \end{frame}
 
