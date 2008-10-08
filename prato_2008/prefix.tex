@@ -20,37 +20,113 @@
 \section{Introduction}
 \subsection{Once upon a time}
 
-\frame{
+\begin{frame}[fragile]
   \frametitle{prefix queries}
 
-  The \alert{prefix} project is about solving prefix queries where the literal is not
-  the literal but the column data.
+  The \alert{prefix} project is about solving prefix queries where the
+  literal is not the literal but the column data.
 
   \begin{example}
+  \begin{verbatim}
     SELECT ... FROM prefixes WHERE prefix @> 'abcdef';
+  \end{verbatim}
   \end{example}
 
   You want to find rows where prefix is 'a', 'abc', 'abcd', etc.
-}
+\end{frame}
 
 \subsection{Available solutions}
 
 \begin{frame}[fragile]
-  \frametitle{SQL or procedural approches}
+  \frametitle{The plain SQL way}
   
-  depesz (both active on the IRC \texttt{\#postgresql} channel and the lists, has a blog entry
-  about it: http://www.depesz.com/index.php/2008/03/04/searching-for-longest-prefix/
-  
-  It requires creating a lot of specific indexes
+  \texttt{depesz} has a blog entry about it:
+  http://www.depesz.com/index.php/2008/03/04/searching-for-longest-prefix/
   
   \begin{example}
   \begin{verbatim}
-     CREATE INDEX pa3_1 on prefixes_andrewsn_3 (prefix) WHERE length(prefix) = 1;
-     CREATE INDEX pa3_2 on prefixes_andrewsn_3 (prefix) WHERE length(prefix) = 2;
-     CREATE INDEX pa3_3 on prefixes_andrewsn_3 (substring(prefix for 3)) WHERE length(prefix) >= 3;
+    create table prefixes (
+        id serial primary key,
+        prefix text not null unique,
+        operator text,
+        something1 text,
+        something2 text
+    );
   \end{verbatim}
   \end{example}
 \end{frame}
+  
+\begin{frame}[fragile]
+  \frametitle{The plain SQL way: indexes for known length 3}
+
+  This works well when you know about the prefix length in your queries:
+
+  \begin{example}
+  \begin{verbatim}
+     CREATE INDEX pa1 on prefixes (prefix) 
+            WHERE length(prefix) = 1;
+
+     CREATE INDEX pa2 on prefixes (prefix)
+            WHERE length(prefix) = 2;
+
+     CREATE INDEX pa3 on prefixes (substring(prefix for 3))
+            WHERE length(prefix) >= 3;
+  \end{verbatim}
+  \end{example}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{The plain SQL way: indexes for known length 3}
+
+  This works well when you know about the prefix length in your queries:
+
+  \begin{example}
+  \begin{verbatim}
+     select * from prefixes
+     where ( length(prefix) = 1 and prefix = ? )
+        or ( length(prefix) = 2 and prefix = ? )
+        or ( length(prefix) >= 3 
+             and substring(prefix for 3) = ? )
+  order by length(prefix) desc
+  limit 1;
+  \end{verbatim}
+  \end{example}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The plain SQL way: no extra indices}
+
+   \texttt{depesz} thought of simply using a list of generated prefixes of
+   phone number. For example for phone number \texttt{0123456789}, we would
+   have: \texttt{prefix in ('0', '01', '012', '0123', ...)}.
+
+  \begin{example}
+  \begin{verbatim}
+     select *
+     from prefixes
+     where prefix in (?, ?, ?, ?, ?, ?, ?)
+     order by length(prefix) desc
+     limit 1;
+  \end{verbatim}
+  \end{example}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The GiST index way}
+
+  The generic solution here is the specialized \alert{GiST} index.
+
+  \begin{example}
+  \begin{verbatim}
+    CREATE INDEX idx_prefix ON prefixes
+           USING GIST(prefix gist_prefix_ops);
+
+    SELECT ... FROM prefixes WHERE prefix @> 'abcdef';
+  \end{verbatim}
+  \end{example}
+\end{frame}
+
 
 \section{First version, text indexing}
 
@@ -75,10 +151,10 @@
 \begin{frame}[fragile]
   \frametitle{Some more optimisation}
   
-  \texttt{prefix} next version will provide some more optimisation
-  by having its internal data structure accept wider ranges of prefixes.
-  The user visible part of this will the the input format of the \texttt{prefix\_range}
-  datatype:
+  \texttt{prefix} next version will provide some more optimisation by having
+  its internal data structure accept wider ranges of prefixes.  The user
+  visible part of this will the the input format of the
+  \texttt{prefix\_range} datatype:
   
   \begin{example}
   \begin{verbatim}
@@ -92,9 +168,8 @@
 \frame{
   \frametitle{Yet Another Single Man Project}
   
-  \texttt{prefix} project is using pgfoundry hosting facilities, has no mailing-list
-  and currently only onde maintainer, contributions and usage feedbacks are
-  welcome.
-}
+  \texttt{prefix} project is using \alert{pgfoundry} hosting facilities, has
+  no mailing-list and currently only onde maintainer, contributions and
+  usage feedbacks are welcome.  }
 
 \end{document}
