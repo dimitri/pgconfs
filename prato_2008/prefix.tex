@@ -38,7 +38,7 @@
   \frametitle{The plain SQL way}
   
   \texttt{depesz} has a blog entry about it:
-  http://www.depesz.com/index.php/2008/03/04/searching-for-longest-prefix/
+  \url{http://www.depesz.com/index.php/2008/03/04/searching-for-longest-prefix/}
   
   \begin{example}
   \begin{verbatim}
@@ -196,8 +196,10 @@ typedef struct {
   \frametitle{PostgreSQL module development}
 
   This part of the development is the same whether you're targeting index
-  code or general purpose code. Some things are not that easy to come up
-  with. Somewhat a steep learning curve...
+  code or general purpose code. It's a rather a steep learning
+  curve... You'll have to read the source.
+
+  Helpers: \url{http://doxygen.postgresql.org/} and \texttt{\#postgresql}
 
   \begin{example}
   \begin{verbatim}
@@ -211,19 +213,134 @@ DatumGetCString(
   \end{example}
 \end{frame}
 
-\frame{
-  \frametitle{PostgreSQL module development}
+\begin{frame}[fragile]
+  \frametitle{PostgreSQL module development: multi-version support}
 
-  TODO:
+  If you want to support multiple major versions of PostgreSQL, check
+  \texttt{PG\_VERSION\_NUM} and... read the source to find out about
+  discrepancies.
 
-  macros, multi-version support, function declarations, pgxs, configure
-  options \texttt{--enable-debug --enable-cassert}, memory allocations
-  scheme, SQL level integration
+  \begin{example}
+  \begin{verbatim}
+#if PG_VERSION_NUM / 100 == 802
+#define PREFIX_VARSIZE(x)        (VARSIZE(x) - VARHDRSZ)
+#define PREFIX_VARDATA(x)        (VARDATA(x))
+#else
+#define PREFIX_VARSIZE(x)        (VARSIZE_ANY_EXHDR(x))
+#define PREFIX_VARDATA(x)        (VARDATA_ANY(x))
+#endif
+  \end{verbatim}
+  \end{example}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{PostgreSQL module development: macros}
+
+  PostgreSQL code style uses macros to simplify raw C-structure accesses,
+  the extension modules are better using the same technique.
+
+  \begin{example}
+  \begin{verbatim}
+#define DatumGetPrefixRange(X)	      ((prefix_range *) PREFIX_VARDATA(DatumGetPointer(X)) )
+#define PrefixRangeGetDatum(X)	      PointerGetDatum(make_varlena(X))
+#define PG_GETARG_PREFIX_RANGE_P(n)  DatumGetPrefixRange(PG_DETOAST_DATUM(PG_GETARG_DATUM(n)))
+#define PG_RETURN_PREFIX_RANGE_P(x)  return PrefixRangeGetDatum(x)
+  \end{verbatim}
+  \end{example}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{PostgreSQL module development: function declarations}
+
+  PostgreSQL has support for polymorphic and overloading functions, even at
+  its innermost foundation: C-level code.
+
+  \begin{example}
+  \begin{verbatim}
+PG_FUNCTION_INFO_V1(prefix_range_cast_from_text);
+Datum prefix_range_cast_from_text(PG_FUNCTION_ARGS)
+{
+  text *txt = PG_GETARG_TEXT_P(0);
+  Datum cstring = DirectFunctionCall1(textout, 
+                                      PointerGetDatum(txt));
+  return DirectFunctionCall1(prefix_range_in, cstring);
 }
+  \end{verbatim}
+  \end{example}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{PostgreSQL module development: \texttt{SQL} integration}
+
+  Here's how to declare previous function in \texttt{SQL}:
+
+  \begin{example}
+  \begin{verbatim}
+CREATE OR REPLACE FUNCTION prefix_range(text)
+RETURNS prefix_range
+AS 'MODULE_PATHNAME', 'prefix_range_cast_from_text'
+LANGUAGE 'C' IMMUTABLE STRICT;
+
+CREATE CAST (text as prefix_range)
+  WITH FUNCTION prefix_range(text) AS IMPLICIT;
+  \end{verbatim}
+  \end{example}
+\end{frame}
+
+\frame{
+  \frametitle{PostgreSQL module development: allocating memory}
+
+  \begin{itemize}
+
+   \item<1-> Use \texttt{palloc} unless told not to, or when the code you're
+     getting inspiration from avoids \texttt{palloc} for \texttt{malloc}.
+
+   \item<2-> \texttt{palloc} memory lives in a \textit{Context} which is
+     freed in one sweep at its death (end of query execution, end of
+     transaction, etc).
+
+   \item<3-> PostgreSQL has support for polymorphic and overloading
+     functions, even at the C-level.
+  \end{itemize}
+}
+
+\begin{frame}[fragile]
+  \frametitle{PostgreSQL module development: building with \texttt{pgxs}}
+
+  PostgreSQL provides the tool suite for easy building and integration of
+  your module: put the following into a \texttt{Makefile}
+
+  \begin{example}
+  \begin{verbatim}
+MODULES = prefix
+DATA_built = prefix.sql
+
+PGXS = $(shell pg_config --pgxs)
+include $(PGXS)
+  \end{verbatim}
+  \end{example}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{PostgreSQL module development: configuring for development}
+
+  When developping a PostgreSQL extension, you'll find it convenient for
+  your installation to exports \texttt{DEBUG} symbols and check for C-level
+  \texttt{Assert}s.
+
+  \begin{example}
+  \begin{verbatim}
+./configure --prefix=/home/dim/pgsql  \
+            --enable-debug            \
+            --enable-cassert
+  \end{verbatim}
+  \end{example}
+\end{frame}
 
 \frame{
   \frametitle{New datatype magic}
-
+  
   SQL integration and test, and column storage too! \alert{wow}.
 }
 
@@ -235,10 +352,14 @@ DatumGetCString(
   7 functions to implement, where you implement your own logic
 
   Beware of conventions and datatypes expected here and there.
+
+  \textit{Slides to come detailing interface and pitfalls, usual suspects in
+    case of error, here to malloc what when docs are unclear.}
+
 }
 
 \begin{frame}[fragile]
-  \frametitle{SQL Interface: \texttt{opclass}}
+  \frametitle{\texttt{GiST} SQL integration: \texttt{opclass}}
 
   You declare \texttt{OPERATOR CLASS}es over the datatype to tell PostgreSQL
   how to index your data. It's all dynamic down to the datatypes, operator
@@ -250,17 +371,51 @@ CREATE OPERATOR CLASS gist_prefix_range_ops
 FOR TYPE prefix_range USING gist 
 AS
 	OPERATOR	1	@>,
-	FUNCTION	1	gpr_consistent (internal, prefix_range, prefix_range
+	FUNCTION	1	gpr_consistent (internal, prefix_range, prefix_range)
   \end{verbatim}
   \end{example}
 \end{frame}
+
+\subsection{GiST challenges}
+
+\frame{
+  \frametitle{The uneasy ones}
+
+  In order for your \texttt{GiST} index to show up good performance
+  characteritics, you'll have to take extra care in implementing good
+  versions of:
+
+  \begin{itemize}
+   \item<1-> \texttt{penalty()}
+   \item<2-> \texttt{picksplit()}
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{GiST penalty}
+
+  Is it better to add this new data (set?) into this side of the index, or
+  this other one?
+
+}
+
+\frame{
+  \frametitle{GiST picksplit}
+
+  When your indexed data can no more live on the same index page, you're
+  responsible for finding a good splitting. And to preserve your
+  \texttt{consistent()} properties while at it.
+
+}
 
 \subsection{Testing, debugging, tools}
 
 \frame{
   \frametitle{dataset}
 
-  ART
+  ART is the French Telecom Regulation Authority, provides a list of
+  all prefixes for local operators.
+
 }
 
 \frame{
@@ -284,20 +439,27 @@ AS
 }
 
 
+\section{Current status and roadmap}
 
-\section{Optimisation: prefix ranges}
+\begin{frame}[fragile]
+  \frametitle{Status \& Roadmap}
 
-\frame{
-  \frametitle{A new \textit{varlena} datatype}
-}
+  \begin{itemize}
 
-\section{Going "live"}
+   \item<1-> Current status is \texttt{postgresql-8.3-prefix\_0.3-1\_i386.deb}
+     is live!
 
-\frame{
-  \frametitle{Current CVS version, 0.3, is running "live"}
-}
+   \item<2-> Open item \#1: add support for indexing \texttt{text} data
+     directly, using \texttt{prefix\_range} internally without the user
+     noticing.
 
-\section{Next versions}
+   \item<3-> Open item \#2: implement a simple optimisation idea (see next
+     slide).
+
+   \item<4-> Release Version 1.0, go into maintenance mode!
+
+  \end{itemize}
+\end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Some more optimisation}
@@ -314,13 +476,20 @@ AS
   \end{example}
 \end{frame}
 
-\section{project organisation}
-
 \frame{
-  \frametitle{Yet Another Single Man Project}
+  \frametitle{Project Organisation}
   
-  \texttt{prefix} project is using \alert{pgfoundry} hosting facilities, has
-  no mailing-list and currently only onde maintainer, contributions and
-  usage feedbacks are welcome.  }
+  \texttt{prefix} project is using \url{http://pgfoundry.org} hosting
+  facilities, has no mailing-list and currently one maintainer,
+  contributions and usage feedbacks are more than welcome.
+
+  \pause
+
+   While developping the solution, the IRC channel \texttt{\#postgresql} was
+   a great resource, especially thanks to the invaluable help from
+   \texttt{RhodiumToad} formely known as \texttt{AndrewSN}, \alert{Andrew
+     Gierth}.
+
+}
 
 \end{document}
