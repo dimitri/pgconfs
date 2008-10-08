@@ -17,8 +17,7 @@
   \tableofcontents
 }
 
-\section{Introduction}
-\subsection{Once upon a time}
+\section{Introduction: problem and existing solutions}
 
 \begin{frame}[fragile]
   \frametitle{prefix queries}
@@ -34,8 +33,6 @@
 
   You want to find rows where prefix is 'a', 'abc', 'abcd', etc.
 \end{frame}
-
-\subsection{Available solutions}
 
 \begin{frame}[fragile]
   \frametitle{The plain SQL way}
@@ -128,11 +125,165 @@
 \end{frame}
 
 
-\section{First version, text indexing}
+\section{Developping a GiST module}
+
+\frame{
+  \frametitle{What's GiST?}
+
+  A kind of index for PostgreSQL: Generalized Search Tree.
+
+\begin{columns}[c]
+
+\pause
+\column{.5\textwidth}
+  PostgreSQL supports several kind of indexes:
+
+  \begin{itemize}
+   \item<3-> BTree
+   \item<4-> Hash
+   \item<5-> GiST 
+   \item<6-> GIN
+  \end{itemize}
+
+\pause
+\column{.5\textwidth} 
+  What's special about \texttt{GiST}?
+  \begin{itemize}
+   \item<7-> balanced
+   \item<8-> tree-structured access method
+   \item<9-> acts as a base template
+   \item<10-> it's a kind of a \textit{plug-in} index system
+  \end{itemize}
+  
+\end{columns}
+}
 
 \frame{
   \frametitle{Developping a GiST indexing module}
+
+  Big picture steps include
+
+  \begin{itemize}
+   \item<1-> internal representation of data
+   \item<2-> a \textit{standard} PostgreSQL extension module
+   \item<3-> exporting C functions in SQL
+   \item<4-> using \texttt{pgxs}
+  \end{itemize}
 }
+
+\begin{frame}[fragile]
+  \frametitle{prefix\_range}
+
+  Internal representation of data is the following:
+
+  \begin{example}
+  \begin{verbatim}
+typedef struct {
+  char first;
+  char last;
+  char prefix[1]; /* varlena struct, data follows */
+} prefix_range;
+  \end{verbatim}
+  \end{example}
+
+  It came from internal representation to full new SQL visible datatype,
+  \texttt{prefix\_range}.
+\end{frame}
+
+\subsection{PostgreSQL module development}
+
+\begin{frame}[fragile]
+  \frametitle{PostgreSQL module development}
+
+  This part of the development is the same whether you're targeting index
+  code or general purpose code. Some things are not that easy to come up
+  with. Somewhat a steep learning curve...
+
+  \begin{example}
+  \begin{verbatim}
+DatumGetCString(
+ DirectFunctionCall1(
+  prefix_range_out,
+  PrefixRangeGetDatum(orig)
+ )
+)
+  \end{verbatim}
+  \end{example}
+\end{frame}
+
+\frame{
+  \frametitle{PostgreSQL module development}
+
+  TODO:
+
+  macros, multi-version support, function declarations, pgxs, configure
+  options \texttt{--enable-debug --enable-cassert}, memory allocations
+  scheme, SQL level integration
+}
+
+\frame{
+  \frametitle{New datatype magic}
+
+  SQL integration and test, and column storage too! \alert{wow}.
+}
+
+\subsection{GiST specifics}
+
+\frame{
+  \frametitle{The interface API}
+
+  7 functions to implement, where you implement your own logic
+
+  Beware of conventions and datatypes expected here and there.
+}
+
+\begin{frame}[fragile]
+  \frametitle{SQL Interface: \texttt{opclass}}
+
+  You declare \texttt{OPERATOR CLASS}es over the datatype to tell PostgreSQL
+  how to index your data. It's all dynamic down to the datatypes, operator
+  and indexing support. Another \textit{wow}.
+  
+  \begin{example}
+  \begin{verbatim}
+CREATE OPERATOR CLASS gist_prefix_range_ops
+FOR TYPE prefix_range USING gist 
+AS
+	OPERATOR	1	@>,
+	FUNCTION	1	gpr_consistent (internal, prefix_range, prefix_range
+  \end{verbatim}
+  \end{example}
+\end{frame}
+
+\subsection{Testing, debugging, tools}
+
+\frame{
+  \frametitle{dataset}
+
+  ART
+}
+
+\frame{
+  \frametitle{gevel}
+
+  The \texttt{gevel} module allows to request from SQL the content of any
+  \texttt{GiST} index!
+}
+
+\frame{
+  \frametitle{Correctness testing}
+
+  Can depends on data, you sometime get crashes, sometime not: test a lot.
+}
+
+
+\frame{
+  \frametitle{Performance testing}
+
+  SQL inner side of a nested loop.
+}
+
+
 
 \section{Optimisation: prefix ranges}
 
