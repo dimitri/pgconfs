@@ -15,3 +15,6 @@ clean:
          -a -not -name "*.pdf"   \
          -a -not -name "*.png*"  \
          -a -not -name "Makefile" | xargs rm -f
+
+count:
+	@for f in $(SRC);do printf "%3d %s\n" `grep -c '[{\]frame' $$f` $$f;done
