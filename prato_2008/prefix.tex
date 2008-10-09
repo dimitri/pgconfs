@@ -122,6 +122,8 @@
     SELECT ... FROM prefixes WHERE prefix @> 'abcdef';
   \end{verbatim}
   \end{example}
+
+  So let's talk about developing this solution!
 \end{frame}
 
 
@@ -147,21 +149,32 @@
 
 \pause
 \column{.5\textwidth} 
-  What's special about \texttt{GiST}?
+  \linebreak
+  \linebreak
+  \onslide<7-> What's special about \texttt{GiST}?
+
   \begin{itemize}
-   \item<7-> balanced
-   \item<8-> tree-structured access method
-   \item<9-> acts as a base template
-   \item<10-> it's a kind of a \textit{plug-in} index system
+   \item<8-> balanced index
+   \item<9-> tree-structured access method
+   \item<10-> acts as a base template
+   \linebreak
+   \linebreak
   \end{itemize}
   
 \end{columns}
+
+  \onslide<11-> It's a kind of a \textit{plug-in} index system, easy enough
+  to work with to plug your own datatype smartness into PostgreSQL index
+  searches.
+
 }
+
+\subsection{PostgreSQL module development}
 
 \frame{
   \frametitle{Developping a GiST indexing module}
 
-  Big picture steps include
+  Big picture steps:
 
   \begin{itemize}
    \item<1-> internal representation of data
@@ -171,8 +184,9 @@
   \end{itemize}
 }
 
+
 \begin{frame}[fragile]
-  \frametitle{prefix\_range}
+  \frametitle{\texttt{prefix\_range} datatype}
 
   Internal representation of data is the following:
 
@@ -189,8 +203,6 @@ typedef struct {
   It came from internal representation to full new SQL visible datatype,
   \texttt{prefix\_range}.
 \end{frame}
-
-\subsection{PostgreSQL module development}
 
 \begin{frame}[fragile]
   \frametitle{PostgreSQL module development}
@@ -338,25 +350,125 @@ include $(PGXS)
   \end{example}
 \end{frame}
 
-\frame{
+\begin{frame}[fragile]
   \frametitle{New datatype magic}
+
+  We choose to export the internal data structure as a full type:
+
+  \begin{example}
+  \begin{overprint}
+
+    \onslide<1>
+  \begin{verbatim}
+CREATE TYPE prefix_range (
+        INPUT   = prefix_range_in,
+        OUTPUT  = prefix_range_out,
+        RECEIVE = prefix_range_recv,
+        SEND    = prefix_range_send
+);
+  \end{verbatim}
+
+    \onslide<2>
+  \begin{verbatim}
+dim=# select '0123'::prefix_range | '0137' as union;
+  union
+---------
+ 01[2-3]
+(1 row)
+  \end{verbatim}
+
+    \onslide<3->
+  \begin{verbatim}
+CREATE TABLE prefixes (
+       prefix    text primary key,
+       name      text not null,
+       shortname text,
+       state     char default 'S',
+);
+  \end{verbatim}
+
+  \end{overprint}
+  \end{example}
   
-  SQL integration and test, and column storage too! \alert{wow}.
-}
+  \onslide<4> SQL integration means column storage too! \alert{wow}.
+\end{frame}
 
 \subsection{GiST specifics}
 
-\frame{
-  \frametitle{The interface API}
+\begin{frame}[fragile]
+  \frametitle{The \texttt{GiST} interface API}
 
-  7 functions to implement, where you implement your own logic
+  To code a new \texttt{GiST} index, one only has to code 7 functions in a
+  dynamic module for PostgreSQL:
 
-  Beware of conventions and datatypes expected here and there.
+\begin{columns}[c]
 
-  \textit{Slides to come detailing interface and pitfalls, usual suspects in
-    case of error, here to malloc what when docs are unclear.}
+\column{.5\textwidth}
+  \begin{itemize}
+   \item<1,5-> \texttt{consistent()}
+   \item<2,5-> \texttt{union()}
+   \item<3,5-> \texttt{compress()}
+   \item<3,5-> \texttt{decompress()}
+   \item<4,5-> \texttt{penalty()}
+   \item<4,5-> \texttt{picksplit()}
+   \item<1,5-> \texttt{same()}
+  \end{itemize}
 
-}
+\column{.5\textwidth}
+
+  \begin{overprint}
+
+  \onslide<1>
+
+  All entries in a \textit{subtree} will share any property you
+  implement.
+  \linebreak
+  \texttt{StrategyNumber} is the operator used into the query.
+  \linebreak
+  \linebreak
+  You get to implement your equality operator (\texttt{=},
+  \texttt{pr\_eq}) for the internal datatype in the index.
+
+  \onslide<2>
+
+  Input: a set of entries. 
+  \linebreak
+  \linebreak
+  Output: a new data which is \textit{consistent} with all of them.
+
+  \onslide<3> 
+  Index internal leaf data.
+  \begin{example}
+  \begin{verbatim}
+PG_FUNCTION_INFO_V1(gpr_compress);
+Datum gpr_compress
+ (PG_FUNCTION_ARGS) 
+{  PG_RETURN_POINTER(
+     PG_GETARG_POINTER(0));
+} \end{verbatim}
+  \end{example}
+
+  \onslide<4>
+  In order for your \texttt{GiST} index to show up good performance
+  characteritics, you'll have to take extra care in implementing good
+  versions of those two.
+  \linebreak
+  \linebreak
+  \textit{see next slides}
+
+  \onslide<5>
+
+  Those functions expects \textit{internal} datatypes as argument and return
+  values, ans stores \textit{exactly} this.
+  \linebreak
+  \linebreak
+  It's easy to mess it up and have \texttt{CREATE INDEX}
+  \texttt{segfault}. \alert{Assert()} your code.
+
+  \end{overprint}
+
+\end{columns}
+\end{frame}
 
 \begin{frame}[fragile]
   \frametitle{\texttt{GiST} SQL integration: \texttt{opclass}}
@@ -364,49 +476,198 @@ include $(PGXS)
   You declare \texttt{OPERATOR CLASS}es over the datatype to tell PostgreSQL
   how to index your data. It's all dynamic down to the datatypes, operator
   and indexing support. Another \textit{wow}.
-  
+
+  \pause
+
   \begin{example}
   \begin{verbatim}
 CREATE OPERATOR CLASS gist_prefix_range_ops
 FOR TYPE prefix_range USING gist 
 AS
-	OPERATOR	1	@>,
-	FUNCTION	1	gpr_consistent (internal, prefix_range, prefix_range)
+    OPERATOR  1  @>,
+    FUNCTION  1  gpr_consistent (internal, prefix_range, prefix_range)
+    ...
   \end{verbatim}
   \end{example}
 \end{frame}
 
+
 \subsection{GiST challenges}
 
-\frame{
-  \frametitle{The uneasy ones}
-
-  In order for your \texttt{GiST} index to show up good performance
-  characteritics, you'll have to take extra care in implementing good
-  versions of:
-
-  \begin{itemize}
-   \item<1-> \texttt{penalty()}
-   \item<2-> \texttt{picksplit()}
-  \end{itemize}
-}
-
-\frame{
+\begin{frame}[fragile]
   \frametitle{GiST penalty}
 
-  Is it better to add this new data (set?) into this side of the index, or
-  this other one?
+  Is this user data more like this other one or that other one?
 
-}
+  \begin{example}
+  \begin{overprint}
 
-\frame{
+  \onslide<1>
+  \begin{verbatim}
+select a, b, pr_penalty(a::prefix_range, b::prefix_range)
+  from
+      
+      
+      
+      
+      
+      
+      
+order by 3 asc;
+  \end{verbatim}
+
+  \onslide<2>
+  \begin{verbatim}
+select a, b, pr_penalty(a::prefix_range, b::prefix_range)
+  from (values('095[4-5]', '0[8-9]'),
+              ('095[4-5]', '0[0-9]'),
+              ('095[4-5]', '[0-3]'),
+              ('095[4-5]', '0'),
+              ('095[4-5]', '[0-9]'),
+              ('095[4-5]', '0[1-5]'),
+              ('095[4-5]', '32'),
+              ('095[4-5]', '[1-3]')) as t(a, b)
+order by 3 asc;
+  \end{verbatim}
+
+  \onslide<3>
+  \begin{verbatim}
+select a, b, pr_penalty(a::prefix_range, b::prefix_range)
+  from (values
+
+
+
+
+
+              ('095[4-5]', '32'),
+              ('095[4-5]', '[1-3]')) as t(a, b)
+order by 3 asc;
+  \end{verbatim}
+
+  \onslide<4>
+  \begin{verbatim}
+select a, b, pr_penalty(a::prefix_range, b::prefix_range)
+  from (values('095[4-5]', '0[8-9]'),
+              ('095[4-5]', '0[0-9]'),
+
+
+
+
+
+                                   ) as t(a, b)
+order by 3 asc;
+  \end{verbatim}
+
+  \onslide<5>
+  \begin{verbatim}
+select a, b, pr_penalty(a::prefix_range, b::prefix_range)
+  from (values
+              
+              ('095[4-5]', '[0-3]'),
+              ('095[4-5]', '0'),
+              ('095[4-5]', '[0-9]'),
+              ('095[4-5]', '0[1-5]'),
+              
+                                   ) as t(a, b)
+order by 3 asc;
+  \end{verbatim}
+
+  \onslide<6>
+  \begin{verbatim}
+    a     |   b    | gpr_penalty
+----------+--------+-------------
+ 095[4-5] | 0[8-9] | 1.52588e-05
+ 095[4-5] | 0[0-9] | 1.52588e-05
+ 095[4-5] | [0-3]  |  0.00390625
+ 095[4-5] | 0      |  0.00390625
+ 095[4-5] | [0-9]  |  0.00390625
+ 095[4-5] | 0[1-5] |   0.0078125
+ 095[4-5] | 32     |           1
+ 095[4-5] | [1-3]  |           1
+  \end{verbatim}
+
+  \end{overprint}
+  \end{example}
+
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{GiST picksplit}
 
-  When your indexed data can no more live on the same index page, you're
-  responsible for finding a good splitting. And to preserve your
-  \texttt{consistent()} properties while at it.
+  The index grows as you insert data, remember?
 
-}
+  \begin{overprint}
+
+  \onslide<2>
+  ~
+  \linebreak
+  prefix picksplit first pass step: presort the \texttt{GistEntryVector}
+  vector by positionning the elements sharing the non-empty prefix which is
+  the more frequent in the distribution at the beginning of the vector.
+  \linebreak
+  \linebreak
+
+  \onslide<3>
+  ~
+  \linebreak
+  prefix picksplit first pass step: presort the \texttt{GistEntryVector}
+  vector by positionning the elements sharing the non-empty prefix which is
+  the more frequent in the distribution at the beginning of the vector.
+  \linebreak
+  \linebreak
+  Then consume the vector by both ends, compare them and choose to move them
+  in the \textit{left} or ther \textit{right} side of the new subtree.
+
+  \onslide<4>
+  \begin{example}
+  \begin{verbatim}
+Datum pr_picksplit(GistEntryVector *entryvec,
+                   GIST_SPLITVEC *v,
+                   bool presort)
+{
+    OffsetNumber maxoff = entryvec->n - 1;
+    GISTENTRY *ent      = entryvec->vector;
+
+    nbytes = (maxoff + 1) * sizeof(OffsetNumber);
+  \end{verbatim}
+  \end{example}
+
+  \onslide<5>
+  \begin{example}
+  \begin{verbatim}
+    listL  = (OffsetNumber *) palloc(nbytes);
+    listR  = (OffsetNumber *) palloc(nbytes);
+
+    unionL = DatumGetPrefixRange(ent[offl].key);
+    unionR = DatumGetPrefixRange(ent[offr].key);
+  \end{verbatim}
+  \end{example}
+
+  \onslide<6>
+  \begin{example}
+  \begin{verbatim}
+    pll = __pr_penalty(unionL, curl);
+    plr = __pr_penalty(unionR, curl);
+    prl = __pr_penalty(unionL, curr);
+    prr = __pr_penalty(unionR, curr);
+  \end{verbatim}
+  \end{example}
+
+  \onslide<7>
+  \begin{example}
+  \begin{verbatim}
+    if( pll <= plr && prl >= prr )       { l, r }
+    else if( pll > plr && prl >= prr )   {  , r }
+    else if( pll <= plr && prl < prr )   { l,   }
+    else if( (pll - plr) < (prr - prl) ) { all to l }
+    else { /* all to listR */ }
+
+  \end{verbatim}
+  \end{example}
+
+  \end{overprint}
+
+\end{frame}
 
 \subsection{Testing, debugging, tools}
 
