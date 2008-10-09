@@ -661,7 +661,6 @@ Datum pr_picksplit(GistEntryVector *entryvec,
     else if( pll <= plr && prl < prr )   { l,   }
     else if( (pll - plr) < (prr - prl) ) { all to l }
     else { /* all to listR */ }
-
   \end{verbatim}
   \end{example}
 
@@ -679,12 +678,26 @@ Datum pr_picksplit(GistEntryVector *entryvec,
 
 }
 
-\frame{
+\begin{frame}[fragile]
   \frametitle{gevel}
 
-  The \texttt{gevel} module allows to request from SQL the content of any
-  \texttt{GiST} index!
-}
+  The \texttt{gevel} module allows to SQL query any \texttt{GiST} index!
+
+  \begin{example}
+  \begin{verbatim}
+dim=# select gist_stat('idx_prefix');
+ Number of levels:          2
+ Number of pages:           63
+ Number of leaf pages:      62
+ Number of tuples:          10031
+ Number of invalid tuples:  0
+ Number of leaf tuples:     9969
+ Total size of tuples:      279904 bytes
+ Total size of leaf tuples: 278424 bytes
+ Total size of index:       516096 bytes
+  \end{verbatim}
+  \end{example}
+\end{frame}
 
 \frame{
   \frametitle{Correctness testing}
@@ -693,11 +706,53 @@ Datum pr_picksplit(GistEntryVector *entryvec,
 }
 
 
-\frame{
+\begin{frame}[fragile]
   \frametitle{Performance testing}
 
-  SQL inner side of a nested loop.
-}
+  \begin{example}
+
+  \begin{overprint}
+
+  \onslide<1>
+  \begin{verbatim}
+create table numbers(number text primary key);
+insert into numbers
+  select '01' || to_char((random()*100)::int, 'FM09')
+              || to_char((random()*100)::int, 'FM09')
+              || to_char((random()*100)::int, 'FM09')
+              || to_char((random()*100)::int, 'FM09')
+   from generate_series(1, 5000);
+INSERT 0 5000
+  \end{verbatim}
+
+  \onslide<2>
+  \begin{verbatim}
+dim=# explain analyze 
+      SELECT * 
+        FROM numbers n 
+             JOIN ranges r 
+               ON r.prefix @> n.number;
+  \end{verbatim}
+
+  \onslide<3>
+  \begin{verbatim}
+ Nested Loop
+  (cost=0.00..4868614.00 rows=149575000 width=45)
+  (actual time=0.345..4994.296 rows=10213 loops=1)
+   ->  Seq Scan on numbers n
+        (cost=0.00..375.00 rows=25000 width=11)
+        (actual time=0.015..12.917 rows=25000 loops=1)
+   ->  Index Scan using idx_prefix on ranges r
+        (cost=0.00..104.98 rows=5983 width=34)
+        (actual time=0.182..0.197 rows=0 loops=25000)
+         Index Cond: (r.prefix @> (n.number)::prefix_range)
+ Total runtime: 4998.936 ms
+(5 rows)
+  \end{verbatim}
+
+  \end{overprint}
+  \end{example}
+\end{frame}
 
 
 \section{Current status and roadmap}
@@ -729,7 +784,9 @@ Datum pr_picksplit(GistEntryVector *entryvec,
   its internal data structure accept wider ranges of prefixes.  The user
   visible part of this will the the input format of the
   \texttt{prefix\_range} datatype:
-  
+
+  \pause
+
   \begin{example}
   \begin{verbatim}
     SELECT 'abc[def-xyz]'::prefix_range;
@@ -743,6 +800,7 @@ Datum pr_picksplit(GistEntryVector *entryvec,
   \texttt{prefix} project is using \url{http://pgfoundry.org} hosting
   facilities, has no mailing-list and currently one maintainer,
   contributions and usage feedbacks are more than welcome.
+  \linebreak
 
   \pause
 
