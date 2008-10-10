@@ -40,6 +40,8 @@
 {
   \frametitle{pgloader's features}
 
+  PGLoader will:
+
   \begin{itemize}
    \item<1-> Load CSV data
    \item<2-> Load pretend-to-be CSV data
@@ -52,14 +54,27 @@
 \section{Architecture}
 \subsection{Main components}
 
-\frame{
+\begin{frame}[fragile]
   \frametitle{Configuration}
 
   We first parse the configuration, with templating system
-}
+
+  \begin{example}
+  \begin{verbatim}
+[simple]
+use_template = simple_tmpl
+table        = simple
+filename     = simple/simple.data
+columns      = a:1, b:3, c:2
+  \end{verbatim}
+  \end{example}  
+\end{frame}
 
 \frame{
   \frametitle{Loading: file reading}
+
+  PGLoader supports many input formats, even if they all look like
+  \texttt{CSV}, the rough time is parsing data:
 
   \begin{itemize}
    \item<1-> Read files one line at a time
@@ -76,21 +91,26 @@
 \frame{
   \frametitle{Processing lines}
 
+  Parsing data is the \texttt{CPU} intensive part of the job. You could even
+  have to guess where lines begin and end. \onslide<2->Then you add:
+
   \begin{itemize}
-   \item<1-> columns restrictions
-   \item<2-> columns reordering
-   \item<3-> user defined columns (constants)
-   \item<4-> user defined reformating modules
+   \item<2-> columns restrictions
+   \item<3-> columns reordering
+   \item<4-> user defined columns (constants)
+   \item<5-> user defined reformating modules
   \end{itemize}
 }
 
 \frame{
-  \frametitle{COPYing to PostgreSQL}
+  \frametitle{\texttt{COPY}ing to PostgreSQL}
+
+  This is how we do it:
 
   \begin{itemize}
-   \item<1-> cStringIO buffers
-   \item<2-> configurable size (copy\_every)
-   \item<3-> using copy\_expert() when available (CVS)
+   \item<1-> python \texttt{cStringIO} buffers
+   \item<2-> configurable size (\texttt{copy\_every})
+   \item<3-> using \texttt{copy\_expert()} when available (CVS)
    \item<4-> dichotomic error search
   \end{itemize}
 }
@@ -98,14 +118,21 @@
 \frame{
   \frametitle{Handling of erroneous data input}
 
+  PGLoader will continue processing your input when it contains erroneous
+  data.
+
   \begin{itemize}
    \item<1-> reject data file
-   \item<2-> 
+   \item<2-> reject log file, containing error messages
+   \item<3-> errors count in \texttt{summary}
   \end{itemize}
 }
 
 \frame{
   \frametitle{Error logging}
+
+  PGLoader will continue processing your input when it contains erroneous
+  data, \alert{and} will make it so that you know about the failures.
 
   \begin{itemize}
    \item<1-> log file
@@ -133,7 +160,8 @@
 
   \begin{itemize}
    \item <1-> mutli-threading is easy to start with in python
-   \item <2-> then you add in dequeues and semaphores (critical sections) and signals
+   \item <2-> then you add in dequeues and semaphores (critical sections)
+     and signals
    \item <3-> Giant Interpreter Lock
    \item <4-> fork() based reimplementation could be of interrest
   \end{itemize}
@@ -149,91 +177,75 @@
 \frame{
   \frametitle{Parallelism choices}
 
-  Has beed asked by some \-hackers, their use cases dictated two different modes.
+  Has beed asked by some \-hackers, their use cases dictated two different
+  modes.
+  \linebreak
+  \pause
 
-  The idea is to have a parallel pg\_restore testbed, interresting with large input
-  files (100GB to several TB). Perfs on on core can't be as good as server one, due
-  to client\-server roundtrips compared to local file reading, but with some more CPUs
-  feeding the disk array, should show up nice improvements.
+  The idea is to have a parallel pg\_restore testbed, interresting with
+  large input files (100GB to several TB). PGLoader's can't compete to plain
+  \texttt{COPY}, due to client\-server roundtrips compared to local file
+  reading, but with some more CPUs feeding the disk array, should show up
+  nice improvements.
+  \linebreak
+  \pause
 
-  Testing and feebback more than welcome\!
+  Testing and feeback more than welcome!
 }
-
-\frame{
-  \frametitle{Round robin reader}
-
-  \begin{example}
-   split\_file\_reading = False
-  \end{example}
-}
-
-
-\frame{
-  \frametitle{Split file reader}
-
-  \begin{example}
-   split\_file\_reading = True
-  \end{example}
-}
-
-\section{Configuration file format}
-\subsection{INI files with user friendly parsing}
-
-\frame{
-  \frametitle{How to set configuration knobs}
-
-   \begin{itemize}
-    \item <1-> brackets sections
-    \item <2-> \texttt{variable = value}
-    \item <3-> templates
-   \end{itemize}
-}
-
-\frame{
-   \frametitle{User friendly and flexible}
-
-   \begin{itemize}
-    \item <1-> Error messages (try to be nice to users)
-    \item <2-> Flexible input (only\_cols \= 1\-3, 5)
-   \end{itemize}
-}
-
-\subsection{User level extensions}
 
 \begin{frame}[fragile]
-  \frametitle{User defined columns}
+  \frametitle{Round robin reader}
 
-  Constant columns added at parsing time.
+  Parsing is all done by a single thread for all the content.
+  \linebreak
+  \pause
 
-  Use case: adding an origin\_server\_id field depending on the file
-  to get loaded, for data aggregation.
+  \texttt{N} readers are started and get each a queue where to fill this
+  round data, and issue \texttt{COPY} while main reader continue parsing.
+  \linebreak
+  \pause
 
   \begin{example}
   \begin{verbatim}
-   columns        = b:2, d:1, x:3, y:4
-   udc_c          = constant value
-   copy_columns   = b, c, d
+[rrr]
+section_threads    = 3
+split_file_reading = False
   \end{verbatim}
   \end{example}
 \end{frame}
 
-\frame
-{
-  \frametitle{User defined Reformating modules}
+\begin{frame}[fragile]
+  \frametitle{Split file reader}
 
-  The basic idea is not to use any sed-like preprocessing scripts.
+  The file is split into \texttt{N} blocks and there's as much pgloader
+  doing the same job in parallel as there are blocks.
+  \linebreak
+  \pause
+
+  \begin{example}
+  \begin{verbatim}
+[rrr]
+section_threads    = 3
+split_file_reading = True
+  \end{verbatim}
+  \end{example}
+\end{frame}
+
+\section{Configuration examples \& Usage}
+
+\frame{
+  \frametitle{Examples}
+
+  PGLoader distribution comes with diverse examples, don't forget to see
+  about them.  
 }
-
-\frame
-{
-  \frametitle{User defined Reformating modules}
-
-}
-
-\subsection{Configuration Examples}
 
 \begin{frame}[fragile]
   \frametitle{simple}
+
+  That simple:
+  \linebreak
+  \pause
 
   \begin{example}
   \begin{verbatim}
@@ -249,42 +261,113 @@ columns      = *
   \end{example}
 \end{frame}
 
-\frame{
-  \frametitle{others}
+\begin{frame}[fragile]
+  \frametitle{User defined columns}
 
-  csv, fixed, user defined columns, columns reordering, user defined modules, parralel loading
-  cluttered data
-}
+  Constant columns added at parsing time.
+  \linebreak
+  \pause
 
-\section{Usage}
+  Use case: adding an origin\_server\_id field depending on the file
+  to get loaded, for data aggregation.
+  \linebreak
+  \pause
 
-\section{Incoming features}
+  \begin{example}
+  \begin{verbatim}
+   [server_A]
+   file           = imports/A.csv
+   columns        = b:2, d:1, x:3, y:4
+   udc_c          = A
+   copy_columns   = b, c, d
+  \end{verbatim}
+  \end{example}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{User defined Reformating modules}
+
+  The basic idea is to avoid any pre-processing done with another tool
+  (\texttt{sed}, \texttt{awk}, you name it).
+  \linebreak 
+  \onslide<2-> file has \texttt{'12131415'}
+  \onslide<3-> we want \texttt{'12:13:14.15'}
+  \pause
+
+  \begin{example}
+  \begin{overprint}
+  
+  \onslide<2>
+  \begin{verbatim}
+[fixed]
+table           = fixed
+format          = fixed
+filename        = fixed/fixed.data
+columns         = *
+fixed_specs     = a:0:10, b:10:8, c:18:8, d:26:17
+reformat        = c:pgtime:time
+  \end{verbatim}
+
+  \onslide<3>
+  \begin{verbatim}
+def time(reject, input):
+    """ Reformat str as a PostgreSQL time """
+    if len(input) != 8:
+        reject.log(mesg, input)
+
+    hour       = input[0:2]
+    ...
+    return '%s:%s:%s.%s' % (hour, min, secs, cents)
+  \end{verbatim}
+  \end{overprint}
+  \end{example}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The fine manual says it all}
+
+  At \url{http://pgloader.projects.postgresql.org/} or \texttt{man pgloader}
+
+  \begin{example}
+  \begin{verbatim}
+> pgloader --help
+> pgloader --version
+> pgloader -DTsc pgloader.conf
+  \end{verbatim}
+  \end{example}
+\end{frame}
+
+\section{Current status \& TODO}
 
 \frame{
   \frametitle{TODO}
 
-  TODO is published at http://pgloader.projects.postgresql.org/dev/TODO.html
+  \url{http://pgloader.projects.postgresql.org/dev/TODO.html}
 
   \begin{itemize}
-   \item <1-> Constraint Exclusion support
-   \item <2-> Reject Behaviour
-   \item <3-> XML support with user defined XSLT StyleSheet
-   \item <4-> Facilities
+   \item <2-> Constraint Exclusion support
+   \item <3-> Reject Behaviour
+   \item <4-> XML support with user defined XSLT StyleSheet
+   \item <5-> Facilities
   \end{itemize}
 
-  Don't be shy and just ask for new features!
+  \onslide<6> Don't be shy and just ask for new features!
 }
-
-\section{Project management}
 
 \frame{
   \frametitle{Resources and Users}
 
-  pgfoundry, 1 developper, some users, no mailing list yet, some mails sometime
+  pgfoundry, 1 developper, some users, no mailing list yet (no one asking
+  for one), some mails sometime, seldom bug reports (fixed) \linebreak
+  \pause
 
-  \#postgresql and \#postgresqlfr
+  Support ongoing at \texttt{\#postgresql} and \texttt{\#postgresqlfr}
+  \linebreak
+  \pause
 
-  packages for debian, freebsd, openbsd
+  packages for \texttt{debian}, \texttt{FreeBSD}, \texttt{OpenBSD},
+  \texttt{CentOS}, \texttt{RHEL} and \texttt{Fedora}.  
+
 }
 
 \end{document}
