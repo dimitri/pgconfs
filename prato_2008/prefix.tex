@@ -335,7 +335,7 @@ include $(PGXS)
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{PostgreSQL module development: configuring for development}
+  \frametitle{PostgreSQL module development: configuring}
 
   When developing a PostgreSQL extension, you'll find it convenient for
   your installation to exports \texttt{DEBUG} symbols and check for C-level
@@ -380,7 +380,7 @@ dim=# select '0123'::prefix_range | '0137' as union;
     \onslide<3->
   \begin{verbatim}
 CREATE TABLE prefixes (
-       prefix    text primary key,
+       prefix    prefix_range primary key,
        name      text not null,
        shortname text,
        state     char default 'S',
@@ -405,20 +405,20 @@ CREATE TABLE prefixes (
 
 \column{.5\textwidth}
   \begin{itemize}
-   \item<1,5-> \texttt{consistent()}
-   \item<2,5-> \texttt{union()}
-   \item<3,5-> \texttt{compress()}
-   \item<3,5-> \texttt{decompress()}
-   \item<4,5-> \texttt{penalty()}
-   \item<4,5-> \texttt{picksplit()}
-   \item<1,5-> \texttt{same()}
+   \item<1,2,6-> \texttt{consistent()}
+   \item<1,3,6-> \texttt{union()}
+   \item<1,4,6-> \texttt{compress()}
+   \item<1,4,6-> \texttt{decompress()}
+   \item<1,5,6-> \texttt{penalty()}
+   \item<1,5,6-> \texttt{picksplit()}
+   \item<1,2,6-> \texttt{same()}
   \end{itemize}
 
 \column{.5\textwidth}
 
   \begin{overprint}
 
-  \onslide<1>
+  \onslide<2>
 
   All entries in a \textit{subtree} will share any property you
   implement.
@@ -429,14 +429,18 @@ CREATE TABLE prefixes (
   You get to implement your equality operator (\texttt{=},
   \texttt{pr\_eq}) for the internal datatype in the index.
 
-  \onslide<2>
+  \onslide<3>
 
   Input: a set of entries. 
   \linebreak
   \linebreak
   Output: a new data which is \textit{consistent} with all of them.
+  \linebreak
+  \linebreak
+  This will form the index tree non-leaf elements, any element in a subtree
+  has to be consistent with all the nodes atop.
 
-  \onslide<3> 
+  \onslide<4> 
   Index internal leaf data.
   \begin{example}
   \begin{verbatim}
@@ -445,10 +449,11 @@ Datum gpr_compress
  (PG_FUNCTION_ARGS) 
 {  PG_RETURN_POINTER(
      PG_GETARG_POINTER(0));
-} \end{verbatim}
+}
+  \end{verbatim}
   \end{example}
 
-  \onslide<4>
+  \onslide<5>
   In order for your \texttt{GiST} index to show up good performance
   characteritics, you'll have to take extra care in implementing good
   versions of those two.
@@ -456,10 +461,10 @@ Datum gpr_compress
   \linebreak
   \textit{see next slides}
 
-  \onslide<5>
+  \onslide<6>
 
   Those functions expects \textit{internal} datatypes as argument and return
-  values, ans stores \textit{exactly} this.
+  values, and stores \textit{exactly} this.
   \linebreak
   \linebreak
   It's easy to mess it up and have \texttt{CREATE INDEX}
@@ -670,13 +675,30 @@ Datum pr_picksplit(GistEntryVector *entryvec,
 
 \subsection{Testing, debugging, tools}
 
-\frame{
+\begin{frame}[fragile]
   \frametitle{dataset}
 
-  ART is the French Telecom Regulation Authority, provides a list of
-  all prefixes for local operators.
+  ART is the French Telecom Regulation Authority, provides a list of all
+  prefixes for local operators. Let's load some \texttt{11966} prefixes from
+  \url{http://www.art-telecom.fr/fileadmin/wopnum.rtf} .
 
-}
+  \pause
+
+  \begin{example}
+  \begin{verbatim}
+dim=# select prefix, shortname from prefixes limit 5;                                                                                                              
+  prefix  | shortname 
+----------+-----------
+ 010001[] | COLT
+ 010002[] | EQFR
+ 010003[] | NURC
+ 010004[] | PROS
+ 010005[] | ITNF
+(5 rows)
+  \end{verbatim}
+  \end{example}
+
+\end{frame}
 
 \begin{frame}[fragile]
   \frametitle{gevel}
@@ -684,6 +706,9 @@ Datum pr_picksplit(GistEntryVector *entryvec,
   The \texttt{gevel} module allows to SQL query any \texttt{GiST} index!
 
   \begin{example}
+  \begin{overprint}
+
+  \onslide<2>
   \begin{verbatim}
 dim=# select gist_stat('idx_prefix');
  Number of levels:          2
@@ -696,14 +721,43 @@ dim=# select gist_stat('idx_prefix');
  Total size of leaf tuples: 278424 bytes
  Total size of index:       516096 bytes
   \end{verbatim}
+
+  \onslide<3>
+  \begin{verbatim}
+select *
+  from gist_print('idx_prefix')
+    as t(level int, valid bool, a prefix_range)
+where level =1;
+
+select *
+  from gist_print('idx_prefix')
+    as t(level int, valid bool, a prefix_range)
+order by level;
+  \end{verbatim}
+
+  \end{overprint}
   \end{example}
 \end{frame}
 
-\frame{
+\begin{frame}[fragile]
   \frametitle{Correctness testing}
 
-  Can depends on data, you sometime get crashes, sometime not: test a lot.
-}
+  Even when your index builds without a \texttt{segfault} you have to
+  test. It can happen at query time, or worse:
+  \pause
+
+  \begin{example}
+  \begin{verbatim}
+set enable_seqscan to on;
+select * from prefixes where prefix @> '0146640123';
+select * from prefixes where prefix @> '0100091234';
+
+set enable_seqscan to off;
+select * from prefixes where prefix @> '0146640123';
+select * from prefixes where prefix @> '0100091234';
+  \end{verbatim}
+  \end{example}
+\end{frame}
 
 
 \begin{frame}[fragile]
@@ -730,7 +784,7 @@ INSERT 0 5000
 dim=# explain analyze 
       SELECT * 
         FROM numbers n 
-             JOIN ranges r 
+             JOIN prefixes r 
                ON r.prefix @> n.number;
   \end{verbatim}
 
@@ -762,8 +816,11 @@ dim=# explain analyze
 
   \begin{itemize}
 
-   \item<1-> Current status is \texttt{postgresql-8.3-prefix\_0.3-1\_i386.deb}
-     is live!
+  \item<1-> Current release is \texttt{0.3-1} and \texttt{CVS} version is
+    live!
+
+     \textit{and has been involved into more than 7 million calls, 2 lookups per
+       call}
 
    \item<2-> Open item \#1: add support for indexing \texttt{text} data
      directly, using \texttt{prefix\_range} internally without the user
