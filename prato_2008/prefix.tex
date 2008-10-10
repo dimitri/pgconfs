@@ -22,8 +22,8 @@
 \begin{frame}[fragile]
   \frametitle{prefix queries}
 
-  The \alert{prefix} project is about solving prefix queries where the
-  literal is not the literal but the column data.
+  The \alert{prefix} project is about solving prefix queries where a literal
+  is compared to potential prefixes in a column data.
 
   \begin{example}
   \begin{verbatim}
@@ -138,7 +138,7 @@
 
 \pause
 \column{.5\textwidth}
-  PostgreSQL supports several kind of indexes:
+  PostgreSQL supports several kinds of indexes:
 
   \begin{itemize}
    \item<3-> BTree
@@ -208,8 +208,8 @@ typedef struct {
   \frametitle{PostgreSQL module development}
 
   This part of the development is the same whether you're targeting index
-  code or general purpose code. It's a rather a steep learning
-  curve... You'll have to read the source.
+  code or general purpose code. It's rather a steep learning curve... You'll
+  have to read the source.
 
   Helpers: \url{http://doxygen.postgresql.org/} and \texttt{\#postgresql}
 
@@ -249,7 +249,7 @@ DatumGetCString(
   \frametitle{PostgreSQL module development: macros}
 
   PostgreSQL code style uses macros to simplify raw C-structure accesses,
-  the extension modules are better using the same technique.
+  the extension modules writers had better use the same technique.
 
   \begin{example}
   \begin{verbatim}
@@ -463,8 +463,8 @@ Datum gpr_compress
 
   \onslide<6>
 
-  Those functions expects \textit{internal} datatypes as argument and return
-  values, and stores \textit{exactly} this.
+  Those functions expect \textit{internal} datatypes as argument and return
+  values, and store \textit{exactly} this.
   \linebreak
   \linebreak
   It's easy to mess it up and have \texttt{CREATE INDEX}
@@ -502,7 +502,7 @@ AS
 \begin{frame}[fragile]
   \frametitle{GiST penalty}
 
-  Is this user data more like this other one or that other one?
+  Is this user data more like this one or that one?
 
   \begin{example}
   \begin{overprint}
@@ -607,8 +607,8 @@ order by 3 asc;
   ~
   \linebreak
   prefix picksplit first pass step: presort the \texttt{GistEntryVector}
-  vector by positionning the elements sharing the non-empty prefix which is
-  the more frequent in the distribution at the beginning of the vector.
+  vector by positioning the elements sharing the non-empty prefix which is
+  the most frequent in the distribution at the beginning of the vector.
   \linebreak
   \linebreak
 
@@ -616,12 +616,12 @@ order by 3 asc;
   ~
   \linebreak
   prefix picksplit first pass step: presort the \texttt{GistEntryVector}
-  vector by positionning the elements sharing the non-empty prefix which is
-  the more frequent in the distribution at the beginning of the vector.
+  vector by positioning the elements sharing the non-empty prefix which is
+  the most frequent in the distribution at the beginning of the vector.
   \linebreak
   \linebreak
   Then consume the vector by both ends, compare them and choose to move them
-  in the \textit{left} or ther \textit{right} side of the new subtree.
+  in the \textit{left} or the \textit{right} side of the new subtree.
 
   \onslide<4>
   \begin{example}
@@ -678,7 +678,7 @@ Datum pr_picksplit(GistEntryVector *entryvec,
 \begin{frame}[fragile]
   \frametitle{dataset}
 
-  ART is the French Telecom Regulation Authority, provides a list of all
+  ART is the French Telecom Regulation Authority. It provides a list of all
   prefixes for local operators. Let's load some \texttt{11966} prefixes from
   \url{http://www.art-telecom.fr/fileadmin/wopnum.rtf} .
 
@@ -743,7 +743,7 @@ order by level;
   \frametitle{Correctness testing}
 
   Even when your index builds without a \texttt{segfault} you have to
-  test. It can happen at query time, or worse:
+  test. It can happen at query time\onslide<2>, or worse:
   \pause
 
   \begin{example}
@@ -819,8 +819,8 @@ dim=# explain analyze
   \item<1-> Current release is \texttt{0.3-1} and \texttt{CVS} version is
     live!
 
-     \textit{and has been involved into more than 7 million calls, 2 lookups per
-       call}
+    \textit{and has been involved in more than 7 million calls, 2 lookups
+      per call}
 
    \item<2-> Open item \#1: add support for indexing \texttt{text} data
      directly, using \texttt{prefix\_range} internally without the user
@@ -852,19 +852,20 @@ dim=# explain analyze
 \end{frame}
 
 \frame{
-  \frametitle{Project Organisation}
+  \frametitle{Project Organisation \& Thanks}
   
   \texttt{prefix} project is using \url{http://pgfoundry.org} hosting
-  facilities, has no mailing-list and currently one maintainer,
-  contributions and usage feedbacks are more than welcome.
+  facilities, has no mailing-list and currently one maintainer.
+  \linebreak
+  Contributions and usage feedbacks are more than welcome.
   \linebreak
 
   \pause
 
-   While developing the solution, the IRC channel \texttt{\#postgresql} was
-   a great resource, especially thanks to the invaluable help from
-   \texttt{RhodiumToad} formely known as \texttt{AndrewSN}, \alert{Andrew
-     Gierth}.
+  While developing the solution, the IRC channel \texttt{\#postgresql} was a
+  great resource, especially thanks to the invaluable help from
+  \texttt{RhodiumToad}, formerly known as \texttt{AndrewSN}, \alert{Andrew
+    Gierth}.
 
 }
 
