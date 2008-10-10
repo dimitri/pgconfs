@@ -237,10 +237,10 @@ DatumGetCString(
 #if PG_VERSION_NUM / 100 == 802
 #define PREFIX_VARSIZE(x)        (VARSIZE(x) - VARHDRSZ)
 #define PREFIX_VARDATA(x)        (VARDATA(x))
-#else
+
+#if PG_VERSION_NUM / 100 == 803
 #define PREFIX_VARSIZE(x)        (VARSIZE_ANY_EXHDR(x))
 #define PREFIX_VARDATA(x)        (VARDATA_ANY(x))
-#endif
   \end{verbatim}
   \end{example}
 \end{frame}
