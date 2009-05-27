@@ -1,0 +1,49 @@
+= No More Waiting
+
+Release 8.4: June, July
+
+== Perfs
+
+- Visibility Maps
+- Default Stats target (100)
+- semi-join / anti-join
+- constraint_exclusion = 'partition'
+
+== Administration
+
+- FSM, vacuum_freeze_...
+- SELECT pg_terminate_backend() --- disconnect
+- stats_temp_directory (memory filesystem)	
+- auto explain (GUC, session) SET auto_explain_log_min_duration = 2000;
+- explain verbose
+
+== PSQL
+
+- \ef
+- \dt+
+
+== Development
+
+- CTE, recursive queries
+- windowing functions
+- LIMIT (subquery)
+- FTS partial match
+- generate_series(timestamptz, timestamptz)
+- array_aggregate() / unnest()
+- suppres_redundent_updates()
+
+== Procedures
+
+- CASE in PLPGSQL
+- variadic functions / default arguments
+- returns table
+- RAISE support for HINT, DETAIL, SQLSTATE
+- RETURN QUERY EXECUTE
+- EXECUTE USING
+- quote_nullable()
+
+== Upgrades
+
+- pg_migrator to test
+- incompatibilities -> release notes (corner cases)
+

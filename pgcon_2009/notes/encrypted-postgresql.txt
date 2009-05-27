@@ -1,0 +1,86 @@
+= Encrypted PostgreSQL
+
+New stuff from Magnus in 8.4
+
+== Decide what your threat is
+
+- costs : performance / maintainability
+
+== Which layer to encrypt
+
+- application / database / storage
+
+=== harddrire / FS
+
+- fsync?
+- where to store the key? (boot interractive)
+
+=== pgcrypto
+
+- client independant
+- encrypt connection
+
+== pgcrypto
+
+- encryption is easy
+- key management is not (where to store the key, not in the database)
+
+- gen_random_bytes() to create key (not random)
+
+=== PGP encryption
+
+- symetric API available (with a password)
+- want text rather than bytea: armor(), dearmor()
+- gpg-style options like cipher-algo=aes256
+- public key encryption, no key generation
+- public key encryption detects wrong key/corrupt data, not symetric mode
+
+=== hashing
+
+- SELECT encode(digest('lolcats!', 'sha256'), 'base64');
+- password hashing with crypt() (autodetects algorithm)
+
+   hash the pass: SELECT crypt('secret', gen_salt('bf'));
+   test the pass: SELECT hash = crypt('secret', hash);
+
+=== Key Management
+
+- where to store the key (which server, use a card, ...)
+- protect the key
+- key recovery?
+
+=== Searching crypted data
+
+- no index (data is encrypted) unless using symetric API
+- index on expression -> data in clear in the index
+
+== SSL / TLS
+
+- encryption, no MITM, authentication
+- ssl=yes, defaults to no in debian
+- postgresql.conf, pg_hba to force ssl usage, libpq requires ssl: 3 places
+- needs a server certificates (auto sign ok, server only possible)
+
+=== man in the middle
+
+- encryption needed
+- needs certificate validation (check the server is the one you want)
+- client needs to know the CA certificate (self-signed ok)
+
+=== SSL client auth
+
+- CA issued certificate on client
+- match CN on certificate to user id (login role) (no password needed anymore)
+- protect client certificate (passphrase/password)
+
+=== ssl in libpq
+
+- sslmode, PGSSLMODE, must be set on client
+- defaults is unsecure
+- modes are: disable, allow, prefer, require, verify-ca, verify-full
+- SSL has huge overhead (often, ssl time > server processing)
+
+== Summary
+
+- encrypt only what you need to
+- debian defaults to ssl overhead with no benefit

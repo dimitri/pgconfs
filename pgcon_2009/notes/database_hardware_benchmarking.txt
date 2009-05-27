@@ -1,0 +1,45 @@
+= Database Hardware Benchmarking
+
+- always benchmark new hardware *before* production
+- allows better trouble shooting if you trust the hardware
+
+== Systematic benchmarking
+
+- memory setup can be wrong
+- test mem, cpu, disk, database, application
+- memtest86+, sysbench, hdparm (non portable results)
+
+=== memtest86+
+
+- memory bandwith speed
+- memory setup reliable when memtest86+ release newer than hardware
+
+=== sysbench
+
+- write test, the read caches
+
+=== sources for slow memory results
+
+- cpu / motherboard : clocks have to be integer multipliers away
+- single channel ram (slots)
+- motherboard bios settings (SPD/timing/voltage)
+
+=== cpu tests
+
+- sysbench
+- generate_series()
+- pgbench select-only
+
+=== sources for slow CPU results
+
+- Power management!
+- linux cpu governor
+
+=== disk tests
+
+- test commit fsync rate (write cache enabled and system lying about it)
+- data physical location (begining of the disk is on the external, faster) 
+  use zcav from bonnie++
+
+
+
