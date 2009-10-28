@@ -1,0 +1,255 @@
+\documentclass{beamer}
+\usepackage[latin9]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{beamerthemesplit}
+\usetheme{Warsaw}
+\beamertemplatetransparentcovered
+
+\title{Les Bases de Données chez Hi-Media}
+\author{Sébastien Lardière}
+\date{8 juillet 2009}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section*{Plan}
+\frame{
+  \frametitle{De quoi ça parle ?}
+  \tableofcontents
+}
+
+\section{Les Métiers d'Hi-Media}
+
+\frame{
+
+ Des services en lignes : 
+
+ \begin{itemize}
+   \item<2-> Paiment Electronique
+   \item<3-> Régie Publicitaire
+   \item<4-> Service Téléphonique
+  \end{itemize}
+
+}
+
+\section{Les Outils}
+
+\frame{
+  \frametitle{Des Outils Libres}
+
+L'essentiel des outils utilisé pour le développement et la production sont des outils libres : 
+
+  \begin{itemize}
+   \item<2-> \texttt{Apache}
+   \item<3-> \texttt{Php}
+   \item<4-> \texttt{Linux}, \texttt{FreeBSD}
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Bases de Données}
+
+\begin{center}
+Depuis un an, un seul outil de bases de données est utilisé : PostgreSQL 
+\end{center}
+
+Les raisons sont multiples : 
+
+  \begin{itemize}
+   \item<2-> Le coût
+   \item<3-> Les fonctionnalités
+   \item<4-> La standardisation des outils, méthodes et du développement
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Production}
+
+Trois versions sont utilisés en production, de la 8.1 à la 8.3, et les études commencent pour l'adoption de la version 8.4
+	
+  \begin{itemize}
+    \item<2-> Environ Cinquantes Instances en production
+    \item<3-> Jusqu'à plus de 100 GB par instance 
+    \item<4-> OLTP ( temps de réponses très bas )
+    \item<5-> OLAP ( gros volumes )
+  \end{itemize}
+
+}
+
+
+\section{Compétences}
+
+\subsection{DBAs}
+
+\frame{
+
+  Deux Architectes-DBAs, spécialistes de PostgreSQL : 
+
+  \begin{itemize}
+    \item<2-> Responsables de la production
+    \item<3-> Accompagnent les équipes de développement
+  \end{itemize}
+
+}
+
+\subsection{Développeurs}
+
+\frame{
+  \frametitle{Le code au plus près des données}
+
+ Les développeurs sont invités à s'appuyer sur la base de données : 
+
+  \begin{itemize}
+    \item<2-> Utilisation complète du SQL
+    \item<3-> Developpement en \texttt{Pl/PGSQL}
+    \item<4-> Consultation des DBAs
+  \end{itemize}
+
+}
+
+\section{Production}
+
+\subsection{Outils, Méthodes}
+
+\frame{
+  \frametitle{Materiel} 
+
+  Nos instances fonctionnent sur du materiel classique et récent : 
+
+  \begin{itemize}
+    \item<2-> Les grosses instances ont une machine dédiée.
+    \item<3-> Le paramètrage y est adapté
+    \item<4-> Certaines "petites" instances partagent le materiel
+  \end{itemize}
+
+}
+
+\frame{
+  \frametitle{Système} 
+
+  \begin{itemize}
+    \item<1-> Toutes les instances fonctionnent sous \texttt{Debian GNU/Linux}, et parfois \texttt{Centos}.
+    \item<2-> Les versions de \texttt{PostgreSQL} viennent de la distribution ou des "backports".
+    \item<3-> Les outils connexes sont empaquetés si nécessaire.
+  \end{itemize}
+
+}
+
+\frame{
+  \frametitle{Monitoring} 
+
+  Les outils de monitoring sont les mêmes pour l'ensemble de la plateforme : \texttt{Nagios} et \texttt{Munin}.
+
+  Des scripts spécifiques sont mis en place pour monitorer les bons indicateurs.
+
+}
+
+\frame{
+  \frametitle{pgFouine} 
+
+  \texttt{pgFouine} est un analyseur de logs générant des rapports HTML : 
+
+\begin{itemize}
+    \item<2-> Les logs générés par chaque instance sont analysés par pgfouine
+    \item<3-> Les rapports sont consultés chaque jour par les DBAs et les chefs de projets.
+    \item<4-> De nombreuses requêtes ont été améliorés ou réécrites
+\end{itemize}
+
+}
+
+
+\subsection{Performances}
+
+\frame{
+  \frametitle{Des temps de réponses à la hauteur}
+
+  \begin{itemize}
+    \item<1-> Environ 5ms pour délivrer une publicité
+    \item<2-> En moyenne, 300 tps
+    \item<3-> Un lag moyen de réplication de 3s
+    \item<4-> Des temps nettement réduits par rapport aux outils précédents
+  \end{itemize}
+
+}
+
+\section{Les Outils Connexes}
+
+\subsection{Skytools}
+
+\frame{
+  \frametitle{Réplication, Queuing}
+
+  Skype fournit les outils développés en interne, nous les utilisons :
+
+  \begin{itemize}
+    \item<2-> \texttt{Londiste} : Réplication maître-esclave asynchrone
+    \item<3-> \texttt{PgQ} : Queuing
+    \item<4-> \texttt{WalMgr} : WAL Shipping
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Pooler}
+
+  pgBouncer est utilisé devant toutes les instances.
+
+  Il permet de protéger les instances derrière les scripts Php
+
+} 
+
+
+\subsection{PgFoundry}
+
+\frame{
+  \frametitle{Des contributions}
+
+  Malgré l'étendu des fonctionnalités de PostgreSQL, PgFoundry fournit des outils supplémentaires
+
+  \begin{itemize}
+    \item<2-> \texttt{ip4r} : stocker et indexer des adresses et des plages d'adresses IP
+    \item<3-> \texttt{temporal} : stocker et indexer des plages de temps
+    \item<4-> \texttt{pgtrgm} : Recherche par correspondances de tri-grammes
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Dans l'autre sens}
+
+  \begin{itemize}
+    \item<1->Lorsque les fonctionnalités internes et les contributions ne suffisent pas, il faut écrire l'extension : \texttt{prefix}
+    \item<2-> Le besoin : stocker et indexer des préfixes de numéros de téléphones.
+    \item<3-> L'extension est écrite en C, avec l'aide de développeurs de PostgreSQL, et le code est ouvert et disponible sur PgFoundry
+  \end{itemize}
+}
+
+\section{Conclusion}
+
+\subsection{Des Pannes ?}
+
+\frame{
+
+  Très peu de pannes liés aux bases de données.
+
+\begin{itemize}
+    \item<2-> Quelques plantages ( SEGFAULT ), toujours dûes aux extensions ( skytools, temporal )
+    \item<3-> Le serveur parvient très souvent à redémarrer seul : downtime très bas
+    \item<4-> Très bonnes réactivité des développeurs ( core et/ou extensions ) pour comprendre et corriger
+\end{itemize}
+
+}
+
+\frame{
+  \frametitle{Le Bon Outil}
+
+  En conclusion, PostgreSQL est un très bon outil, riche en fonctionnalité, extensible, avec une communauté 
+  d'utilisateurs et de développeurs riche et réactive, parfaitement utilisable en entreprise.
+
+  Des Questions ? 
+
+}
+
+
+\end{document}
+
