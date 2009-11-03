@@ -1,0 +1,200 @@
+\documentclass{beamer}
+\usepackage[latin9]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{beamerthemesplit}
+\usetheme{Warsaw}
+\beamertemplatetransparentcovered
+
+\title{pg\_staging}
+\author{Dimitri Fontaine}
+\date{November, 7th 2009}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section*{Plan}
+\frame{
+  \frametitle{How to manage your staging environments?}
+  \tableofcontents
+}
+
+\section{Premise: you do have backups, right?}
+
+\frame{
+  \frametitle{About backups}
+
+  The idea of \texttt{pg\_staging} is to maintain a \textit{staging}
+  environment from production backups. If you don't have one, this tool will
+  not do any good for you, but you have bigger problems than that. Supported
+  backups are:
+
+  \begin{itemize}
+   \item<2-> \texttt{pg\_dump}
+   \item<3-> \textit{PITR archives} (ongoing work)
+  \end{itemize}
+}
+
+\section{Describing staging envs}
+
+\frame{
+  \frametitle{About backups}
+
+  When developping \texttt{pg\_staging}, the aim is to manage a staging
+  environment with:
+
+  \begin{itemize}
+   \item<2-> a dev env, with new code and old database containing
+     developpers test data
+   \item<3-> a prelive env with code to get in production and the most
+     recent possible data from production
+  \end{itemize}
+}
+
+\section{pg\_staging design \& dependancies}
+\subsection{design}
+
+\frame{
+  \frametitle{Design}
+
+  What do we want the tool to do?
+
+  \begin{itemize}
+   \item<2-> easily restore production database on staging env
+   \item<3-> filtering out (\textit{historical}) data we don't need in staging
+   \item<4-> allow to restore more than one version of production database
+   \item<5-> allow to easily switch from one version to the other
+   \item<6-> offer interactive console usage and be cron friendly too
+  \end{itemize}
+}
+
+\begin{frame}[fragile]
+  \frametitle{Easy restore with filtering}
+
+  The \texttt{restore} command will \texttt{createdb}, \textit{fetch} the
+  wanted backup, \textit{filter} the dump catalog, \texttt{pg\_restore}
+  selected data then optionaly switch the staging env to this new database.
+
+  \pause
+  \linebreak
+
+  \begin{example}
+  \begin{verbatim}
+schemas         = public, payment, utils, jdb, operations, statistiques
+schemas_nodata  = sessions, archives
+  \end{verbatim}
+  \end{example}
+\end{frame}
+
+\frame{
+  \frametitle{Dependancies}
+
+  The following tools are used by \texttt{pg\_staging}:
+
+  \begin{itemize}
+   \item<2-> \texttt{apache} to serve the backups
+   \item<3-> \texttt{pgbouncer} for database switching
+   \item<4-> \texttt{postgresql-client-8.x} for dump \& restore
+   \item<5-> \texttt{staging-client.sh}
+   \item<6-> non-interactive \texttt{ssh}
+   \item<7-> \texttt{python}
+  \end{itemize}
+}
+
+\subsection{pgbouncer}
+
+\frame{
+  \frametitle{Switching databases with pgbouncer}
+}
+
+\subsection{pg\_restore}
+
+\frame{
+  \frametitle{Filtering objects from dump files}
+
+  pg\_restore -L
+
+  catalog \& triggers command
+}
+
+\frame{
+  \frametitle{Cluster globals, init command}
+
+  init
+}
+
+\frame{
+  \frametitle{custom \texttt{SQL}}
+
+  presql / postsql options and commands
+}
+
+\subsection{pg\_dump}
+
+\frame{
+  \frametitle{\texttt{pg\_dump} support}
+}
+
+\subsection{londiste}
+
+\frame{
+  \frametitle{londiste support}
+
+  skipping tables we are a subscriber of, see \texttt{nodata} command
+
+}
+
+\section{usage and documentation}
+
+\frame{
+  \frametitle{pg\_staging notions}
+
+  commands, config, dbname, backup date
+}
+
+\begin{frame}[fragile]
+  \frametitle{Interactive or not?}
+
+  \begin{example}
+  \begin{verbatim}
+#  pg_staging restore mydb today
+#  pg_staging < foo.pgs
+#  pg_staging
+Welcome to pg_staging 0.7.
+pg_staging> 
+  \end{verbatim}
+  \end{example}
+\end{frame}
+
+\section{distribution and status}
+
+\begin{frame}[fragile]
+  \frametitle{pgfoundry or github...}
+
+  \texttt{pgfoundry} will host the releases when they happen.
+
+  \linebreak
+  \linebreak
+  \pause
+
+  The code is hosted at \url{http://github.com/dimitri/pg_staging}, along
+  with the debian packaging. Go \texttt{git clone} and try it, we use it
+  about daily.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Any question?}
+
+  \center{Now is the time to ask!}
+
+  \linebreak
+  \pause
+
+  \begin{center}
+  If you want to leave feedback, consider visiting
+  \url{http://2009.pgday.eu/feedback}
+  \end{center}
+\end{frame}
+
+\end{document}
