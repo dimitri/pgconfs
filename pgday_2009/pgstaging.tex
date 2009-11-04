@@ -53,7 +53,7 @@
 }
 
 \section{pg\_staging design \& dependancies}
-\subsection{design}
+\subsection{Design}
 
 \frame{
   \frametitle{Design}
@@ -75,9 +75,8 @@
   The \texttt{restore} command will \texttt{createdb}, \textit{fetch} the
   wanted backup, \textit{filter} the dump catalog, \texttt{pg\_restore}
   selected data then optionaly switch the staging env to this new database.
-
-  \pause
   \linebreak
+  \pause
 
   \begin{example}
   \begin{verbatim}
@@ -104,8 +103,26 @@ schemas_nodata  = sessions, archives
 
 \subsection{pgbouncer}
 
-\frame{
+\begin{frame}[fragile]
   \frametitle{Switching databases with pgbouncer}
+
+  \texttt{pgbouncer} is able to provide ``virtual'' database:
+  \pause
+
+  \begin{example}
+  \begin{verbatim}
+pg_staging> pgbouncer some_db.dev
+              some_db      some_db_20091029 :5432
+     some_db_20090717      some_db_20090717 :5432
+     some_db_20091029      some_db_20091029 :5432
+  \end{verbatim}
+  \end{example}
+
+  \pause
+
+  So \texttt{pg\_staging} is able to switch staging database without editing
+  application connection strings.
+\end{frame}
 }
 
 \subsection{pg\_restore}
@@ -113,27 +130,66 @@ schemas_nodata  = sessions, archives
 \frame{
   \frametitle{Filtering objects from dump files}
 
-  pg\_restore -L
+  Using \texttt{pg\_restore} options -l and -L, \texttt{pg\_staging} can filter
+  out objects at restore time, per schema.
+  \linebreak 
+  \linebreak
 
-  catalog \& triggers command
+  A 2-pass parsing is done, so that even triggers depending on functions
+  that are in the given excluded schemas are filtered out.
+  \linebreak
+  \linebreak
+  \pause
+
+  See commands \texttt{catalog} \& \texttt{triggers} to check for yourself
+  the catalog that will get used.
 }
 
-\frame{
+\begin{frame}[fragile]
   \frametitle{Cluster globals, init command}
 
-  init
-}
+  To be able to restore you need to \textit{create} the roles. Store next to
+  your backups \texttt{pg\_dumpall --globals-only} and edit your setup
+  accordingly.
 
-\frame{
+  \pause
+  
+  \begin{example}
+  \begin{verbatim}
+dumpall_url = /clusters/myserver/8.3-main.globals.sql
+  \end{verbatim}
+  \end{example}
+
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{custom \texttt{SQL}}
 
-  presql / postsql options and commands
-}
+  Setup a \texttt{sql\_path} entry in your configuration file then \texttt{restore} command will play all files in there:
+
+  \pause
+
+  \begin{example}
+  \begin{verbatim}
+psql ... -f pre/*.sql
+pg_restore
+psql ... -f post/*.sql
+  \end{verbatim}
+  \end{example}
+\end{frame}
 
 \subsection{pg\_dump}
 
 \frame{
   \frametitle{\texttt{pg\_dump} support}
+
+  \texttt{pg\_staging} also provides a \texttt{dump} command for producing a
+  local dump from the remote configured server.
+  \linebreak
+  \linebreak
+  \pause
+
+  Use \texttt{redump} if you want to overwrite a previous existing dump file.  
 }
 
 \subsection{londiste}
@@ -141,20 +197,149 @@ schemas_nodata  = sessions, archives
 \frame{
   \frametitle{londiste support}
 
-  skipping tables we are a subscriber of, see \texttt{nodata} command
+  Given a \textit{replication.ini} setup (to be documented soon, but we
+  actually use the feature), \texttt{pg\_staging} is able to configure
+  \textit{londiste} and the associated \textit{pgq ticker}.
+  \linebreak
+  \linebreak
+  \pause
 
+  It will also skip restoring tables we are a subscriber of, see
+  \texttt{nodata} command.
 }
 
+\begin{frame}[fragile]
+  \frametitle{replication.ini example}
+
+\begin{overprint}
+
+\onslide<1>
+\begin{verbatim}
+[DEFAULT]
+pgq_lazy_fetch  = 500
+
+[some_db_ticker.dev]
+job_name = pgq_some_db
+host     = bdd1.service.dev
+db       = dbname=some_db user=postgres port=5432 host=127.0.0.1
+\end{verbatim}
+
+\onslide<2>
+\begin{verbatim}
+[payment_to_reporting.dev]
+host            = bdd2.service.dev
+ticker          = some_db_ticker.dev
+pgq_queue_name  = service_to_reporting
+provider        = some_service.dev
+subscriber      = some_reporting.dev
+provider_db     = dbname=some_service host=localhost port=6432 user=postgres
+subscriber_db   = dbname=some_reporting host=reporting.service.dev port=6432 user=postgres
+provides = schema.table1 schema.table2 other_schema.other_table
+\end{verbatim}
+\end{overprint}
+\end{frame}
+
 \section{usage and documentation}
+\subsection{generics}
 
 \frame{
   \frametitle{pg\_staging notions}
 
-  commands, config, dbname, backup date
+  Some generics about \texttt{pg\_staging} usage:
+
+  \begin{itemize}
+   \item<2-> \textit{commands} are the same in console and \textrt{CLI}
+   \item<3-> \textit{config} is made of \texttt{.INI} files
+   \item<4-> \textit{dbname} refers to .INI section
+   \item<5-> \textit{backup date} defaults to \textit{today}
+  \end{itemize}
 }
 
+\subsection{commands overview}
+\begin{frame}[fragile]
+  \frametitle{main commands}
+
+\begin{verbatim}
+pg_staging> help
+  commands provide a user friendly listing of commands
+      init <dbname>
+   restore <dbname> restore a database
+      drop <dbname> drop given database
+      dump <dbname> dump a database
+    redump dump a database, overwriting the pre-existing dump file if it exists
+      pitr <dbname> <time|xid> value
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{listing resources}
+
+\begin{verbatim}
+pg_staging> help
+       ...
+ databases list configured databases
+   backups list available backups for a given database
+    dbsize show given database size
+   dbsizes show dbsize for all databases of a dbname section
+      psql launch a psql connection to the given configured section
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{and some more}
+
+\begin{verbatim}
+pg_staging> help
+       ...
+     fetch <dbname> [date]
+      load <dbname> <dumpfile>
+
+      show show given database setting current value
+       get <dbname> <option> print the current value of [dbname] option
+       set <dbname> <option> <value> for current session only
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{managing services}
+\begin{verbatim}
+pg_staging> help
+       ...
+ pgbouncer list configured pgbouncer databases
+     pause pause <dbname> [date] (when no date given, not expanded to today)
+    resume resume <dbname> [date] (when no date given, not expanded to today)
+    switch <dbname> <bdate> switch default pgbouncer config to dbname_bdate
+
+  londiste prepare londiste files for providers of given dbname section
+    status show status of given service ...
+     start start given service depending on its configuration and special args
+      stop stop given service depending on its configuration and special args
+   restart restart given service depending on its configuration and special args
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{internals you might have a use for}
+\begin{verbatim}
+pg_staging> help
+       ...
+   catalog <dbname> [dump] print catalog for dbname, edited for nodata tables
+  triggers <dbname> [dump] print triggers procedures for dbname
+    nodata list tables to restore without their data
+    presql <dbname> [date]
+   postsql <dbname> [date]
+search_path alter database <dbname> set search_path
+\end{verbatim}
+\end{frame}
+
+\subsection{Interactive console, CLI, scripting}
 \begin{frame}[fragile]
   \frametitle{Interactive or not?}
+
+  Remember the ``design'' slide, we want to have both an interactive tool
+  and a script friendly (easy to have in cron) one.
+
+  \pause
 
   \begin{example}
   \begin{verbatim}
@@ -168,21 +353,31 @@ pg_staging>
 \end{frame}
 
 \section{distribution and status}
+\subsection{development \& releases}
 
 \begin{frame}[fragile]
   \frametitle{pgfoundry or github...}
 
-  \texttt{pgfoundry} will host the releases when they happen.
+  \url{http://pgfoundry.org/projects/pgstaging} will host the releases when
+  they happen.
 
-  \linebreak
-  \linebreak
   \pause
 
-  The code is hosted at \url{http://github.com/dimitri/pg_staging}, along
-  with the debian packaging. Go \texttt{git clone} and try it, we use it
-  about daily.
+  \begin{example}
+  \begin{verbatim}
+# pg_staging.py --version
+pg_staging 0.7
+  \end{verbatim}
+  \end{example}
+
+  \pause
+
+  \url{http://github.com/dimitri/pg_staging} is hosting the code, along with
+  the debian packaging. Go \texttt{git clone} and try it, we use it about
+  daily.
 \end{frame}
 
+\subsection{The end. Any question?}
 \begin{frame}[fragile]
   \frametitle{Any question?}
 
