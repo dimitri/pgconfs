@@ -1,23 +1,24 @@
 \documentclass{beamer}
 \usepackage[latin9]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage{babel}
 
 \usepackage{beamerthemesplit}
 \usetheme{Warsaw}
 \beamertemplatetransparentcovered
 
-\title{Les Bases de Données chez Hi-Media}
-\author{Sébastien Lardière}
-\date{8 juillet 2009}
+\title{PostgreSQL et Skytools chez Hi-Media}
+\author{Dimitri Fontaine \& Sébastien Lardière}
+\date{6 Novembre 2009}
 
 \begin{document}
 
 \frame{\titlepage}
 
-\section*{Plan}
+\section*{Agenda}
 \frame{
   \frametitle{De quoi ça parle ?}
-  \tableofcontents
+  \tableofcontents[pausesections]
 }
 
 \section{Les Métiers d'Hi-Media}
@@ -27,14 +28,15 @@
  Des services en lignes : 
 
  \begin{itemize}
-   \item<2-> Paiment Electronique
-   \item<3-> Régie Publicitaire
-   \item<4-> Service Téléphonique
+   \item Paiment Electronique
+   \item Régie Publicitaire
+   \item Service Téléphonique
   \end{itemize}
 
 }
 
-\section{Les Outils}
+\section{Les Outils et Compétences}
+\subsection{Logiciels libres}
 
 \frame{
   \frametitle{Des Outils Libres}
@@ -42,9 +44,10 @@
 L'essentiel des outils utilisé pour le développement et la production sont des outils libres : 
 
   \begin{itemize}
-   \item<2-> \texttt{Apache}
-   \item<3-> \texttt{Php}
-   \item<4-> \texttt{Linux}, \texttt{FreeBSD}
+   \item \texttt{Apache}
+   \item \texttt{Php}
+   \item \texttt{Linux}, \texttt{debian}
+   \item \texttt{FreeBSD}
   \end{itemize}
 }
 
@@ -58,30 +61,28 @@ Depuis un an, un seul outil de bases de données est utilisé : PostgreSQL
 Les raisons sont multiples : 
 
   \begin{itemize}
-   \item<2-> Le coût
-   \item<3-> Les fonctionnalités
-   \item<4-> La standardisation des outils, méthodes et du développement
+   \item Le coût
+   \item Les fonctionnalités
+   \item La standardisation des outils, méthodes et du développement
   \end{itemize}
 }
 
+\subsection{Environnement de production}
 \frame{
   \frametitle{Production}
 
-Trois versions sont utilisés en production, de la 8.1 à la 8.3, et les études commencent pour l'adoption de la version 8.4
+  Nous utilisons de la \texttt{8.1} à la \texttt{8.4} en production :
 	
   \begin{itemize}
-    \item<2-> Environ Cinquantes Instances en production
-    \item<3-> Jusqu'à plus de 100 GB par instance 
-    \item<4-> OLTP ( temps de réponses très bas )
-    \item<5-> OLAP ( gros volumes )
+    \item<2-> Environ 50 instances en production
+    \item<3-> Jusqu'à plus de \texttt{100 GB} par instance 
+    \item<4-> OLTP (\textit{temps de réponses très bas})
+    \item<5-> OLAP (\textit{gros volumes})
   \end{itemize}
 
 }
 
-
-\section{Compétences}
-
-\subsection{DBAs}
+\subsection{Ressources}
 
 \frame{
 
@@ -90,11 +91,11 @@ Trois versions sont utilisés en production, de la 8.1 à la 8.3, et les études co
   \begin{itemize}
     \item<2-> Responsables de la production
     \item<3-> Accompagnent les équipes de développement
+    \item<4-> Sont ammenés à contribuer des outils ou des extensions, sous
+      licence libre
   \end{itemize}
 
 }
-
-\subsection{Développeurs}
 
 \frame{
   \frametitle{Le code au plus près des données}
@@ -102,26 +103,26 @@ Trois versions sont utilisés en production, de la 8.1 à la 8.3, et les études co
  Les développeurs sont invités à s'appuyer sur la base de données : 
 
   \begin{itemize}
-    \item<2-> Utilisation complète du SQL
-    \item<3-> Developpement en \texttt{Pl/PGSQL}
+    \item<2-> Utilisation complète du \tesxttt{SQL}
+    \item<3-> Développements en \texttt{Pl/PGSQL}
     \item<4-> Consultation des DBAs
   \end{itemize}
 
 }
 
-\section{Production}
+%%\section{Production}
 
 \subsection{Outils, Méthodes}
 
 \frame{
-  \frametitle{Materiel} 
+  \frametitle{Matériel} 
 
   Nos instances fonctionnent sur du materiel classique et récent : 
 
   \begin{itemize}
     \item<2-> Les grosses instances ont une machine dédiée.
     \item<3-> Le paramètrage y est adapté
-    \item<4-> Certaines "petites" instances partagent le materiel
+    \item<4-> Certaines « petites » instances partagent le materiel
   \end{itemize}
 
 }
@@ -131,7 +132,7 @@ Trois versions sont utilisés en production, de la 8.1 à la 8.3, et les études co
 
   \begin{itemize}
     \item<1-> Toutes les instances fonctionnent sous \texttt{Debian GNU/Linux}, et parfois \texttt{Centos}.
-    \item<2-> Les versions de \texttt{PostgreSQL} viennent de la distribution ou des "backports".
+    \item<2-> Les versions de \texttt{PostgreSQL} viennent de la distribution ou des « \textit{backports} ».
     \item<3-> Les outils connexes sont empaquetés si nécessaire.
   \end{itemize}
 
@@ -140,7 +141,11 @@ Trois versions sont utilisés en production, de la 8.1 à la 8.3, et les études co
 \frame{
   \frametitle{Monitoring} 
 
-  Les outils de monitoring sont les mêmes pour l'ensemble de la plateforme : \texttt{Nagios} et \texttt{Munin}.
+  Les outils de monitoring sont les mêmes pour l'ensemble de la plateforme :
+  \texttt{Nagios} et \texttt{Munin}.
+  \linebreak
+  \linebreak
+  \pause
 
   Des scripts spécifiques sont mis en place pour monitorer les bons indicateurs.
 
@@ -166,15 +171,15 @@ Trois versions sont utilisés en production, de la 8.1 à la 8.3, et les études co
   \frametitle{Des temps de réponses à la hauteur}
 
   \begin{itemize}
-    \item<1-> Environ 5ms pour délivrer une publicité
-    \item<2-> En moyenne, 300 tps
-    \item<3-> Un lag moyen de réplication de 3s
+    \item<1-> Environ \texttt{5ms} pour délivrer une publicité
+    \item<2-> En moyenne, \texttt{300 tps}
+    \item<3-> Un lag moyen de réplication configuré à \texttt{3s}
     \item<4-> Des temps nettement réduits par rapport aux outils précédents
   \end{itemize}
 
 }
 
-\section{Les Outils Connexes}
+\section{Outils avancés, réplication, plan de reprise}
 
 \subsection{Skytools}
 
@@ -183,71 +188,167 @@ Trois versions sont utilisés en production, de la 8.1 à la 8.3, et les études co
 
   Skype fournit les outils développés en interne, nous les utilisons :
 
-  \begin{itemize}
-    \item<2-> \texttt{Londiste} : Réplication maître-esclave asynchrone
-    \item<3-> \texttt{PgQ} : Queuing
-    \item<4-> \texttt{WalMgr} : WAL Shipping
-  \end{itemize}
+  \begin{definition}
+    \alert{\texttt{londiste}} Réplication maître-esclave asynchrone
+
+    \alert{\texttt{PGQ}} Queuing pour nos traitements par lots
+
+    \alert{\texttt{WalMgr}} WAL Shipping (\textit{plan de reprise d'activité})
+
+    \alert{\texttt{pgbouncer}} pool de connexions (\textit{prepared statements!})
+
+    \alert{\texttt{plproxy}} distribution de données
+  \end{definition}
 }
 
 \frame{
-  \frametitle{Pooler}
+  \frametitle{Pool de connections}
 
   pgBouncer est utilisé devant toutes les instances.
+  \linebreak
+  \linebreak
 
-  Il permet de protéger les instances derrière les scripts Php
+  Il permet de protéger les instances derrière les scripts \texttt{PHP}, et
+  sur les plateformes de développement et de pré-production, de maintenir
+  plusieurs copies de la production en parallèle.
 
 } 
 
-
-\subsection{PgFoundry}
+\subsection{Réplications}
 
 \frame{
-  \frametitle{Des contributions}
+  \frametitle{Réplication : différents usages}
 
-  Malgré l'étendu des fonctionnalités de PostgreSQL, PgFoundry fournit des outils supplémentaires
+  Selon les projets l'outil de réplication sert différents besoins :
 
   \begin{itemize}
-    \item<2-> \texttt{ip4r} : stocker et indexer des adresses et des plages d'adresses IP
-    \item<3-> \texttt{temporal} : stocker et indexer des plages de temps
-    \item<4-> \texttt{pgtrgm} : Recherche par correspondances de tri-grammes
+    \item<2-> Séparer des couches applicatives autonomes
+    \item<3-> Fédérer les « \textit{logs} » applicatifs sur une base centrale
+    \item<4-> Publier sur des \textit{frontaux} les informations du \textit{backoffice}
+    \item<5-> Distribuer l'analyse des données produite et la préparation des vues matérialisées
+    \item<6-> Maintenir un réplica de la production pour \textit{failover}
   \end{itemize}
 }
 
+\subsection{Distribution de données}
+
 \frame{
-  \frametitle{Dans l'autre sens}
+  \frametitle{Distribution de données avec \texttt{plproxy}}
+
+  Une de nos applications offre un cas très adapté à l'utilisation de
+  \texttt{plproxy} :
 
   \begin{itemize}
-    \item<1->Lorsque les fonctionnalités internes et les contributions ne suffisent pas, il faut écrire l'extension : \texttt{prefix}
-    \item<2-> Le besoin : stocker et indexer des préfixes de numéros de téléphones.
-    \item<3-> L'extension est écrite en C, avec l'aide de développeurs de PostgreSQL, et le code est ouvert et disponible sur PgFoundry
+    \item<2-> Affichage de données consolidées par \textit{compte}
+    \item<3-> Près de \texttt{300000} \textit{comptes} actifs
+    \item<4-> Volumes de données de plus en plus importants
+    \item<5-> \texttt{plproxy} nous permet de distribuer les données sur
+      autant de partitions que nécessaire
+  \end{itemize}
+
+}
+
+\subsection{Traitements par lots}
+
+\frame{
+  \frametitle{\textit{batchs maison} avec \texttt{PGQ}}
+
+  Nos couches métiers sont souvent écrites en \texttt{PHP} et nous voulons
+  les réutiliser dans nos \textit{batch}, et nous voulons que ceux-ci soient
+  fiables et robustes.
+  \linebreak
+  \linebreak
+  \pause
+  
+  \begin{center}
+  Grâce à \texttt{libphp-pgq} c'est possible!
+  \end{center}
+}
+
+
+\subsection{La communauté et PgFoundry}
+
+\frame{
+  \frametitle{Utiliser les contributions proposées}
+
+  Malgré l'étendu des fonctionnalités de PostgreSQL, PgFoundry fournit des
+  outils supplémentaires
+  \pause
+
+  \begin{definition}
+    \alert{\texttt{ip4r}} stocker et indexer des adresses (et plages) IP
+
+    \alert{\texttt{temporal}} stocker et indexer des plages de temps
+
+    \alert{\texttt{pgtrgm}} recherche par correspondances de tri-grammes
+  \end{definition}
+}
+
+\frame{
+  \frametitle{Contribuer en retour}
+
+  \begin{itemize}
+    \item<1->Lorsque les fonctionnalités internes et les contributions ne suffisent pas, il faut retrousser les manches : \texttt{prefix}, \texttt{pg\_staging}
+    \item<2-> \texttt{prefix} : stocker et indexer des préfixes de numéros de téléphones.
+    \item<3-> extension écrite en C, avec l'aide de développeurs de PostgreSQL, sous licence \texttt{BSD}
+    \item<4-> \texttt{pg\_staging} ; rendez-vous demain 14h10 \textit{English, developer}
   \end{itemize}
 }
 
 \section{Conclusion}
 
-\subsection{Des Pannes ?}
+\subsection{Une solution robuste}
 
 \frame{
 
   Très peu de pannes liés aux bases de données.
 
 \begin{itemize}
-    \item<2-> Quelques plantages ( SEGFAULT ), toujours dûes aux extensions ( skytools, temporal )
-    \item<3-> Le serveur parvient très souvent à redémarrer seul : downtime très bas
-    \item<4-> Très bonnes réactivité des développeurs ( core et/ou extensions ) pour comprendre et corriger
+    \item<2-> Quelques plantages (\texttt{SEGFAULT}), toujours dûes aux extensions (\textit{skytools}, \textit{temporal}, ...)
+    \item<3-> Le serveur parvient très souvent à redémarrer seul : \textit{downtime} très bas
+    \item<4-> Très bonnes réactivité des développeurs ( \texttt{core} et/ou extensions ) pour comprendre et corriger
 \end{itemize}
 
 }
 
 \frame{
-  \frametitle{Le Bon Outil}
+  \frametitle{Le Bon Outil \textit{(tm)}}
 
-  En conclusion, PostgreSQL est un très bon outil, riche en fonctionnalité, extensible, avec une communauté 
-  d'utilisateurs et de développeurs riche et réactive, parfaitement utilisable en entreprise.
+  En conclusion, \alter{PostgreSQL} est un très bon outil, riche en
+  fonctionnalité, extensible, avec une communauté d'utilisateurs et de
+  développeurs riche et réactive, parfaitement utilisable en entreprise.
+  \linebreak
+  \linebreak
+  \pause
 
-  Des Questions ? 
+  Pour en tirer le meilleur il est cependant fortement conseillé de devenir
+  un membre à part entière de la \textit{communauté}. C'est de la que vient
+  le meilleur support et les outils. 
+  \linebreak
+  \linebreak
+  \pause
 
+  Pour devenir membre de la communauté, il suffit de considérer que l'on en
+  fait déjà partie :)
+
+}
+
+\subsection{Des questions ?}
+
+\frame{
+  \frametitle{Des questions ?}
+
+  \begin{center}
+  Si vous avez des questions, c'est maintenant ! :)
+  \end{center}
+
+  \linebreak
+  \pause
+
+  \begin{center}
+  If you want to leave feedback, consider visiting
+  \url{http://2009.pgday.eu/feedback}
+  \end{center}
 }
 
 
