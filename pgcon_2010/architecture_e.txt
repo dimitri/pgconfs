@@ -1,0 +1,29 @@
+
+
+                                  +--------------------------+
+                                  |       Central       c897 |
+                                  |            {d}           |
+                                  |                          |
+                                  |      Inheritance         |
+                                  | Centralisation Triggers  |
+                                  | Cost Computing Triggers  |
+                                  |       Backoffice         |
+                                  |       Statistics         |
+                                  |       Reporting          |
+                                  +------------+-------------+
+                                               ^
+                                               :
+                      londiste                 |        plproxy RPC
+          +-----------------------------+------+-----------------------------------+
+          |                             |                                          |
+          v                             v                                          v
+ +--------+-------------+    +----------+-----------+                   +----------+-----------+
+ |      IVR S1     c789 |    |      IVR S2     c789 |                   |      IVR S30    c789 |
+ |          {d}         |    |          {d}         |                   |          {d}         |
+ |                      |    |                      |                   |                      |
+ |   Prefix Routing     |    |   Prefix Routing     |       ...         |   Prefix Routing     |
+ |    plproxy RPC       |    |    plproxy RPC       |                   |    plproxy RPC       |
+ | Status Monitoring    |    | Status Monitoring    |                   | Status Monitoring    |
+ |C / Macros / (PL)SQL  |    |C / Macros / (PL)SQL  |                   |C / Macros / (PL)SQL  |
+ +----------------------+    +----------------------+                   +----------------------+
+

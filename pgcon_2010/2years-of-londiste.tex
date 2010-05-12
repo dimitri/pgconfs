@@ -43,8 +43,9 @@
   \end{itemize}
 }
 
-\section{Free Software \& Open Source Toolset}
+\section{Tool Set for production}
 
+\subsection{Free Software \& Open Source Tools}
 \frame{
   \frametitle{Open Source Tools}
 
@@ -54,36 +55,26 @@
    \item Apache, haproxy, Nginx
    \item PHP, some tools are in python
    \item Linux, debian, FreeBSD
-   \item PostgreSQL
+   \item PostgreSQL with \textit{contribs} and \textit{extensions}
   \end{itemize}
 }
 
-\begin{frame}[fragile]
-  \frametitle{Monitoring}
-  \begin{center} We use \textit{Nagios} and \textit{Munin}. \end{center}
-  \begin{overprint}
-  \onslide<1>
-  \begin{center} 
-    \includegraphics[height=2.0in]{bdd-pg_walmgr-day.png}
-  \end{center} 
+\frame{
+  \frametitle{PostgreSQL and extensions}
 
-  \onslide<2>
-  \begin{center} 
-    \includegraphics[height=2.0in]{tr1-pg_user_tables_activity_tracking-day.png}
-  \end{center} 
+  History makes it so that we're running a mix of \texttt{8.2}, \texttt{8.3}
+  and \texttt{8.4}, with
 
-  \onslide<3>
-  \begin{center} 
-    \includegraphics[height=2.0in]{tr1-pg_queue_tracking_tr_tr1-day.png}
-  \end{center} 
-
-  \onslide<4>
-  \begin{center} 
-    \includegraphics[height=2.0in]{sp2n-pg_user_tables_activity_sp-day.png}
-  \end{center} 
-
-  \end{overprint}  
-\end{frame}
+  \begin{itemize}
+   \item Skytools: PGQ, Londiste, walmgr, plproxy, pgbouncer
+   \item \texttt{prefix\_range} datatype and indexing
+   \item temporal, with the \texttt{period} datatype and indexing
+   \item ip4r, accelerating \textit{GeoIP} matching
+   \item pg\_freespacemap, for munin 
+   \item UUID in 8.2
+   \item orafce
+  \end{itemize}
+}
 
 \frame{
   \frametitle{pgFouine} 
@@ -92,23 +83,10 @@
 
 \begin{itemize}
     \item<1-> it produces easy to digest \texttt{HTML} reports
-    \item<2-> it sends emails with the errors, too
+    \item<2-> we script it for sending emails with the errors, too
     \item<3-> allows for targetting the optimisation effort
 \end{itemize}
 
-}
-
-\subsection{Performances}
-
-\frame{
-  \frametitle{Latency is good}
-
-  \begin{itemize}
-    \item<1-> About \texttt{6ms} to push an advert
-    \item<2-> \texttt{300 tps} in average
-    \item<3-> replication lag is setup for averaging at \texttt{3s}
-    \item<4-> we switched from another open source solution, we're much better now
-  \end{itemize}
 }
 
 \subsection{Production Environment}
@@ -118,11 +96,11 @@
   Using from \texttt{8.2} to \texttt{8.4} in production:
 	
   \begin{itemize}
-    \item<2-> about 50 production databases
-    \item<3-> anywhere from some \texttt{MB} to \texttt{1518 GB}
-    \item<4-> OLTP (\textit{very low latency})
-    \item<5-> OLAP (\textit{bigger volumes, high insert load})
-    \item<6-> using distribution packages only
+    \item<1-> about 50 production databases
+    \item<1-> anywhere from some \texttt{MB} to \texttt{1518 GB}
+    \item<2-> OLTP (\textit{very low latency})
+    \item<2-> OLAP (\textit{bigger volumes, high insert load})
+    \item<3-> using distribution packages only
   \end{itemize}
 }
 
@@ -134,9 +112,76 @@
   \begin{itemize}
     \item<1-> manage the production 
     \item<2-> participate into development (lots of logic is in the database)
-    \item<3-> enhance the tool set, proposing Open Source Software each time
-      it makes sense
+    \item<3-> enhance the tool set, proposing and releasing Open Source
+      Software each time it makes sense
   \end{itemize}
+}
+
+\subsection{Monitoring \& Performances}
+\begin{frame}[fragile]
+  \frametitle{Monitoring with munin \& nagios}
+  \begin{overprint}
+  \onslide<1>
+  \begin{center} 
+    \includegraphics[height=2.4in]{bdd-pg_walmgr-day.png}
+  \end{center} 
+
+  \onslide<2>
+  \begin{center} 
+    \includegraphics[height=2.4in]{tr1-pg_user_tables_activity_tracking-day.png}
+  \end{center} 
+
+  \onslide<3>
+  \begin{center} 
+    \includegraphics[height=2.4in]{tr1-pg_queue_tracking_tr_tr1-day.png}
+  \end{center} 
+
+  \onslide<4>
+  \begin{center} 
+    \includegraphics[height=2.4in]{sp2n-pg_user_tables_activity_sp-day.png}
+  \end{center} 
+
+  \end{overprint}  
+\end{frame}
+
+\frame{
+  \frametitle{Good performance results}
+
+  \begin{overprint}
+    \onslide<1-4>
+
+    Advertising
+
+    \begin{itemize}
+    \item<1-> About \texttt{6ms} to push an advert
+    \item<1-> \texttt{300 tps} in average
+    \item<2-> replication lag is setup for averaging at \texttt{3s}
+    \item<3-> materialized views updated every 5 minutes
+    \item<4-> switched from a mixed solution, so much better with only PostgreSQL
+    \end{itemize}
+
+    \onslide<5-7>
+
+    Micro Payment
+
+    \begin{itemize}
+    \item<5-> Backoffice and reporting database, \texttt{190 GB}, running 8.4
+    \item<5-> \texttt{64GB RAM}, \texttt{log\_min\_duration\_statement = 200ms}
+    \item<6-> Slow queries are \texttt{COPY}, that's \textit{backups}
+    \item<7-> Some other slow queries, slowest takes \texttt{0.51s} to run
+    \end{itemize}
+
+    \onslide<8-10>
+
+    Telephony, IVR
+
+    \begin{itemize}
+    \item<8-> Answering phone calls, prefix lookups, running 8.3
+    \item<8-> application status monitoring in the database, and replicated
+    \item<9-> 500 updates a second, \texttt{HOT} + \texttt{CLUSTER}
+    \item<10-> Statistics reports, backoffice, federating data, computing costs
+    \end{itemize}
+  \end{overprint}  
 }
 
 \section{Replication and failover}
@@ -144,24 +189,52 @@
 \subsection{Different Architectures for different needs}
 
 \frame{
+  \frametitle{3 projects, 3 architectures, one tool set}
+
+  We have 3 very different projects here, we're using specialised
+  architectures but the same tools.
+
+  \begin{center} 
+    Let's see.
+  \end{center} 
+}
+
+\frame{
   \frametitle{Centralised management and data federating}
 
-  Include a graphic, talk about it
+  All server are both \textit{master} and \textit{slave}. Each IVR server is
+  a master in its own schema.
+
+  \begin{center} 
+    \includegraphics[height=1.6in]{architecture_e.png}
+  \end{center} 
 }
 
 \frame{
   \frametitle{Separating payments and their backoffice}
 
-  Include a graphic, talk about it
+  The business critical part is the payment, it's running separated from the
+  backoffice, but that's where customers will setup what they sell through
+  our services.
+
+  \begin{center} 
+    \includegraphics[height=1.7in]{architecture_a.png}
+  \end{center} 
+
 }
 
 \frame{
-  \frametitle{Modernizing ditributed delivery}
+  \frametitle{Modernizing distributed delivery}
 
-  Include a graphic, talk about it
+  A 3-stage processing of advert printing, from backoffice and setup to
+  dynamic servers, with advert choice caped on budgets.
+
+  \begin{center} 
+    \includegraphics[height=2.1in]{architecture_c.png}
+  \end{center} 
 }
 
-\subsection{Skytools}
+\subsection{A unique solution: Skytools}
 
 \frame{
   \frametitle{Replication, Queuing}
@@ -181,7 +254,18 @@
   \end{definition}
 }
 
-\subsection{Transactional Batch processing}
+\frame{
+  \frametitle{Maintenance: anecdotes from running Londiste}
+
+  \begin{itemize}
+  \item<1-> Had to replay 2 days of production: took 12 hours, 400 millions
+    of events from 12 queues
+  \item<1-> Got a hick-up of 15s when truncating the queue tables
+  \item<2-> Other problems we had are all misbehavior of admins
+  \item<2-> Typical is DDL on master only
+  \end{itemize}
+}
+
 \frame{
   \frametitle{Using PGQ for batch needs}
 
@@ -197,13 +281,9 @@
   \begin{center} \texttt{libphp-pgq} \end{center}
 }
 
-\section{Open Source Community}
-
-\subsection{Community \& PgFoundry}
-
 \section{Conclusion}
 
-\subsection{Reliable solution}
+\subsection{Reliable and flexible solution}
 
 \frame{
   \frametitle{Multiple usages of replication}
@@ -211,13 +291,49 @@
   We use replication for serving quite different needs
 
   \begin{itemize}
-    \item<2-> Separate different application layers
-    \item<3-> Federating logs and offloading their processing
-    \item<4-> Managing information on 1 backoffice only, but having network
+    \item<1-> Separating different application layers
+    \item<2-> Federating logs and offloading their processing
+    \item<3-> Managing information on 1 backoffice only, but having network
       glitches tolerant front servers, or cached data if you will
-    \item<5-> Materialized views for more than one server
-    \item<6-> \textit{Failover} ready
+    \item<4-> Materialized views for more than one server
+    \item<5-> \textit{Failover} ready
   \end{itemize}
+}
+
+\frame{
+  \frametitle{Reliability}
+
+  We're experiencing very few hick-ups in production.
+  \linebreak
+  \linebreak
+
+  From January 2009, I've been woken up less than 10 times for 4 projects
+  and about 50 databases in production, and my colleague the same. On those
+  night calls, a majority is application problems.
+  \linebreak
+  \linebreak
+
+  It's not PostgreSQL disturbing my sleeping patterns (hi Kids)!
+}
+
+\subsection{Community}
+\frame{
+  \frametitle{What does it mean, this ``community''?}
+
+  One of the main advantages of PostgreSQL is its community, delivering
+  amazing extensions. From Skytools to temporal (period), we depend on the
+  community about as much as from the core database engine.
+
+  \pause
+  \begin{center} 
+    Being part of this community is as simple as picturing yourself as being
+    part of it!
+  \end{center}
+
+  \pause
+  \begin{center} 
+    Welcome aboard!
+  \end{center}
 }
 
 \subsection{Any question?}

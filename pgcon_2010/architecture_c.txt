@@ -1,0 +1,38 @@
+
+
+                                  +--------------------------+
+                                  |       Central       c897 |
+                                  |            {d}           |
+                                  |                          |
+                                  |       Backoffice         |
+                                  |       Statistics         |
+                                  |       Reporting          |
+                                  +------------+-------------+
+					       ^
+       	       	       	       londiste	       :       plproxy
+       	       	       	 +---------------------+-------------------+
+			 |					   |
+			 v					   v
+       	       +--------------------+  	       	        +--------------------+
+	       | Statistics   c978  |                   | Statistics   c978  |
+	       |         {d}        |                   |         {d}        |
+	       |                    |                   |                    |
+               |  Centralisation    |                   |  Centralisation    |
+               |Materialized Views  |                   |Materialized Views  |
+	       |  40 GB per day     |                   |  40 GB per day     |
+	       +---------+----------+                   +----------+---------+
+       	       	       	 ^					   ^
+			 :					   |			     
+	       		 |	     londiste			   | 			    
+       	  +--------------+------------------+----------------------+-----------------------+ 
+       	  |				    |						   |
+	  v    	       	       	       	    v						   v
+   +------+---------------+    	  +---------+------------+		       	+----------------------+
+   | Advertising S1  c789 |       | Advertising S2  c789 |		        | Advertising S14 c789 |
+   |	      {d}	  |       |          {d}         |		        |          {d}         |
+   |			  |       |                      |     	     ...        |                      |
+   |Advert choosing (SQL) |       |Advert choosing (SQL) |                      |Advert choosing (SQL) |
+   |   Logging in DB	  |       |   Logging in DB      |                      |   Logging in DB      |
+   |  Costs computing	  |       |  Costs computing     |                      |  Costs computing     |
+   +----------------------+       +----------------------+                      +----------------------+
+			                                                                                
