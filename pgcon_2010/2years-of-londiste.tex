@@ -206,7 +206,7 @@
   a master in its own schema.
 
   \begin{center} 
-    \includegraphics[height=1.6in]{architecture_e.png}
+    \includegraphics[height=1.6in]{architecture_e}
   \end{center} 
 }
 
@@ -218,7 +218,7 @@
   our services.
 
   \begin{center} 
-    \includegraphics[height=1.7in]{architecture_a.png}
+    \includegraphics[height=1.7in]{architecture_a}
   \end{center} 
 
 }
@@ -230,7 +230,7 @@
   dynamic servers, with advert choice caped on budgets.
 
   \begin{center} 
-    \includegraphics[height=2.1in]{architecture_c.png}
+    \includegraphics[height=2.1in]{architecture_c}
   \end{center} 
 }
 
@@ -270,15 +270,17 @@
   \frametitle{Using PGQ for batch needs}
 
   We have all this code in PHP, and we need to process data after the client
-  saw the \textt{COMMIT} back. We want to be able to stop them and never
+  saw the \texttt{COMMIT} back. We want to be able to stop them and never
   lose a single transaction, even if system crashes. PostgreSQL level
   reliability. \texttt{PGQ} offers that, for \texttt{python}.
 
-  \linebreak
-  \linebreak
-  \pause
+  %% \linebreak
+  %% \linebreak
+  %% \pause
 
-  \begin{center} \texttt{libphp-pgq} \end{center}
+  \begin{center} 
+    Enters \texttt{libphp-pgq} 
+  \end{center}
 }
 
 \section{Conclusion}
@@ -345,9 +347,8 @@
     Now is a pretty good time to ask!
   \end{center}
 
-  \linebreak
-  \pause
-
+  %% \linebreak
+  %% \pause
   %% \begin{center}
   %%   If you want to leave feedback, consider visiting
   %%   \url{http://2009.pgday.eu/feedback}

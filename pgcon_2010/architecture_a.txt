@@ -19,6 +19,6 @@
 		  |		|   Daemons  c978     |		  |
 		  |		|     	  {d}	      |		  |
 		  +-------------+		      +<----------+
-		  		|     libphp-pgq      |
+		  		|     libphp pgq      |
 				|  Compute statistics |
 				+---------------------+
