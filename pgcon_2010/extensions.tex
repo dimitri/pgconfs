@@ -1,0 +1,143 @@
+\documentclass[english]{beamer}
+\usepackage[utf8,latin9]{inputenc}
+%%\usepackage[latin9]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+
+\usepackage{beamerthemesplit}
+\usetheme{Warsaw}
+\beamertemplatetransparentcovered
+
+\title{Extensions: a status update}
+\author{Dimitri Fontaine}
+\date{May, 19 2010}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section{User Design}
+\frame{
+  \frametitle{Set the goal}
+
+  What we're talking about:
+
+  \begin{itemize}
+   \item<1-> dump \& reload support
+   \item<2-> any source language (C, SQL, PL...)
+   \item<3-> procedural language as an extension
+   \item<4-> custom variables
+   \item<5-> source level packaging
+   \item<6-> \texttt{PGXS} and platform support
+   \item<7-> upgrading facilities (\textit{callback})
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Set the goal}
+
+  What we're \textit{NOT} talking about:
+
+  \begin{itemize}
+   \item<1-> user defined schema where to install (\texttt{pg\_extension})
+   \item<2-> versions \& dependencies
+   \item<3-> \texttt{ACLs}
+   \item<4-> \texttt{PGAN}
+   \item<5-> OS level packaging \& distribution
+  \end{itemize}
+}
+
+\subsection{2 step install syntax}
+
+\begin{frame}[fragile]
+  \frametitle{Step 1: CREATE EXTENSION}
+
+  To ease dependency tracking of what object belongs to what extension
+
+\begin{example}
+  \begin{overprint}
+  \onslide<1>
+\begin{verbatim}
+ create extension foo 
+   with version 1.0
+        install [script] 'foo.install.sql'
+        uninstall [script] 'foo.uninstall.sql'
+        upgrade function upgrade_foo(old version, 
+                                     new version)
+        [ custom_variable_classes 'a,b' 
+          configuration file 'foo.conf' ]
+   depends on bar version 0.3
+       and on baz version >= 1.2;
+\end{verbatim}
+
+  \onslide<2>
+\begin{verbatim}
+ create extension foo 
+   with version 1.0
+        install [script] 'foo.install.sql'
+        uninstall [script] 'foo.uninstall.sql'
+        upgrade function upgrade_foo(old version, 
+                                     new version)
+        [ custom_variable_classes 'a,b' 
+          configuration file 'foo.conf' ]
+\end{verbatim}
+  \end{overprint}
+\end{example}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Step 2: INSTALL EXTENSION}
+
+\begin{example}
+\begin{verbatim}
+ begin;
+ install extension foo;
+ commit;
+\end{verbatim}
+\end{example}
+
+\begin{example}
+\begin{verbatim}
+ begin;
+ drop extension foo [cascade];
+ commit;
+\end{verbatim}
+\end{example}
+\end{frame}
+
+\section{Implementation}
+\begin{frame}[fragile]
+  \frametitle{pg\_execute\_from\_file()}
+
+  This is the easiest part to implement, so that's done... available in git
+  already. Does it make sense on its own?
+
+\begin{example}
+\begin{verbatim}
++Datum
++pg_execute_from_file(PG_FUNCTION_ARGS)
++{
++	text	   *filename_t = PG_GETARG_TEXT_P(0);
++
++	foreach(parsetree_item, parsetree_list)
++
+\end{verbatim}
+\end{example}
+\end{frame}
+
+\frame{
+  \frametitle{tracking objects}
+  
+  We'll need to add a \textit{backend local variable} and some action on
+  each and every \texttt{CREATE} command.  
+}
+
+\frame{
+  \frametitle{Conclusion}
+
+  \begin{center} 
+    We need to talk.
+  \end{center} 
+}
+
+\end{document}
