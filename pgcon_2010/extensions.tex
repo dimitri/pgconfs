@@ -54,12 +54,12 @@
 
   To ease dependency tracking of what object belongs to what extension
 
-\begin{example}
+\begin{example}[foo.sql]
   \begin{overprint}
   \onslide<1>
 \begin{verbatim}
  create extension foo 
-   with version 1.0
+   with version '1.0'
         install [script] 'foo.install.sql'
         uninstall [script] 'foo.uninstall.sql'
         upgrade function upgrade_foo(old version, 
@@ -73,7 +73,7 @@
   \onslide<2>
 \begin{verbatim}
  create extension foo 
-   with version 1.0
+   with version '1.0'
         install [script] 'foo.install.sql'
         uninstall [script] 'foo.uninstall.sql'
         upgrade function upgrade_foo(old version, 
@@ -83,6 +83,27 @@
 \end{verbatim}
   \end{overprint}
 \end{example}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Step 1: CREATE EXTENSION}
+
+  To ease dependency tracking of what object belongs to what extension
+
+\begin{example}[foo.sql]
+\begin{verbatim}
+ create extension foo 
+   with version '1.0'
+        upgrade function upgrade_foo(old version, 
+                                     new version)
+        [ custom_variable_classes 'a,b' 
+          configuration file 'foo.conf' ]
+\end{verbatim}
+\end{example}
+
+  Files are in \texttt{\$PGDATA/extensions/foo}, \texttt{foo.sql},
+  \texttt{install.sql} and \texttt{uninstall.sql}.
+
 \end{frame}
 
 \begin{frame}[fragile]
