@@ -8,7 +8,8 @@
 \usetheme{Warsaw}
 \beamertemplatetransparentcovered
 
-\title{Extensions: a status update}
+\title{Status report on modules}
+\subtitle{Except we call them extensions now}
 \author{Dimitri Fontaine}
 \date{May, 19 2010}
 
@@ -27,7 +28,7 @@
    \item<2-> any source language (C, SQL, PL...)
    \item<3-> procedural language as an extension
    \item<4-> custom variables
-   \item<5-> source level packaging
+   \item<5-> versions \& dependencies
    \item<6-> \texttt{PGXS} and platform support
    \item<7-> upgrading facilities (\textit{callback})
   \end{itemize}
@@ -40,7 +41,7 @@
 
   \begin{itemize}
    \item<1-> user defined schema where to install (\texttt{pg\_extension})
-   \item<2-> versions \& dependencies
+   \item<2-> source level packaging
    \item<3-> \texttt{ACLs}
    \item<4-> \texttt{PGAN}
    \item<5-> OS level packaging \& distribution
@@ -50,66 +51,28 @@
 \subsection{2 step install syntax}
 
 \begin{frame}[fragile]
-  \frametitle{Step 1: CREATE EXTENSION}
+  \frametitle{Step 1: make install}
 
-  To ease dependency tracking of what object belongs to what extension
+  Support files are in \texttt{\$PGDATA/extensions/foo}, and are
+  \texttt{control}, \texttt{install.sql} and \texttt{uninstall.sql},
+  \texttt{foo.conf}.
 
-\begin{example}[foo.sql]
-  \begin{overprint}
-  \onslide<1>
+\begin{example}[extensions/foo/control]
 \begin{verbatim}
- create extension foo 
-   with version '1.0'
-        install [script] 'foo.install.sql'
-        uninstall [script] 'foo.uninstall.sql'
-        upgrade function upgrade_foo(old version, 
-                                     new version)
-        [ custom_variable_classes 'a,b' 
-          configuration file 'foo.conf' ]
-   depends on bar version 0.3
-       and on baz version >= 1.2;
-\end{verbatim}
-
-  \onslide<2>
-\begin{verbatim}
- create extension foo 
-   with version '1.0'
-        install [script] 'foo.install.sql'
-        uninstall [script] 'foo.uninstall.sql'
-        upgrade function upgrade_foo(old version, 
-                                     new version)
-        [ custom_variable_classes 'a,b' 
-          configuration file 'foo.conf' ]
-\end{verbatim}
-  \end{overprint}
-\end{example}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Step 1: CREATE EXTENSION}
-
-  To ease dependency tracking of what object belongs to what extension
-
-\begin{example}[foo.sql]
-\begin{verbatim}
- create extension foo 
-   with version '1.0'
-        upgrade function upgrade_foo(old version, 
-                                     new version)
-        [ custom_variable_classes 'a,b' 
-          configuration file 'foo.conf' ]
+name = foo
+version = 1.0
+custom_variable_classes = 'foo'
+depends  = bar (>= 1.1), baz
+conflicts = bla (< 0.8)
 \end{verbatim}
 \end{example}
-
-  Files are in \texttt{\$PGDATA/extensions/foo}, \texttt{foo.sql},
-  \texttt{install.sql} and \texttt{uninstall.sql}.
 
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Step 2: INSTALL EXTENSION}
 
-\begin{example}
+\begin{example}[install extension]
 \begin{verbatim}
  begin;
  install extension foo;
@@ -117,7 +80,7 @@
 \end{verbatim}
 \end{example}
 
-\begin{example}
+\begin{example}[drop extension]
 \begin{verbatim}
  begin;
  drop extension foo [cascade];
@@ -133,7 +96,7 @@
   This is the easiest part to implement, so that's done... available in git
   already. Does it make sense on its own?
 
-\begin{example}
+\begin{example}[execute from file]
 \begin{verbatim}
 +Datum
 +pg_execute_from_file(PG_FUNCTION_ARGS)
