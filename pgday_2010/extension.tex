@@ -1,0 +1,325 @@
+%%% PgDay 2010
+%%%
+%%% PostgreSQL extensibility is remarkable but incomplete. It lacks dump and
+%%% restore support. What that means is  that once an extension is installed
+%%% into your database, PostgreSQL currently has no idea of what SQL objects
+%%% belongs to  the extension rather  itself, so  the dump will  contain the
+%%% instructions to install the extension. That's only practical if you want
+%%% to restore  your dump targeting  the very same extension's  version, but
+%%% when upgrading systems that's seldom what happens. This talk will detail
+%%% how to fix this problem and more, explaining you how to benefit from the
+%%% extensions capabilities for your own work within the database.
+
+\documentclass[english]{beamer}
+\usepackage[utf8,latin9]{inputenc}
+%%\usepackage[latin9]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+
+\usepackage{beamerthemesplit}
+\usetheme{Warsaw}
+\beamertemplatetransparentcovered
+
+\title{PostgreSQL extension's development}
+\author{Dimitri Fontaine}
+\date{Dec. 7, 2010}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section*{Agenda}
+\frame{
+  \frametitle{Content}
+  \tableofcontents[pausesections]
+}
+
+\section{What's an Extensions?}
+
+\begin{frame}[fragile]
+  \frametitle{Definitions}
+
+  \begin{center}
+    PostgreSQL extensibility is remarkable but incomplete. 
+  \end{center}
+
+\begin{example}[Basic SQL query]
+\begin{verbatim}
+  SELECT col
+    FROM table
+   WHERE stamped > date 'today' - interval '1 day'
+\end{verbatim}
+\end{example}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Some extensions example}
+
+  \begin{center}
+    46 Contribs, Community extensions, Private ones...
+  \end{center}
+
+\begin{columns}[c]
+
+\column{.18\textwidth}
+  \begin{itemize}
+   \item cube
+   \item ltree
+   \item citext
+   \item \alert{hstore}
+   \item intagg
+  \end{itemize}
+
+\column{.23\textwidth}
+  \begin{itemize}
+   \item adminpack
+   \item \alert{pgq}
+   \item pg\_trgm
+   \item wildspeed
+   \item \alert{dblink}
+  \end{itemize}
+
+\column{.23\textwidth} 
+  \begin{itemize}
+   \item \alert{PostGIS}
+   \item ip4r
+   \item temporal
+   \item prefix
+   \item pgfincore
+  \end{itemize}
+
+\column{.4\textwidth}
+  \begin{itemize}
+   \item pgcrypto
+   \item pg\_stattuple
+   \item pg\_freespacemap
+   \item pg\_stat\_statements
+   \item \alert{pg\_standby}
+  \end{itemize}
+
+\end{columns}
+\end{frame}
+
+\frame{
+  \begin{center}
+    PostgreSQL extensibility is remarkable but incomplete. 
+    \linebreak
+
+    \alert{It lacks dump and restore support.}
+  \end{center}
+}
+
+\subsection{Current state of affairs}
+
+\begin{frame}[fragile]
+  \frametitle{Installing an extension}
+
+  \begin{example}[Installing an extension before 9.1]
+\begin{verbatim}
+apt-get install postgresql-contrib-9.0
+apt-get install postgresql-9.0-ip4r
+psql -f /usr/share/postgresql/9.0/contrib/hstore.sql
+\end{verbatim}
+  \end{example}
+
+  \begin{itemize}
+    \item<2-> so, what did it install? ok, reading the \textit{script}
+    \item<3-> Oh, nice, it's all in the \texttt{public} schema
+    \item<4-> Oh, very nice, no \texttt{ALTER OPERATOR SET SCHEMA}
+  \end{itemize}
+
+  \onslide<5>
+  \begin{center}
+    Wait, it gets better!
+  \end{center}
+\end{frame}
+
+\frame{
+  \frametitle{backup and restores}
+
+  \begin{center}
+    \texttt{pg\_dump -h remote mydb | psql fresh}\
+  \end{center}
+
+  \begin{itemize}
+    \item<1-> extensions objects are an entire part of your database
+    \item<1-> but they are maintained elsewhere, that's just a dependency
+    \item<2-> \texttt{pg\_dump} makes no difference
+    \item<3-> what about upgrading systems (system, database, extension)
+  \end{itemize}  
+}
+
+\section{The extension specs \& scope}
+
+\subsection{scope}
+\frame{
+  \frametitle{What problems are we solving?}
+
+  Clearing up the mess. No feature is accepted in PostgreSQL without
+  complete support for dump and restore nowadays. And that's good news.
+}
+
+\subsection{specs}
+
+\frame{
+  \frametitle{How are we solving our problems?}
+
+  Tracking dependencies, relying on the system's packaging
+}
+
+\subsection{Implementation details}
+
+\frame{
+  \frametitle{The effort in figures}
+
+  \begin{center}
+    \texttt{git diff master.. | diffstat | tail -1}
+    \linebreak
+    \texttt{244 files changed, 4940 insertions(+), 1362 deletions(-)}
+  \end{center}
+
+  \begin{itemize}
+    \item<2-> 5 patches, 6 branches, its own \textit{Commit Fest} section
+    \item<3-> about 18 months to get an agreement on what to develop \textit{first}
+    \item<4-> 2 \textit{Developer Meeting} interventions, in Ottawa, \textit{PgCon}
+    \item<5-> 4 weeks full time, countless evening
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{What's to know, now}
+
+  \begin{itemize}
+    \item \texttt{CREATE EXTENSION hstore WITH SCHEMA utils;}
+    \item \texttt{\char`\\dx[+]}
+    \item \texttt{select * from pg\_extension\_objects('unaccent');}
+    \item \texttt{ALTER EXTENSION hstore SET SCHEMA addons;}
+    \item \texttt{DROP EXTENSION hstore CASCADE;}
+    \item \texttt{pg\_execute\_sql\_file()}
+    \item \texttt{pg\_execute\_sql\_string()}
+  \end{itemize}
+
+}
+\section{Extension for their authors. That's YOU. Here.}
+
+\subsection{PGXS and the control file}
+
+\begin{frame}[fragile]
+  \frametitle{Using PGXS}
+
+  Simpler way to have your files installed at the right place, using
+  \texttt{make install}. But \texttt{Makefile}s are hard, right?
+
+  \onslide<2>
+  \begin{example}[citext.control.in]
+\begin{verbatim}
+MODULES = citext
+DATA_built = citext.sql
+DATA = uninstall_citext.sql
+REGRESS = citext
+
+EXTENSION = $(MODULE_big)
+EXTVERSION = $(VERSION)
+\end{verbatim}
+  \end{example}
+\end{frame}
+
+%% FIXME: PGXS example Makefile, prefix
+%% FIXME: PGXS example Makefile, SQL only
+
+\begin{frame}[fragile]
+  \frametitle{The control file}
+
+  It's a very complex file containing the \textit{meta data} that PostgreSQL
+  needs to know about to be able to register your \textit{extension} in its
+  \textit{system catalogs}. It looks like this:
+
+  \onslide<2>
+  \begin{example}[citext.control.in]
+\begin{verbatim}
+# citext
+comment = 'case-insensitive character string type'
+version = 'EXTVERSION'
+\end{verbatim}
+  \end{example}
+\end{frame}
+
+\frame{
+  \frametitle{custom\_variable\_classes}
+
+  FIXME
+}
+
+\subsection{extension with user data}
+
+\frame{
+  \frametitle{User data}
+
+  The problem: \textit{extension} support sole goal is not to pollute
+  \texttt{pg\_dump} output. And now you're putting \textit{user} data in
+  there.
+}
+
+\begin{frame}[fragile]
+  \frametitle{User data and extension's scripts}
+
+  \begin{example}[user extension's script]
+\begin{verbatim}
+DO $$
+BEGIN
+IF pg_extension_with_user_data() THEN
+  create schema foo;
+  create table foo.bar(id serial primary key);
+  perform pg_extension_flag_dump('foo.bar_id_seq'::regclass);
+  perform pg_extension_flag_dump('foo.bar::regclass);
+END IF;
+END;
+$$;
+\end{verbatim}
+  \end{example}
+\end{frame}
+
+\subsection{extension and packaging}
+
+\frame{
+  \frametitle{debian and pg\_buildext}
+
+  \texttt{postgresql-server-dev-all}
+
+  %%% FIXME: include some example
+}
+
+\section{Conclusion}
+
+\subsection{Sponsoring}
+
+\frame{
+  \frametitle{Money}
+
+  4 week full time at home, thanks to \alert{2ndQuadrant}, and to our
+  affiliation with European Research
+
+  \begin{quote}
+    The research leading to these results has received funding from the
+    European Union's Seventh Framework Programme (FP7/2007-2013) under grant
+    agreement 258862
+  \end{quote}
+}
+
+\subsection{Any question?}
+
+\begin{frame}[fragile]
+  \frametitle{Any question?}
+
+  \begin{center}
+    Now is a pretty good time to ask!
+  \end{center}
+
+  \linebreak
+  \begin{center}
+    If you want to leave feedback, consider visiting
+    \url{http://2010.pgday.eu/feedback}
+  \end{center}
+\end{frame}
+
+\end{document}
