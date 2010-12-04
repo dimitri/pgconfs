@@ -34,7 +34,7 @@
   \tableofcontents[pausesections]
 }
 
-\section{What's an Extensions?}
+\section{What's an Extension?}
 
 \begin{frame}[fragile]
   \frametitle{Definitions}
@@ -138,7 +138,7 @@ psql -f /usr/share/postgresql/9.0/contrib/hstore.sql
   \frametitle{backup and restores}
 
   \begin{center}
-    \texttt{pg\_dump -h remote mydb | psql fresh}\
+    \texttt{pg\_dump -h remote mydb | psql fresh}
   \end{center}
 
   \begin{itemize}
@@ -151,23 +151,72 @@ psql -f /usr/share/postgresql/9.0/contrib/hstore.sql
 
 \section{The extension specs \& scope}
 
-\subsection{scope}
-\frame{
+\subsection{Scope, or What?}
+
+\begin{frame}[fragile]
   \frametitle{What problems are we solving?}
 
   Clearing up the mess. No feature is accepted in PostgreSQL without
   complete support for dump and restore nowadays. And that's good news.
-}
 
-\subsection{specs}
+  \begin{example}[the goal: have pg\_dump output this]
+\begin{verbatim}
+CREATE EXTENSION hstore WITH NO USER DATA;
+\end{verbatim}
+  \end{example}  
+\end{frame}
+
+\subsection{Specs, or How?}
 
 \frame{
   \frametitle{How are we solving our problems?}
 
-  Tracking dependencies, relying on the system's packaging
+  Lots of little things need to happen:
+
+  \begin{itemize}
+    \item<1-> Rely on the OS to install the \textit{script} and \textit{module}
+    \item<2-> Register the extension in the catalogs, to get an \textit{OID}
+    \item<3-> Track dependencies at \texttt{CREATE EXTENSION} time
+    \item<4-> Adapt \texttt{pg\_dump}
+    \item<5-> Offer a \texttt{WITH SCHEMA} facility
+    \item<6-> Offer \texttt{ALTER EXTENSION SET SCHEMA}
+    \item<7-> Don't forget \texttt{DROP EXTENSION RESTRICT|CASCADE}
+  \end{itemize}
 }
 
-\subsection{Implementation details}
+\frame{
+  \frametitle{Extensions and user data}
+
+  What if an extension gets modified after install?
+
+  \begin{itemize}
+    \item \texttt{pg\_dump} support is all about \textit{excluding} things from dumps
+    \item some extensions install default data
+    \item and allow users to edit them
+    \item now you want the data in your dumps, right?
+  \end{itemize}  
+}
+
+\begin{frame}[fragile]
+  \frametitle{Extension script and user data}
+
+  \begin{example}[Flag your pg\_dump worthy objects]
+\begin{verbatim}
+ DO $$
+ BEGIN
+ IF pg_extension_with_user_data() THEN
+   create schema foo;
+   create table foo.bar(id serial primary key);
+   perform pg_extension_flag_dump('foo.bar_id_seq'::regclass);
+   perform pg_extension_flag_dump('foo.bar::regclass);
+ END IF;
+ END;
+ $$;
+\end{verbatim}
+  \end{example}  
+\end{frame}
+
+\subsection{Implementation details, or What?}
 
 \frame{
   \frametitle{The effort in figures}
@@ -179,15 +228,17 @@ psql -f /usr/share/postgresql/9.0/contrib/hstore.sql
   \end{center}
 
   \begin{itemize}
-    \item<2-> 5 patches, 6 branches, its own \textit{Commit Fest} section
+    \item<2-> 5 patches, 7 branches, its own \textit{Commit Fest} section
     \item<3-> about 18 months to get an agreement on what to develop \textit{first}
     \item<4-> 2 \textit{Developer Meeting} interventions, in Ottawa, \textit{PgCon}
-    \item<5-> 4 weeks full time, countless evening
+    \item<5-> 4 weeks full time, countless evenings
   \end{itemize}
 }
 
 \frame{
   \frametitle{What's to know, now}
+
+  Some new commands and catalogs:
 
   \begin{itemize}
     \item \texttt{CREATE EXTENSION hstore WITH SCHEMA utils;}
@@ -209,6 +260,7 @@ psql -f /usr/share/postgresql/9.0/contrib/hstore.sql
 
   Simpler way to have your files installed at the right place, using
   \texttt{make install}. But \texttt{Makefile}s are hard, right?
+  \linebreak
 
   \onslide<2>
   \begin{example}[citext.control.in]
@@ -218,7 +270,7 @@ DATA_built = citext.sql
 DATA = uninstall_citext.sql
 REGRESS = citext
 
-EXTENSION = $(MODULE_big)
+EXTENSION = $(MODULES)
 EXTVERSION = $(VERSION)
 \end{verbatim}
   \end{example}
@@ -233,6 +285,7 @@ EXTVERSION = $(VERSION)
   It's a very complex file containing the \textit{meta data} that PostgreSQL
   needs to know about to be able to register your \textit{extension} in its
   \textit{system catalogs}. It looks like this:
+  \linebreak
 
   \onslide<2>
   \begin{example}[citext.control.in]
@@ -247,8 +300,36 @@ version = 'EXTVERSION'
 \frame{
   \frametitle{custom\_variable\_classes}
 
-  FIXME
+  The \texttt{custom\_variable\_classes} should be only known by extensions
+  authors.
+  \linebreak
+
+  \onslide<2>
+  \begin{quote}
+    A custom variable is a variable not normally known to PostgreSQL proper
+    but used by some add-on module. Such variables must have names
+    consisting of a class name, a dot, and a variable
+    name. \texttt{custom\_variable\_classes} specifies all the class names
+    in use in a particular installation.
+  \end{quote}
 }
+
+\begin{frame}[fragile]
+  \frametitle{custom\_variable\_classes, continued}
+
+  \begin{example}[citext.control.in]
+\begin{verbatim}
+# pg_stat_statements
+comment = 'tracking execution statistics of all SQL statements executed'
+version = 'EXTVERSION'
+custom_variable_classes = 'pg_stat_statements'
+pg_stat_statements.max = 1000
+pg_stat_statements.track = 'top'
+pg_stat_statements.track_utility = true
+pg_stat_statements.save = true
+\end{verbatim}
+  \end{example}
+\end{frame}
 
 \subsection{extension with user data}
 
