@@ -151,14 +151,17 @@ psql -f /usr/share/postgresql/9.0/contrib/hstore.sql
 
 \section{The extension specs \& scope}
 
-\subsection{Scope, or What?}
+\subsection{Scope}
 
 \begin{frame}[fragile]
   \frametitle{What problems are we solving?}
 
-  Clearing up the mess. No feature is accepted in PostgreSQL without
-  complete support for dump and restore nowadays. And that's good news.
+  It's all about clearing up the mess. No feature is accepted in PostgreSQL
+  without complete support for dump and restore nowadays. And that's good
+  news.
+  \linebreak
 
+  \onslide<2>
   \begin{example}[the goal: have pg\_dump output this]
 \begin{verbatim}
 CREATE EXTENSION hstore WITH NO USER DATA;
@@ -166,7 +169,7 @@ CREATE EXTENSION hstore WITH NO USER DATA;
   \end{example}  
 \end{frame}
 
-\subsection{Specs, or How?}
+\subsection{Specs}
 
 \frame{
   \frametitle{How are we solving our problems?}
@@ -190,33 +193,14 @@ CREATE EXTENSION hstore WITH NO USER DATA;
   What if an extension gets modified after install?
 
   \begin{itemize}
-    \item \texttt{pg\_dump} support is all about \textit{excluding} things from dumps
-    \item some extensions install default data
-    \item and allow users to edit them
-    \item now you want the data in your dumps, right?
+    \item<1-> \texttt{pg\_dump} support is all about \textit{excluding} things from dumps
+    \item<1-> some extensions install default data
+    \item<2-> and allow users to edit them
+    \item<3-> now you want the data in your dumps, right?
   \end{itemize}  
 }
 
-\begin{frame}[fragile]
-  \frametitle{Extension script and user data}
-
-  \begin{example}[Flag your pg\_dump worthy objects]
-\begin{verbatim}
- DO $$
- BEGIN
- IF pg_extension_with_user_data() THEN
-   create schema foo;
-   create table foo.bar(id serial primary key);
-   perform pg_extension_flag_dump('foo.bar_id_seq'::regclass);
-   perform pg_extension_flag_dump('foo.bar::regclass);
- END IF;
- END;
- $$;
-\end{verbatim}
-  \end{example}  
-\end{frame}
-
-\subsection{Implementation details, or What?}
+\subsection{Implementation details...}
 
 \frame{
   \frametitle{The effort in figures}
@@ -241,16 +225,17 @@ CREATE EXTENSION hstore WITH NO USER DATA;
   Some new commands and catalogs:
 
   \begin{itemize}
-    \item \texttt{CREATE EXTENSION hstore WITH SCHEMA utils;}
-    \item \texttt{\char`\\dx[+]}
-    \item \texttt{select * from pg\_extension\_objects('unaccent');}
-    \item \texttt{ALTER EXTENSION hstore SET SCHEMA addons;}
-    \item \texttt{DROP EXTENSION hstore CASCADE;}
-    \item \texttt{pg\_execute\_sql\_file()}
-    \item \texttt{pg\_execute\_sql\_string()}
+    \item<1-> \texttt{CREATE EXTENSION hstore WITH SCHEMA utils;}
+    \item<2-> \texttt{\char`\\dx[+]}
+    \item<2-> \texttt{select * from pg\_extension\_objects('unaccent');}
+    \item<3-> \texttt{ALTER EXTENSION hstore SET SCHEMA addons;}
+    \item<3-> \texttt{DROP EXTENSION hstore CASCADE;}
+    \item<4-> \texttt{pg\_execute\_sql\_file()}
+    \item<5-> \texttt{pg\_execute\_sql\_string()}
   \end{itemize}
 
 }
+
 \section{Extension for their authors. That's YOU. Here.}
 
 \subsection{PGXS and the control file}
@@ -275,9 +260,6 @@ EXTVERSION = $(VERSION)
 \end{verbatim}
   \end{example}
 \end{frame}
-
-%% FIXME: PGXS example Makefile, prefix
-%% FIXME: PGXS example Makefile, SQL only
 
 \begin{frame}[fragile]
   \frametitle{The control file}
@@ -317,7 +299,7 @@ version = 'EXTVERSION'
 \begin{frame}[fragile]
   \frametitle{custom\_variable\_classes, continued}
 
-  \begin{example}[citext.control.in]
+  \begin{example}[pg\_stat\_statements.control.in]
 \begin{verbatim}
 # pg_stat_statements
 comment = 'tracking execution statistics of all SQL statements executed'
@@ -331,44 +313,64 @@ pg_stat_statements.save = true
   \end{example}
 \end{frame}
 
-\subsection{extension with user data}
-
-\frame{
-  \frametitle{User data}
-
-  The problem: \textit{extension} support sole goal is not to pollute
-  \texttt{pg\_dump} output. And now you're putting \textit{user} data in
-  there.
-}
-
 \begin{frame}[fragile]
-  \frametitle{User data and extension's scripts}
+  \frametitle{Extension script and user data}
 
-  \begin{example}[user extension's script]
+  \begin{example}[Flag your pg\_dump worthy objects]
 \begin{verbatim}
-DO $$
-BEGIN
-IF pg_extension_with_user_data() THEN
-  create schema foo;
-  create table foo.bar(id serial primary key);
-  perform pg_extension_flag_dump('foo.bar_id_seq'::regclass);
-  perform pg_extension_flag_dump('foo.bar::regclass);
-END IF;
-END;
-$$;
+ DO $$
+ BEGIN
+ IF pg_extension_with_user_data() THEN
+   create schema foo;
+   create table foo.bar(id serial primary key);
+   perform pg_extension_flag_dump('foo.bar_id_seq'::regclass);
+   perform pg_extension_flag_dump('foo.bar::regclass);
+ END IF;
+ END;
+ $$;
 \end{verbatim}
-  \end{example}
+  \end{example}  
 \end{frame}
 
 \subsection{extension and packaging}
 
-\frame{
+\begin{frame}[fragile]
   \frametitle{debian and pg\_buildext}
 
+  Contributed and available in \textit{debian squeeze},
   \texttt{postgresql-server-dev-all}
+  \linebreak
 
-  %%% FIXME: include some example
-}
+  \begin{example}[debian/pgversions]
+\begin{verbatim}
+8.4
+9.0
+\end{verbatim}
+  \end{example}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{debian and pg\_buildext}
+
+  Contributed and available in \textit{debian squeeze},
+  \texttt{postgresql-server-dev-all}
+  \linebreak
+
+  \begin{example}[debian/rules]
+\begin{verbatim}
+include /usr/share/postgresql-common/pgxs_debian_control.mk
+
+install: build
+	# build all supported version
+	pg_buildext build $(SRCDIR) $(TARGET) "$(CFLAGS)"
+
+	# then install each of them
+	for v in `pg_buildext supported-versions $(SRCDIR)`; do \
+		dh_install -ppostgresql-$$v-pgfincore ;\
+	done
+\end{verbatim}
+  \end{example}
+\end{frame}
 
 \section{Conclusion}
 
