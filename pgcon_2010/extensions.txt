@@ -1,0 +1,5 @@
+control file:
+ - licence
+ - upgrade function / script
+
+user data in the extension and pg_restore
