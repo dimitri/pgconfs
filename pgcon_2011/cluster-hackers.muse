@@ -1,0 +1,65 @@
+#author Dimitri Fontaine
+#title Cluster Hackers Meeting
+#date 20110517
+
+* Status update
+
+** Slony-I
+
+Working on version 2.1 (bug fixes).  2.0 will get a backport of performance
+(high volume transactions).
+
+Wait for commands get into slonic so that users don't have to do it by hand.
+
+Transactions for cluster commands are now defined in javascript.  This new
+framework is on github (Provisionning, etc).
+
+** pgPool II
+
+Works with Streaming Replication.  Version 3.1 getting to beta, many
+improvements by dalibo.  Control interface in SQL (pgAdmin).
+
+Future plans: query cache, no SPOF architecture, pseudo multi-master.
+
+** GridSQL / Stado
+
+Mason Sharp is no more at EDB.  EDB is out of GridSQL.
+
+Parallel distributed PostGIS.  High Availability is on the roadmap.
+
+** PostgresXC
+
+Working on 1.0.  Version 0.9.4 is out, and BSD licenced.  SQL support is not
+finished. 0.9.5 will have session parameters, *data distribution extensions*.
+Adding cluster management tools written in ruby.
+
+1.0 is scheduled for april 2012 and based on 9.1.
+
+** Bucardo
+
+Version 5 alpha is out (last week).  N masters (N>2).  Uses LISTEN/NOTIFY
+internally rather than its own (bloated) tables.
+
+** Skytools
+
+Soon to release 3.0, but it's already in production at Skype.  Cascaded
+replication/queueing.  Londiste handlers (plugins like partitioning).
+Planned handler for handling multi-master (targeting failover).
+
+** Binary replication
+
+Sync Rep in 9.1 (teamwork).  The result is quite simple (and robust) in the
+code and the setup.  Result of 7 years of work.  Transaction Controlled is
+industry first.
+
+repmgr next version has fully automated failover with witness nodes etc.
+
+Binary based replication looks about over, next steps would be to better
+integrate with existing external systems.
+
+** Mammoth replicator
+
+It's dead.
+
+Development has stoped.  One reason is 9.0 with integrated replication.
+
