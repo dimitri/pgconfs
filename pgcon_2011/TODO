@@ -1,0 +1,6 @@
+* ALTER EXTENSION UPDATE or UPGRADE?
+* recheck extensions Makefile
+* recheck control file format
+* Upgrade the user data facility
+* Add some slides about upgrading
+* talk about file names and versions too ( --1.0.sql)
