@@ -1,0 +1,44 @@
+#author Dimitri Fontaine
+#title Hacking the Query Planner
+#date 20110519
+
+* Overview
+
+parser -> rewriter -> planner -> executor
+
+Planner task is fuzzier than others.
+
+ - heuristic --- planning time is constrained
+ - extensibility --- no hard wired knowledge (if possible)
+
+** plan node
+
+data source, target list, qualifiers (WHERE conditions)
+
+include estimates (row count, row width, total cost, startup cost)
+
+** phases
+
+Preprocessing
+Scan/Join planning
+Query special feature
+Postprocessing -> executor input
+
+* Constant folding
+
+Scalar means not a table
+
+x+0 = x --- can not simplify (élément neutre pour l'opérateur non supporté)
+
+* Step Ordering
+
+Important so that optimisation opportunities are not lost
+
+* Scan Join Planning
+
+FROM / WHERE and ORDER BY (influences Merge Joins)
+
+Produces a “Path”, simplified representation of a potential plan tree
+
+Lots of path are considered, the selected one is transformed into an
+execution plan.
