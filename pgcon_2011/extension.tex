@@ -36,6 +36,12 @@
 
 \section{What's an Extension?}
 
+\frame{
+  \begin{center}
+    What is a ``Extension''?
+  \end{center}
+}
+
 \begin{frame}[fragile]
   \frametitle{Definitions}
 
@@ -111,6 +117,12 @@
 
 \subsection{Before 9.1 and CREATE EXTENSION}
 
+\frame{
+  \begin{center}
+    Before 9.1 and CREATE EXTENSION
+  \end{center}
+}
+
 \begin{frame}[fragile]
   \frametitle{Installing an extension}
 
@@ -151,6 +163,12 @@ psql -f /usr/share/postgresql/9.0/contrib/hstore.sql
 
 \section{The extension specs \& scope}
 
+\frame{
+  \begin{center}
+    The extension specs \& scope
+  \end{center}
+}
+
 \subsection{Scope}
 
 \begin{frame}[fragile]
@@ -170,6 +188,12 @@ CREATE EXTENSION IF NOT EXISTS hstore WITH SCHEMA public;
 \end{frame}
 
 \subsection{Specs}
+
+\frame{
+  \begin{center}
+    Specs
+  \end{center}
+}
 
 \frame{
   \frametitle{How are we solving our problems?}
@@ -204,6 +228,12 @@ CREATE EXTENSION IF NOT EXISTS hstore WITH SCHEMA public;
 \subsection{Implementation details...}
 
 \frame{
+  \begin{center}
+    Implementation
+  \end{center}
+}
+
+\frame{
   \frametitle{The effort in figures}
 
   \begin{center}
@@ -236,12 +266,19 @@ CREATE EXTENSION IF NOT EXISTS hstore WITH SCHEMA public;
     \item<3-> \texttt{ALTER EXTENSION hstore SET SCHEMA addons;}
     \item<3-> \texttt{DROP EXTENSION hstore CASCADE;}
     \item<4-> \texttt{ALTER EXTENSION hstore UPDATE TO \textit{version};}
+    \item<4-> \texttt{CREATE EXTENSION hstore FROM unpackaged;}
   \end{itemize}
 }
 
 \section{Extension for their authors: YOU.}
 
 \subsection{PGXS and the control file}
+
+\frame{
+  \begin{center}
+    PGXS and the control file
+  \end{center}
+}
 
 \begin{frame}[fragile]
   \frametitle{Using PGXS}
@@ -324,6 +361,13 @@ SELECT pg_catalog.pg_extension_config_dump('my_config',
 
 \subsection{Extensions Upgrades}
 
+\frame{
+  \begin{center}
+    Extension Upgrades
+  \end{center}
+}
+
+
 \begin{frame}[fragile]
   \frametitle{ALTER EXTENSION ... UPDATE;}
 
@@ -336,7 +380,47 @@ SELECT pg_catalog.pg_extension_config_dump('my_config',
 
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{ALTER EXTENSION ... UPDATE [TO VERSION];}
+
+  \begin{itemize}
+    \item system view \texttt{pg\_available\_extensions}
+    \item system view \texttt{pg\_available\_extension\_versions}
+    \item \texttt{CREATE EXTENSION ... FORM old\_versions}
+  \end{itemize}
+
+  \begin{example}[hstore--unpackaged--1.0.sql]
+\begin{verbatim}
+ALTER EXTENSION hstore ADD type hstore;
+ALTER EXTENSION hstore ADD function hstore_in(cstring);
+ALTER EXTENSION hstore ADD function hstore_out(hstore);
+...
+\end{verbatim}
+  \end{example}  
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Upgrade Scripts}
+
+  Extension author has to provide scripts for all supported upgrades
+
+  \begin{itemize}
+    \item PostgreSQL handles upgrade paths
+    \item \texttt{1.0--1.1} then \texttt{1.1--1.2}
+    \item system view \texttt{pg\_available\_extension\_versions}
+    \item Be careful about downgrade paths!
+  \end{itemize}
+  
+\end{frame}
+
+
 \subsection{Extensions and packaging}
+
+\frame{
+  \begin{center}
+    Extension and packaging
+  \end{center}
+}
 
 \begin{frame}[fragile]
   \frametitle{debian and \texttt{pg\_buildext}}
@@ -379,6 +463,12 @@ install: build
 \section{Conclusion}
 
 \subsection{Sponsoring}
+
+\frame{
+  \begin{center}
+    Conclusion
+  \end{center}
+}
 
 \frame{
   \frametitle{Money}
