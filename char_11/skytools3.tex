@@ -1,0 +1,178 @@
+%%% Skytools3 --- what's good and new, why you want to upgrade, how to plan
+%%% your upgrade
+
+\documentclass[english]{beamer}
+\usepackage[utf8,latin9]{inputenc}
+%%\usepackage[latin9]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+
+\usepackage{beamerthemesplit}
+\usetheme{Warsaw}
+\beamertemplatetransparentcovered
+
+\title{Skytools 3.0}
+\author{Dimitri Fontaine}
+\date{July, 12 2011}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section*{Agenda}
+\frame{
+  \frametitle{Content}
+  \tableofcontents[pausesections]
+}
+
+\section{Skytools}
+
+\subsection{Software Architecture}
+
+\frame{
+  \frametitle{Skytools Architecture}
+
+  \begin{itemize}
+   \item in-database \texttt{PGQ} modules
+   \item Skytools python framework
+   \item PGQ python librairies, utilities to code consumers (daemons)
+   \item Specific consumers, such as \texttt{londiste}
+   \item Extra tools based upon the framework, such as \texttt{walmgr}
+  \end{itemize}
+}
+
+\section{Skytools 3.0}
+
+\subsection{PGQ improvements}
+
+\frame{
+  \frametitle{PGQ improvements}
+
+  %%% TODO
+}
+
+\subsection{Replicating Queues}
+
+\frame{
+  \frametitle{PGQ Nodes}
+
+  PGQ architecture has changed so that the queue themselves can be
+  replicated from a node to another, to allow for online switchover
+  facilities.  That comes with 3 node types:
+
+  \begin{itemize}
+   \item Root
+   \item Branch
+   \item Leaf
+  \end{itemize}  
+}
+
+%%% TODO, add a text graph with root/branch/leaf example, straight from
+%%% qadmin
+
+\subsection{Cooperative Consumers}
+
+\frame{
+  \frametitle{Cooperative Consumers}
+
+  PGQ is often used on its own, for general queuing needs that are not tied
+  to replication.  In some cases you want to have multiple consumers
+  draining in parallel from the same queue, but \textit{sharing} the work.
+  \linebreak
+  \pause
+  
+  Includes failover.  When a consumer stops consuming, its current batch
+  gets reassigned to another one after a configurable timeout.
+}
+
+\subsection{Admin tool, \tettt{qadmin}}
+
+\frame{
+  \frametitle{\texttt{qadmin}}
+
+  \texttt{qadmin} is the new interactive command line, replacing
+  \texttt{pgqadm} and offering a much richer set of commands.
+
+  \begin{itemize}
+   \item connect, install
+   \item create queue, alter queue, show ...
+   \item register, unregister
+   \item londiste commands
+  \end{itemize}  
+}
+
+\subsection{Londiste improvements}
+
+\frame{
+  \frametitle{Londiste improvements}
+
+  Londiste itself received some new features
+
+  \begin{itemize}
+   \item Parallel \texttt{COPY}
+   \item Execute scripts (\texttt{DDL} support)
+   \item Online topology changes
+   \item \texttt{londiste ... add --create}
+   \item Custom handlers (\textit{plugins})
+   \item Documentation...
+  \end{itemize}
+}
+
+\subsection{\texttt{debian} Packaging}
+
+\frame{
+  \frametitle{\texttt{debian} Packaging}
+
+  Completely new for \texttt{skytools3}
+
+  \begin{itemize}
+   \item skytools3
+   \item python-pgq3
+   \item python-skytools3
+   \item skytools3-walmgr
+   \item skytools3-ticker
+   \item postgresql-8.4-pgq3
+   \item postgresql-9.0-pgq3
+  \end{itemize}
+}
+
+\section{Upgrading}
+
+\subsection{Upgrading PGQ}
+
+\frame{
+  \frametitle{Upgrading PGQ}
+
+  %%% TODO
+}
+
+\subsection{Upgrading Services}
+
+\frame{
+  \frametitle{Upgrading Services}
+
+  That's the easy part
+
+  \begin{itemize}
+   \item Tickers: \texttt{pgqd} takes over \texttt{pgqadm}
+   \item Daemons: the API is compatible
+   \item Mostly: no more \texttt{failed} queue
+   \item Londiste should run fine
+  \end{itemize}  
+}
+
+\end{document}
+
+\section{Conclusion}
+
+\subsection{Any question?}
+
+\frame{
+  \frametitle{Any question?}
+
+  \begin{center}
+    Now is a pretty good time to ask!
+  \end{center}
+}
+
+\end{document}
