@@ -27,29 +27,50 @@
 
 \section{Skytools}
 
+\subsection{History}
+
+\frame{
+  \frametitle{Where does Londiste comes from?}
+
+  \begin{itemize}
+   \item<1-> Slony-I
+   \item<2-> Write load versus reliability
+   \item<2-> Network Topology versus flexibility
+   \item<3-> Only solves a subset of the problems
+   \item<4-> Shared some internal implementation (as \texttt{txid\_snapshot})
+  \end{itemize}
+}
+
 \subsection{Software Architecture}
 
 \frame{
   \frametitle{Skytools Architecture}
 
   \begin{itemize}
-   \item in-database \texttt{PGQ} modules
-   \item Skytools python framework
-   \item PGQ python librairies, utilities to code consumers (daemons)
-   \item Specific consumers, such as \texttt{londiste}
-   \item Extra tools based upon the framework, such as \texttt{walmgr}
+   \item<1-> in-database \texttt{PGQ} modules (C coded triggers)
+   \item<2-> Skytools python framework
+   \item<3-> PGQ python librairies, utilities to code consumers (daemons)
+   \item<4-> Specific consumers, such as \texttt{londiste}
+   \item<5-> Extra tools based upon the framework, such as \texttt{walmgr}
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{What does that mean for me?}
+
+  A flexible architecture allows
+
+  \begin{itemize}
+   \item<1-> Cross version and architecture replication
+   \item<1-> Version and Schema upgrade support
+   \item<2-> General asynchronous processing support
+   \item<3-> Limited set of concepts
   \end{itemize}
 }
 
 \section{Skytools 3.0}
 
 \subsection{PGQ improvements}
-
-\frame{
-  \frametitle{PGQ improvements}
-
-  %%% TODO
-}
 
 \subsection{Replicating Queues}
 
@@ -67,8 +88,32 @@
   \end{itemize}  
 }
 
-%%% TODO, add a text graph with root/branch/leaf example, straight from
-%%% qadmin
+\begin{frame}[fragile]
+  \frametitle{PGQ Nodes}
+
+  \begin{example}[qadmin status]
+\begin{verbatim}
+bdd2$ londiste3 demo.ini status
+Queue: demo   Local node: bdd2
+ 
+bdd1 (root)
+  |                           Tables: 85/0/0
+  |                           Lag: 3s, Tick: 8706
+  +--bdd2 (branch)
+     |                        Tables: 85/0/0
+     |                        Lag: 3s, Tick: 8706
+     +--web1 (leaf)
+     |                        Tables: 85/0/0
+     |                        Lag: 3s, Tick: 8706
+     +--web2 (leaf)
+     |                        Tables: 85/0/0
+     |                        Lag: 3s, Tick: 8706
+     +--web3 (leaf)
+                              Tables: 85/0/0
+                              Lag: 3s, Tick: 8706
+\end{verbatim}
+  \end{example}
+\end{frame}
 
 \subsection{Cooperative Consumers}
 
@@ -109,12 +154,13 @@
   Londiste itself received some new features
 
   \begin{itemize}
-   \item Parallel \texttt{COPY}
-   \item Execute scripts (\texttt{DDL} support)
-   \item Online topology changes
-   \item \texttt{londiste ... add --create}
-   \item Custom handlers (\textit{plugins})
-   \item Documentation...
+   \item<1-> Execute scripts (\texttt{DDL} support)
+   \item<1-> \texttt{londiste ... add --create}
+   \item<1-> Parallel \texttt{COPY}
+   \item<2-> Column granularity
+   \item<3-> Online topology changes
+   \item<3-> Custom handlers (\textit{plugins})
+   \item<4-> Documentation...
   \end{itemize}
 }
 
@@ -143,7 +189,14 @@
 \frame{
   \frametitle{Upgrading PGQ}
 
-  %%% TODO
+  How to upgrade from \texttt{PGQ 2} to \texttt{PGQ 3}
+
+  \begin{itemize}
+   \item<1-> Best way, do it on a new target database
+   \item<2-> Upgrade \texttt{PGQ} schema
+   \item<3-> Upgrade modules
+   \item<4-> Upgrade to \texttt{pgqd}
+  \end{itemize}
 }
 
 \subsection{Upgrading Services}
@@ -151,17 +204,14 @@
 \frame{
   \frametitle{Upgrading Services}
 
-  That's the easy part
+  That's the easy part (thanks to compatiblity)
 
   \begin{itemize}
-   \item Tickers: \texttt{pgqd} takes over \texttt{pgqadm}
    \item Daemons: the API is compatible
    \item Mostly: no more \texttt{failed} queue
    \item Londiste should run fine
   \end{itemize}  
 }
-
-\end{document}
 
 \section{Conclusion}
 
