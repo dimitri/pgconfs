@@ -1,0 +1,252 @@
+\documentclass{beamer}
+
+\usepackage{beamerthemesplit}
+\usetheme{Warsaw}
+
+\title{el-get}
+\subtitle{Emacs distributed packaging}
+\author{Dimitri Fontaine}
+\date{August 26, 2011}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section*{Outline}
+\frame{
+  \frametitle{Table of contents}
+  \tableofcontents
+}
+
+\section{el-get}
+
+\subsection{el what?}
+
+\frame{
+  \frametitle{Emacs Lisp Extensions}
+
+  Installing extensions for emacs is uneasy, unclean.
+
+  \begin{itemize}
+   \item<1-> Search EmacsWiki, another source, find \textit{something}
+   \item<1-> Copy it (\texttt{wget}) somewhere in \texttt{load-path}
+   \item<1-> If not a single file, \texttt{(add-to-list 'load-path ...)}
+   \item<2-> Read further install notes or docs
+   \item<3-> Test it, use it, adapt your setup to it
+   \item<4-> Remove it?
+   \item<5-> Upgrade... where did I get it from already?
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{apt-get for Emacs}
+
+  \texttt{el-get} offers \texttt{apt-get} like \textit{UI} for Emacs.
+
+  \begin{itemize}
+   \item \texttt{M-x el-get-install}
+   \item \texttt{M-x el-get-describe}
+   \item \texttt{M-x el-get-list-packages}
+   \item \texttt{M-x el-get-self-update}
+   \item \texttt{M-x el-get-update}
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{ELPA}
+
+  The Emacs Lisp Packages Archive is a good solution, that is:
+
+  \begin{itemize}
+   \item Integrated in Emacs24
+   \item Supports non-GNU repositories (yes, it's a feature)
+   \item Often needs editing the \texttt{elisp} source
+   \item Only simple for one-file packages
+   \item Strange with respect to versioning
+  \end{itemize}
+}
+
+\subsection{Distributed, what do you mean?}
+
+\frame{
+  \frametitle{Recipes}
+
+  el-get wants your recipes!
+
+  \begin{itemize}
+   \item<1-> recipes are packaging script
+   \item<2-> can be pretty simple
+   \item<2-> can be pretty involved
+   \item<3-> easy enough to make your own locally
+   \item<3-> \texttt{el-get-sources} or in a local file
+   \item<4-> require no edits of upstream sources
+  \end{itemize}
+}
+
+\begin{frame}[fragile]
+  \frametitle{Recipe Example 1, el-get}
+
+  \texttt{el-get} is self-hosted and has a \texttt{*scratch*} installer
+
+  \begin{verbatim}
+(:name el-get
+       :website "https://github.com/dimitri/el-get#readme"
+       :description "Manage the external elisp bits and pieces you depend upon."
+       :type git
+       :branch "2.stable"
+       :url "https://github.com/dimitri/el-get.git"
+       :features el-get
+       :load    "el-get.el"
+       :compile "el-get.el")
+  \end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Recipe Example 2, escreen}
+
+  Escreen is available on some website, not ELPA ready, Copyright 1992, 94,
+  95, 97, 2001, 2005 Noah S. Friedman
+
+  \begin{verbatim}
+(:name escreen
+       :description "Emacs window session manager"
+       :type http
+       :url "http://www.splode.com/~friedman/software/emacs-lisp/src/escreen.el"
+       :post-init (lambda ()
+		    (autoload 'escreen-install "escreen" nil t)))
+  \end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Recipe Example 3}
+
+  Solarized is a recent color-theme, and has been a fast moving target,
+  hosted at github, not available as an ELPA package.
+
+  \begin{verbatim}
+(:name color-theme-solarized
+       :description "Emacs highlighting using Ethan Schoonover's Solarized color scheme"
+       :type git
+       :url "https://github.com/sellout/emacs-color-theme-solarized.git"
+       :load "color-theme-solarized.el"
+       :depends color-theme)
+  \end{verbatim}
+\end{frame}
+
+\frame{
+  \frametitle{Sharing Recipes}
+
+  Distributed packaging: the Emacs Packages Social Network
+
+  \begin{itemize}
+   \item Once tested, send them to me (github, mail)
+   \item Once pushed, \texttt{el-get-self-update}
+   \item Available in \texttt{M-x el-get-install}
+   \item and in \texttt{M-x el-get-describe}
+   \item and in \texttt{M-x el-get-list-packages}
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Sharing Recipes}
+
+  Distributed packaging: the Emacs Packages Social Network
+  \linebreak
+  \linebreak
+  \pause
+
+  Or just mail them over to a friend.  Save as \texttt{recipe-name.el}
+  somewhere in \texttt{el-get-recipe-path}.
+}
+
+\subsection{Installing el-get}
+
+\begin{frame}[fragile]
+  \frametitle{The \texttt{*scratch*} installer}
+
+  el-get aims at making installing things like el-get easier.  How to
+  bootstap?
+
+  \begin{verbatim}
+;; So the idea is that you copy/paste this code into your *scratch* buffer,
+;; hit C-j, and you have a working el-get.
+(url-retrieve
+ "https://github.com/dimitri/el-get/raw/master/el-get-install.el"
+ (lambda (s)
+   (end-of-buffer)
+   (eval-print-last-sexp)))
+  \end{verbatim}
+
+  Don't forget to edit your \texttt{~/.emacs.d/init.el} (well,
+  \texttt{user-init-file})
+\end{frame}
+
+\section{Features}
+
+\subsection{Package Types Supported}
+
+\frame{
+  \frametitle{git, http, svn, what else?}
+
+  \begin{itemize}
+   \item<1-> git (with branch support), http, svn
+   \item<2-> emacswiki, \texttt{M-x el-get-emacswiki-refresh}
+   \item<3-> emacsmirror
+   \item<4-> git-svn, bzr, darcs, cvs, hg
+   \item<4-> ftp, http-tar
+   \item<4-> apt-get, pacman, fink
+   \item<4-> elpa (multi repositories, \texttt{:repo})
+  \end{itemize}
+}
+
+\subsection{el-get-init}
+
+\frame{
+  \frametitle{what does el-get cares about for me?}
+
+  When a packaged is installed, then it's initialized, and again at next
+  startups.  Meaning:
+
+  \begin{itemize}
+   \item<1-> \texttt{load-path}
+   \item<1-> \texttt{Info-directory-list} and \textt{ginstall-info}
+   \item<2-> byte compiling (\texttt{el-get-byte-compile-at-init})
+   \item<3-> autoloads
+   \item<3-> \texttt{require}, \texttt{load}, \texttt{eval-after-load}
+   \item<4-> custom function (prepare, before, post-init, after)
+   \item<4-> el-get-post-init-hooks
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Sync or Async? Eager or Lazy?}
+
+  You can be lazy, it works.  Or you can cook an involved init sequence so
+  that there's no \textit{eager} loading of anything, so that Emacs starts
+  in less than a second.  \pause Once a month.
+
+  \begin{itemize}
+   \item<3-> \texttt{autoloads}, \texttt{el-get-is-lazy}
+   \item<3-> \texttt{:after}, \texttt{:features}
+   \item<4-> \texttt{(el-get 'sync)}
+   \item<4-> \texttt{(el-get 'wait)}
+  \end{itemize}
+}
+
+\subsection{Other Features}
+
+\frame{
+  \frametitle{What else...}
+
+  \begin{itemize}
+   \item Windows support (users called) (yes they still exist)
+   \item Package dependencies
+   \item Per \texttt{system-type} build commands
+   \item 402 recipes included
+   \item 1656 emacswiki files supported
+   \item 3627 lines of emacs-lisp fun (including comments)
+   \item 1-year old, long time stable, production ready
+  \end{itemize}
+}
+
+\end{document}
