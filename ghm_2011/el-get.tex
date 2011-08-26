@@ -177,8 +177,26 @@
    (eval-print-last-sexp)))
   \end{verbatim}
 
-  Don't forget to edit your \texttt{~/.emacs.d/init.el} (well,
-  \texttt{user-init-file})
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{.emacs}}
+
+  In your \texttt{~/.emacs.d/init.el} (well, \texttt{user-init-file}):
+
+  \begin{verbatim}
+(setq el-get-sources
+      '((:name magit
+	     :after (lambda ()
+             (global-set-key (kbd "C-x C-z") 'magit-status)))))
+
+(setq my-packages
+      (append
+       '(cssh el-get switch-window mailq escreen emms)
+       (mapcar 'el-get-source-name el-get-sources)))
+
+(el-get 'sync my-packages)
+  \end{verbatim}
 \end{frame}
 
 \section{Features}
