@@ -27,7 +27,6 @@
 
 \frame{\titlepage}
 
-\section*{Agenda}
 \frame{
   \frametitle{Extensions?  Logic?  Fuzzy Business?  Say what?}
   \tableofcontents[pausesections]
@@ -126,10 +125,8 @@
 \subsection{MVC: Where's the Model}
 
 \frame{
-  \frametitle{MVC and the database layer}
-
   \begin{center} 
-    \includegraphics[height=2.9in]{tiers.png}
+    \includegraphics[height=2.8in]{tiers.png}
   \end{center}   
 }
 
@@ -185,6 +182,9 @@ CREATE OPERATOR ~> (LEFTARG = text, RIGHTARG = text,
 \begin{frame}[fragile]
   \frametitle{35.15. Packaging Related Objects into an Extension 3/6}
 
+  PostgreSQL needs some \textit{metadata} about your extension, fill in the
+  \texttt{control} file.
+
 \begin{example}[pair.control]
 \begin{verbatim}
 # pair extension
@@ -198,10 +198,14 @@ relocatable = true
 \begin{frame}[fragile]
   \frametitle{35.15. Packaging Related Objects into an Extension 4/6}
 
+  To easy the package installation process, you need a scary
+  \texttt{Makefile}. Beware of \texttt{VPATH}, he's your friend, but he's
+  very picky about it.
+
 \begin{example}[Makefile]
 \begin{verbatim}
 EXTENSION = pair
-DATA = pair--1.0.sql
+DATA = pair--1.0.sql # avoid $(wildcard sql/*--*.sql)
 
 PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
@@ -213,6 +217,8 @@ include $(PGXS)
 \begin{frame}[fragile]
   \frametitle{35.15. Packaging Related Objects into an Extension 5/6}
 
+  Now, relax and profit.
+
 \begin{example}[psql]
 \begin{verbatim}
 CREATE EXTENSION pair SCHEMA utils;
@@ -222,6 +228,8 @@ CREATE EXTENSION pair SCHEMA utils;
 
 \begin{frame}[fragile]
   \frametitle{35.15. Packaging Related Objects into an Extension 6/6}
+
+  Oh, and maybe you wanted to use the extension, too.
 
 \begin{example}[psql]
 \begin{verbatim}
@@ -234,10 +242,77 @@ INSERT INTO foo(kv)
 
 \section{Managing upgrades}
 
-\subsection{Minor upgrades}
-\subsection{Major upgrades}
-\subsection{From developement to production}
+\subsection{Extension upgrades}
+
+\begin{frame}[fragile]
+  \frametitle{Upgrading an extension}
+
+  That used to be a ``guru'' only operation...
+
+\begin{example}[extension update]
+\begin{verbatim}
+ALTER EXTENSION pair UPDATE;
+ALTER EXTENSION pair UPDATE TO '1.1';
+
+SELECT * FROM pg_available_extensions();
+SELECT * FROM pg_available_extension_versions();
+\end{verbatim}
+\end{example}
+\end{frame}
+
+\subsection{From development to production}
+
+\begin{frame}[fragile]
+  \frametitle{Packaging upgrades in development}
+
+\begin{example}[update to 1.4]
+\begin{verbatim}
+  ALTER EXTENSION pair UPDATE TO '1.1';
+  ...
+  ALTER EXTENSION pair UPDATE TO '1.4';
+\end{verbatim}
+\end{example}
+
+  \begin{itemize}
+   \item<1-> \texttt{pair---1.0.sql}
+   \item<2-> \texttt{pair---1.0---1.1.sql}
+   \item<3-> \texttt{pair---1.1---1.2.sql}
+   \item<3-> \texttt{pair---1.2---1.3.sql}
+   \item<3-> \texttt{pair---1.3---1.4.sql}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Packaging upgrades for production rollouts}
+
+\begin{example}[update to 1.4]
+\begin{verbatim}
+  ALTER EXTENSION pair UPDATE TO '1.4';
+\end{verbatim}
+\end{example}
+
+  \begin{itemize}
+   \item<1-> \texttt{\char`\\dx} shows we're at version \texttt{1.0}
+   \item<1-> PostgreSQL will happily apply those files:
+   \item<2-> \texttt{pair---1.0---1.1.sql}, \texttt{pair---1.1---1.2.sql},
+   \item<2-> \texttt{pair---1.2---1.3.sql}, \texttt{pair---1.3---1.4.sql}
+   \item<3-> \alert{Check} with \texttt{pg\_available\_extension\_versions()}!
+  \end{itemize}
+\end{frame}
+
 \subsection{Managing Rollouts}
+
+\frame{
+  \frametitle{Packaging upgrades for production rollouts}
+
+  Sometimes playing each step one after the other is not what you want.
+
+  \begin{itemize}
+   \item<1-> Prepare \texttt{pair---1.0---1.4.sql}
+   \item<2-> PostgreSQL will happily prefer this file
+   \item<3-> Check with \texttt{pg\_available\_extension\_versions()}
+  \end{itemize}
+}
 
 \section{Conclusion}
 
@@ -253,7 +328,7 @@ INSERT INTO foo(kv)
   \linebreak
   \begin{center}
     If you want to leave feedback, consider visiting
-    \url{http://2010.pgday.eu/feedback}
+    \url{http://2011.pgconf.eu/feedback}
   \end{center}
 \end{frame}
 
