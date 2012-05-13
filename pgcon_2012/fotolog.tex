@@ -1,0 +1,111 @@
+%%% PGCON 2012
+%%%
+%%% Once a Top-10 internet audience site. 32 million users. Billions of
+%%% photos and comments, more than 6TB of them. Migrating away from MySQL to
+%%% PostgreSQL!
+%%%
+%%% This talk will share hindsights about the why and the how of that
+%%% migration, what problems couldn't be solved without moving away and how
+%%% the solution now looks. The tools used for migrating away the data, the
+%%% methods and will detail the new architecture. And the new home, in the
+%%% cloud!
+%%%
+%%% On the technical side of things, we will be talking about MySQL,
+%%% mysqltocsv, pgloader, pljava, Google Protocol Buffers, pgbouncer,
+%%% plproxy, PostgreSQL, pghashlib, walmgr, streaming replication. And
+%%% Amazon hosting facilities too (EBS for starters).
+%%%
+%%%
+%%%
+%%% fotolog@admin=# select min(stat_day), max(stat_day), avg(nb_registration), avg(nb_photos_add), avg(nb_guestbook_add) from fl.stats_user_activity limit 35;
+%%%    min     |    max     |          avg          |        avg         |        avg         
+%%% ------------+------------+-----------------------+--------------------+--------------------
+%%% 2012-03-02 | 2012-05-13 | 1309.3287671232876712 | 16046.890410958904 | 11046.452054794521
+%%% (1 row)
+
+\documentclass[english]{beamer}
+\usepackage[utf8,latin9]{inputenc}
+%%\usepackage[latin9]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+
+\usepackage{beamerthemesplit}
+\usetheme{Warsaw}
+\beamertemplatetransparentcovered
+
+\title{Large Scale MySQL Migration}
+\subtitle{to PostgreSQL!}
+\author{Dimitri Fontaine}
+\date{May 17, 2012}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section*{Agenda}
+\frame{
+  \frametitle{Content}
+  \tableofcontents[pausesections]
+}
+
+\section{Fotolog}
+
+\frame{
+  \frametitle{Fotolog}
+
+  \begin{itemize}
+   \item Photo Sharing website
+   \item with friends and favorites
+   \item \texttt{    32 000 000} users
+   \item \texttt{ 1 000 000 000} photos
+   \item \texttt{10 000 000 000} comments
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Ideas to develop}
+
+  \begin{itemize}
+   \item Old architecture (Java, Scala, MySQL, Tokyo Tyrant, Memcache, Redis)
+   \item Sharding A-Z0-9
+   \item Approach to business, time to market and rentability
+   \item 
+   \item 
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Still growing}
+
+  \begin{itemize}
+   \item \texttt{ 1310} new users a day, average
+   \item \texttt{ 4375} new friends a day, average
+   \item \texttt{16046} new photos a day, average, max 93840
+   \item \texttt{11046} new comments a day, average
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Activity}
+
+  \begin{itemize}
+   \item 73 queries/s, * 16 = 1168 req/s
+   \item 
+   \item
+   \item
+  \end{itemize}
+}
+
+\section{Conclusion}
+
+\subsection{Any question?}
+
+\frame{
+  \frametitle{Any question?}
+
+  \begin{center}
+    Now is a pretty good time to ask!
+  \end{center}
+}
+
+\end{document}
