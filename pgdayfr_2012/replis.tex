@@ -1,0 +1,50 @@
+%%% PGDAY FR 2012
+%%%
+%%% PostgreSQL et ses projects satellites permettent de mettre en oeuvre
+%%% avec simplicité plusieurs types de réplications assez différentes. Nous
+%%% verrons ici en quoi ces différentes solutions sont complémentaires en
+%%% illustrant les besoins communs d'un projet d'architecture de taille
+%%% moyenne : durabilité des données, plans de reprise et de continuité
+%%% d'activité, procédures de reprise sur incident (erreurs et omissions),
+%%% etc.
+%%%
+%%% Nous détaillerons comment conjuguer plusieurs techniques afin de
+%%% répondre au mieux à ces besoins : Streaming Réplication, Hot Standby,
+%%% walmgr.py, Londiste, Démons PGQ, plproxy.
+
+\documentclass[english]{beamer}
+\usepackage[utf8,latin9]{inputenc}
+%%\usepackage[latin9]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+
+\usepackage{beamerthemesplit}
+\usetheme{Warsaw}
+\beamertemplatetransparentcovered
+
+\title{Disponibilité et Durabilité}
+\subtitle{Architectures et Réplications}
+\author{Dimitri Fontaine}
+\date{7 Juin 2012}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section*{Agenda}
+\frame{
+  \frametitle{Content}
+  \tableofcontents[pausesections]
+}
+
+\section{Conclusion}
+
+\frame{
+  \frametitle{Any question?}
+
+  \begin{center}
+    Now is a pretty good time to ask!
+  \end{center}
+}
+
+\end{document}
