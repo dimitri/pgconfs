@@ -159,12 +159,12 @@
   enough so as to maximize the revenues from the website:
 
   \begin{itemize}
-   \item Web server, EC2, 8GB RAM, 8 CPU, 16 of them
-   \item Database servers, EC2, 15GB RAM, 4*400GB local disks
-   \item 16 database servers, each hosting 16 databases shards
-   \item Cron server, web like, admin server, bdd like
-   \item Backup server, EC2, 15GB RAM, 18 EBS (500GB), 18 Hot Standbies
-   \item S3 storage for archiving (WAL-E)
+   \item<1-> Web server, EC2, 8GB RAM, 8 CPU, 16 of them
+   \item<1-> Database servers, EC2, 15GB RAM, 4*400GB local disks
+   \item<1-> 16 database servers, each hosting 16 databases shards
+   \item<2-> Cron server, web like, admin server, bdd like
+   \item<3-> Backup server, EC2, 15GB RAM, 18 EBS (500GB), 18 Hot Standbies
+   \item<3-> S3 storage for archiving (WAL-E)
   \end{itemize}
 }
 
@@ -190,11 +190,11 @@
   We first tried some fancy newer stuff.
 
   \begin{itemize}
-   \item Streaming data from MySQL to PostgreSQL?
-   \item using the MySQL Foreign Data Wrapper
-   \item did have to edit the code
-   \item very very slow rate
-   \item even after optimization tries
+   \item<1-> Streaming data from MySQL to PostgreSQL?
+   \item<1-> using the MySQL Foreign Data Wrapper
+   \item<2-> did have to edit the code
+   \item<3-> very very slow rate
+   \item<3-> even after optimization tries
   \end{itemize}
 }
 
@@ -204,11 +204,11 @@
   Back to the basics then.
 
   \begin{itemize}
-   \item \texttt{echo \$sql| mysql| psql}
-   \item MySQL man page pretends to be sending CSV
-   \item But that's a lie.
-   \item so we had to write a very simple \texttt{mysql2csv} client
-   \item and summon \texttt{pgloader} to the rescue!
+   \item<1-> \texttt{echo \$sql| mysql| psql}
+   \item<2-> MySQL man page pretends to be sending CSV
+   \item<2-> But that's a lie.
+   \item<3-> so we had to write a very simple \texttt{mysql2csv} client
+   \item<3-> and summon \texttt{pgloader} to the rescue!
   \end{itemize}
 }
 
@@ -228,11 +228,11 @@
   Some details about that migration scripts:
 
   \begin{itemize}
-   \item 37 different mysql sources
-   \item loading to temp PostgreSQL where it's all text
-   \item \texttt{COPY OUT} from a query with lots of \texttt{COALESCE}
-   \item that's where we process \texttt{0000-00-00} dates and the like
-   \item oh, and \textit{blobs} too
+   \item<1-> 37 different mysql sources
+   \item<2-> loading to temp PostgreSQL where it's all text
+   \item<3-> \texttt{COPY OUT} from a query with lots of \texttt{COALESCE}
+   \item<3-> that's where we process \texttt{0000-00-00} dates and the like
+   \item<4-> oh, and \textit{blobs} too
   \end{itemize}
 }
 
@@ -244,12 +244,12 @@
   Yes you did.
 
   \begin{itemize}
-   \item MySQL made it complex to adapt the schema live
-   \item and to partition data (13 times the same guestbook table)
-   \item finally they opted for \textit{Google Protocol Buffers}
-   \item the API is available for Java, C++ and Python
-   \item we tried \texttt{pl/python} first, encoding and \texttt{NULL} problems
-   \item we then tried \texttt{pl/java}
+   \item<1-> MySQL made it complex to adapt the schema live
+   \item<1-> and to partition data (13 times the same guestbook table)
+   \item<2-> finally they opted for \textit{Google Protocol Buffers}
+   \item<2-> the API is available for Java, C++ and Python
+   \item<2-> we tried \texttt{pl/python} first, encoding and \texttt{NULL} problems
+   \item<3-> we then tried \texttt{pl/java}
   \end{itemize}
 }
 
