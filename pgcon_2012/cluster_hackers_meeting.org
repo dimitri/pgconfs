@@ -1,0 +1,18 @@
+* Event Triggers
+** Why events and not just commands?
+** recursive processing
+*** ALTER EVENT TRIGGER foo DISABLE;
+** Subcommands are a full stack not just 2 levels
+* API for Logical Replication
+** Extension for Canonical Command String
+*** Schema qualified
+*** Standard_conforming_strings
+*** OIDs
+** Extension/Patch for Environments
+*** SELECT set_command FROM pg_catalog.getenv();
+*** Date Time Format
+*** subscriber: SET LOCAL or PUSH/POP env
+*** Named/Registered Environments
+** Extension for structured parse treee
+*** JSON or XML
+*** Text[]
