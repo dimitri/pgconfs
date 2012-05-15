@@ -1,0 +1,16 @@
+  /----------------------------+ 
+  |        WEB FRONTS          |
+  +----------------------------+ 
+  |         Varnish        cGRE|
+  +----------------------------+ 
+  |        Apache PHP      cGRE| 
+  +----------+-------+---------+
+  |	 cPNK|   cPNK|	   cPNK| 
+  | Memcache | Redis | Membase | 
+  +----------+-------+---------+
+  |    local PostgreSQL    cBLU|
+  |   pgbouncer    plproxy     |
+  |	pghashlib ip4r	       |
+  +----------------------------/
+
+
