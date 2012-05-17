@@ -132,6 +132,26 @@
   \end{center} 
 }
 
+\begin{frame}[fragile]
+  \frametitle{\texttt{PL/Proxy}}
+
+  \textit{pl/proxy} is the integrated sharding layer. Now you have to write
+  all your SQL in server side functions.
+
+  \begin{example}[admin/change\_group\_status.sql]
+\begin{verbatim}
+create or replace function admin.change_group_status
+(
+    user_name text, status integer
+)
+returns void as $BODY$
+    CLUSTER 'fl_cluster';
+    RUN ON hash_string(user_name, 'lookup3le');
+$BODY$;
+\end{verbatim}
+  \end{example}
+\end{frame}
+
 \section{The Migration}
 
 \subsection{Code}
