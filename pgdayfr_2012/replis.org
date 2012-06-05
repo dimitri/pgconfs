@@ -1,0 +1,20 @@
+* Présentation
+** Qui suis-je
+** expertise 2ndQuadrant dans la réplication
+** une approche par le besoin
+** la réplication à quoi ça sert
+** la haute disponibilité, comment ?
+* Projet
+** projet web, archi sur un seul serveur
+** ajout de pgbouncer
+** séparations webs/bdd, pgbouncer sur les webs
+** stratégie de backup
+** PRA : reprise sur incident et PITR
+** archivage et donc warm standby
+** séparation production et back office, londiste
+** traitements asynchone, PGQ
+** RPC avec plproxy
+** vers un PCA, Hot Standby
+** scalability : scale-up ou scale-out ?
+** sharding avec plproxy
+* 
