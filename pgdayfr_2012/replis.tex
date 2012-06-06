@@ -21,7 +21,8 @@
 \usepackage{babel}
 
 \usepackage{beamerthemesplit}
-\usetheme{Warsaw}
+%% \usetheme{Warsaw}
+\usetheme{Frankfurt}
 \beamertemplatetransparentcovered
 
 \title{Disponibilité et Durabilité}
@@ -34,31 +35,29 @@
 
 \frame{\titlepage}
 
-\section*{Agenda}
-\frame{
-  \frametitle{Content}
-  %% \tableofcontents[pausesections]
-  \tableofcontents
-}
-
 \section{Présentation}
-
-\subsection{Dimitri Fontaine}
+\subsection{Préambule}
+\frame{\tableofcontents[currentsection]}
 
 \begin{frame}[fragile]
   \frametitle{Dimitri Fontaine}
+
+  \begin{center}
+    \textbf{2ndQuadrant France}
+    \linebreak
+    PostgreSQL Major Contributor
+  \end{center}
+  \linebreak
 
 \begin{columns}[c]
 \column{.75\textwidth} 
 
   \begin{itemize}
-   \item<1-> \alert{\textbf{2ndQuadrant France}} — \textit{Hi-Media}
-   \item<2-> \alert{PostgreSQL Major Contributor}
-   \item<2-> \texttt{pgloader}, \texttt{prefix}, \texttt{skytools}, \texttt{debian}, …
-   \item<3-> \texttt{\textbf{CREATE EXTENSION}}
-   \item<4-> \textit{Command Triggers}
-   \item<4-> \textit{Bi-Directional Réplication}
-   \item<4-> \textit{Partitionnement}
+   \item<1-> \texttt{pgloader}, \texttt{prefix}, \texttt{skytools}, \texttt{debian}, …
+   \item<1-> \texttt{\textbf{CREATE EXTENSION}}
+   \item<2-> \textit{Command Triggers}
+   \item<2-> \textit{Bi-Directional Réplication}
+   \item<3-> \textit{Partitionnement}
   \end{itemize}  
 
 \column{.25\textwidth}
@@ -68,7 +67,66 @@
 \end{columns}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Retour d'expérience, principalement avec Hi-Media}
+
+  \center{\textbf{Hi-Media} (200 millions \euro de CA)}
+
+\begin{columns}[c]
+\column{.75\textwidth} 
+
+  \begin{itemize}
+   \item<1-> 3 métiers autour de la monétisation web
+   \item<2-> Allopass, HiPay : micro paiement sur internet
+   \item<2-> Services Télécom
+   \item<2-> Régie publicitaire
+  \end{itemize}  
+
+  \onslide<3->{\center{PostgreSQL au cœur de l'architecture technique}}
+
+  \begin{itemize}
+  \item<4-> Réponse aux contraintes
+  \item<4-> Adaptation aux changements
+  \end{itemize}  
+
+\column{.25\textwidth}
+\begin{center}
+  \includegraphics[height=7em]{agenda.jpg}
+\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Vos données sont votre métier}
+
+  \begin{center}
+    Comment assurer la \textit{durabilité} et la \textit{disponibilité} de vos
+    données ?
+  \end{center}
+  \linebreak
+
+\begin{columns}[c]
+\column{.75\textwidth} 
+
+  Besoin :
+
+  \begin{itemize}
+   \item<2-> Fiabilité
+   \item<2-> Robustesse
+   \item<2-> Performances
+   \item<3-> Accompagnement du succès commercial
+   \item<3-> Continuité et Innovation
+  \end{itemize}  
+
+\column{.25\textwidth}
+\begin{center}
+  \includegraphics[height=7em]{agenda.jpg}
+\end{center}
+\end{columns}
+\end{frame}
+
 \subsection{Disponibilité, Durabilité}
+\frame{\tableofcontents[currentsubsection]}
 
 \begin{frame}
   \frametitle{Glossaire}
@@ -137,9 +195,9 @@
 \end{columns}
 \end{frame}
 
-\section{Besoins et Architectures}
-
+\section{Architectures et Réplications}
 \subsection{Augmentation du trafic}
+\frame{\tableofcontents[currentsubsection]}
 
 \begin{frame}[fragile]
   \frametitle{Séparation des tâches}
@@ -192,6 +250,7 @@
 \end{frame}
 
 \subsection{Durabilité des données}
+\frame{\tableofcontents[currentsubsection]}
 
 \begin{frame}[fragile]
   \frametitle{Le plan de sauvegardes}
@@ -230,13 +289,16 @@
     \item<1-> protège contre les \textit{erreurs et omissions}
     \item<1-> temps de restauration conséquent
     \item<2-> Indispensable à la \textbf{durabilité} des données
-    \item<2-> ne garanti pas leur \textbf{disponibilité}
+    \item<2-> La \textbf{disponibilité} est-elle suffisante ?
   \end{itemize}
 
 \column{.25\textwidth}
 \includegraphics[height=7em]{restore.png}
 \end{columns}
 \end{frame}
+
+\subsection{Disponibilité des données}
+\frame{\tableofcontents[currentsubsection]}
 
 \begin{frame}[fragile]
   \frametitle{Plan de Reprise de l'Activité}
@@ -271,6 +333,7 @@
 }
 
 \subsection{Disponibilité des services}
+\frame{\tableofcontents[currentsubsection]}
 
 \begin{frame}[fragile]
   \frametitle{Séparation des composants}
@@ -362,6 +425,7 @@
 }
 
 \subsection{Sharding}
+\frame{\tableofcontents[currentsubsection]}
 
 \begin{frame}[fragile]
   \frametitle{Augmenter la capacité en écriture}
@@ -405,8 +469,8 @@
 }
 
 \section{Conclusion}
-
 \subsection{Rétrospective et avenir de la réplication PostgreSQL}
+\frame{\tableofcontents[currentsubsection]}
 
 \begin{frame}[fragile]
   \frametitle{Haute Disponibilité Multi Sites}
