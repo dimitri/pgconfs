@@ -37,7 +37,8 @@
 \section*{Agenda}
 \frame{
   \frametitle{Content}
-  \tableofcontents[pausesections]
+  %% \tableofcontents[pausesections]
+  \tableofcontents
 }
 
 \section{Présentation}
@@ -62,7 +63,7 @@
 
 \column{.25\textwidth}
 \begin{center}
-  \includegraphics[height=9em]{bulle-blue-icon.png}
+  \includegraphics[height=5em]{bulle-blue-icon.png}
 \end{center}
 \end{columns}
 \end{frame}
@@ -74,18 +75,20 @@
   
   \center{Thèmes abordés}
   \linebreak
+  \linebreak
 
 \begin{columns}[c]
-\column{.5\textwidth} 
+\column{.75\textwidth} 
 
   \begin{itemize}
-    \item<1,5> Disponibilité
-    \item<2,5> Durabilité
-    \item<3,5> Architectures
-    \item<4,5> Réplications
+    \item<3,4,6> Disponibilité \only<4->{\textit{des services ou des
+        données ?}}
+    \item<2,6> Durabilité (ACI\alert{D})
+    \item<5,6> Architectures
+    \item<1,6> Réplications
   \end{itemize}  
 
-\column{.5\textwidth}
+\column{.25\textwidth}
 \includegraphics[height=6em]{glossaire.jpg}
 \end{columns}
 \end{frame}
@@ -95,21 +98,43 @@
 \begin{frame}[fragile]
   \frametitle{Une approche par le besoin}
 
+  \center{Les besoins évoluent, les solutions s'adaptent}
+  \linebreak
+
+\begin{columns}[c]
+\column{.75\textwidth} 
+
+\begin{itemize}
+  \item<1-> Projet simple, besoins simples
+  \item<1-> Le projet évolue et les besoins aussi
+  \item<2-> Haute Disponibilité \textit{des données}
+  \item<2-> Haute Disponibilité \textit{des services}
+  \item<3-> Répartition de charge \textit{en lecture}
+  \item<3-> Répartition de charge \textit{en écriture}
+\end{itemize}
+
+\column{.25\textwidth}
+\includegraphics[height=5em]{development_life_cycle.png}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Il faut bien commencer quelque part}
+
   \center{Cycle de vie d'un projet}
   \linebreak
 
 \begin{columns}[c]
-\column{.65\textwidth} 
+\column{.75\textwidth} 
 
   Prenons comme exemple un projet relativement simple, une application web
   dont les besoins évoluent avec le succès grandissant.
 
-  \center{\includegraphics[height=1.3in]{archi_v1.png}}  
+  \center{\includegraphics[height=1in]{archi_v1.png}}  
 
-\column{.35\textwidth}
-\includegraphics[height=9em]{bedbugslifecycle.png}
+\column{.25\textwidth}
+\includegraphics[height=5em]{development_life_cycle.png}
 \end{columns}
-
 \end{frame}
 
 \section{Besoins et Architectures}
@@ -187,7 +212,7 @@
   \end{itemize}  
 
 \column{.35\textwidth}
-\includegraphics[height=9em]{online-backup.jpg}
+\includegraphics[height=7em]{online-backup.jpg}
 \end{columns}
 \end{frame}
 
@@ -219,7 +244,7 @@
   \center{Sauvegardes physiques et retour à un point dans le passé}
 
 \begin{columns}[c]
-\column{.6\textwidth} 
+\column{.65\textwidth} 
 
   \begin{itemize}
    \item<1-> \alert{Point In Time Recovery}, 8.1
@@ -230,8 +255,8 @@
    \item<4-> \texttt{walmgr.py}, {\texttt{WAL-E}
   \end{itemize}  
 
-\column{.4\textwidth}
-\includegraphics[height=9em]{pitr.png}
+\column{.35\textwidth}
+\includegraphics[height=6em]{pitr.png}
 \end{columns}
 \end{frame}
 
@@ -254,7 +279,7 @@
   \linebreak
 
 \begin{columns}[c]
-\column{.6\textwidth} 
+\column{.65\textwidth} 
 
   \begin{itemize}
    \item<1-> Réplication croisée
@@ -265,8 +290,8 @@
    \item<4-> Skytools fourni \alert{\textbf{PGQ}}
   \end{itemize}  
 
-\column{.4\textwidth}
-\includegraphics[height=9em]{cross-replication.jpg}
+\column{.35\textwidth}
+\includegraphics[height=6em]{cross-replication.jpg}
 \end{columns}
 \end{frame}
 
@@ -331,8 +356,12 @@
   \frametitle{Plan de Continuité de l'Activité}
   \center{Mise en place de Hot Standby}
   
-  < Insérer l'image arch\_v5 ici >
+\begin{center}
+  \includegraphics[height=1.9in]{archi_v5.png}
+\end{center}
 }
+
+\subsection{Sharding}
 
 \begin{frame}[fragile]
   \frametitle{Augmenter la capacité en écriture}
@@ -363,17 +392,26 @@
   \frametitle{Augmenter la capacité en écriture}
   \center{Mise en place de \texttt{plproxy}}
 
-  < Insérer l'image arch\_v6 ici >
+  \only<1>{
+    \begin{center}
+      \includegraphics[height=1.9in]{archi_v6.png}
+    \end{center}
+  }
+  \only<2>{
+    \begin{center}
+      \includegraphics[height=1.9in]{archi_v7.png}
+    \end{center}
+  }
 }
 
 \section{Conclusion}
 
-\subsection{Le futur de la réplication}
+\subsection{Rétrospective et avenir de la réplication PostgreSQL}
 
 \begin{frame}[fragile]
   \frametitle{Haute Disponibilité Multi Sites}
 
-  \center{Le futur de la réplication dans PostgreSQL}
+  \center{Rétrospective et avenir de la réplication dans PostgreSQL}
   \linebreak
 
 \begin{columns}[c]
