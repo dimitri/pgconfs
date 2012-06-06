@@ -17,7 +17,7 @@
 |     PostgreSQL   |     |     PostgreSQL   |    |     PostgreSQL   |
 +--------+---------+     +--------+---------+    +--------+---------+
          :                        :                       :
-         |        Streaming       |       Archivage       |
+         |      Streaming         |       Archivage       |
          |                        v                       |
          |               +------------------+             |
          |               |    Hot Standby   |             |
