@@ -1,0 +1,25 @@
++----------------+    +----------------+     +----------------+    +----------------+
+|  Front 1   cPNK|    |  Front 2   cPNK|     |  Front 1  cPNK |    |  Front 2  cPNK |
+|   Apache       |    |   Apache       |     |   Apache       |    |   Apache       |
+| {pgbouncer}    |    | {pgbouncer}    |     | {pgbouncer}    |    | {pgbouncer}    |
++--+-------------+    +-------------+--+     +--+-------------+    +--------------+-+
+   |                                |           |                                |
+   |                                |           |                                |
+   |     +------------------+       |           |     +------------------+       |
+   |     |    Backoffice    |       |           |     |    Production    |       |
+   |     |             cGRE |       |           |     |             cGRE |       |
+   +---->|     pgbouncer    |<------+           +---->|     pgbouncer    |<------+
+         |     PostgreSQL   +<-=--------------------->+     PostgreSQL   |
+         +--------+-----+---+         londiste        +-+------+---------+
+                  :     ^                               :      :
+		  |     |         +----------+          |      |
+		  |     +-------=-|   PGQ    |<---------+      |
+		  |               |     cFF8 |                 |
+            WAL   |               +----------+                 |   WAL
+        Streaming v                                            v Streaming
+          +------------------+                         +------------------+
+          |   Hot Standby    |                         |   Hot Standby    |
+          |             cBLU |                         |             cBLU |
+          |     PostgreSQL   |                         |     PostgreSQL   |
+          |      walmgr      |                         |      walmgr      |
+          +------------------+                         +------------------+
