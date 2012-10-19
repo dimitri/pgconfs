@@ -452,6 +452,88 @@
 \end{columns}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{\texttt{PL/Proxy}}
+  
+  \center{Installing \texttt{plproxy}}
+
+\begin{columns}[c]
+\column{.6\textwidth} 
+
+  \begin{example}[install.sql]
+\begin{verbatim}
+=# create extension plproxy;
+=# create extension hashlib;
+\end{verbatim}
+  \end{example}
+
+\column{.4\textwidth}
+\includegraphics[height=9em]{distribution.jpg}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{PL/Proxy}}
+
+  \textit{pl/proxy} is the integrated sharding layer. Now you have to write
+  all your SQL in server side functions.
+
+  \begin{example}[admin/change\_group\_status.sql]
+\begin{verbatim}
+create or replace function admin.change_group_status
+(
+    user_name text, status integer
+)
+returns void as $BODY$
+    CLUSTER 'fl_cluster';
+    RUN ON hash_string(user_name, 'lookup3le');
+$BODY$;
+\end{verbatim}
+  \end{example}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Distributed Sequences 1/2}
+
+  Same schema on every node, best to avoid overlapping sequences.
+
+\begin{columns}[c]
+\column{.6\textwidth} 
+
+  \begin{example}[distributing sequence]
+\begin{verbatim}
+ALTER SEQUENCE foo_id_seq
+  INCREMENT BY 16;
+\end{verbatim}
+  \end{example}
+
+\column{.4\textwidth}
+\includegraphics[height=9em]{distribution.jpg}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Distributed Sequences 2/2}
+
+  Same schema on every node, best to avoid overlapping sequences.
+
+\begin{columns}[c]
+\column{.6\textwidth} 
+
+  \begin{example}[distributing sequence]
+\begin{verbatim}
+ALTER SEQUENCE foo_id_seq
+      MINVALUE 297000000000000000
+      MAXVALUE 297999999999999999;
+\end{verbatim}
+  \end{example}
+
+\column{.4\textwidth}
+\includegraphics[height=9em]{distribution.jpg}
+\end{columns}
+
+  \onslide<2->{\center{\url{http://www.fotolog.com/<user>/297000000000017139/}}}
+\end{frame}
 
 \frame{
   \frametitle{Scaling Writes}
