@@ -1,0 +1,29 @@
+* fotolog migration
+** What is Fotolog?
+** Some history
+** How was it running
+** Why did we have to change
+** Reasons for PostgreSQL
+** The new architecture
+** The new hosting
+*** all Amazon
+*** EC2 with 4 disks, software RAID-10
+*** EBS on the standby only
+*** S3
+** Migration
+*** Code
+*** Data
+*** Services
+** Getting data out MySQL
+*** MySQL FDW
+*** mysql|psql
+*** mysql2csv
+** Comment blobs, Google Protocol Buffers
+*** PL/Java to the rescue
+*** PL/Python
+** Sharding data with plproxy
+*** stable hash function
+*** pghashlib
+** Backups
+*** WAL-E
+*** Streaming Replication / Hot Standby

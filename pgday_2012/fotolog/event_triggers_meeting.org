@@ -1,0 +1,14 @@
+* Event Triggers Dinner
+** First patch next month
+*** Try skipping any definitional issues
+*** Catalog, pg_dump, syntax
+*** a single event managed: ddl_command_start
+*** hooked in utility.c, no specific code in commands code
+*** not providing any specific trigger paramaters
+*** ok to support global objects
+*** error management (event/command couple not supported)
+*** limited subcommands handling
+*** actively prevent firing CREATE SEQUENCE event for SERIAL
+*** docs with discussion about (sub)commands and event support
+
+** Then implement new events, one at a time
