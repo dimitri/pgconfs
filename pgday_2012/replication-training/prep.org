@@ -1,0 +1,26 @@
+* Préparation Training Prague
+** VM virtualbox, une seule debian squeeze
+** Utilisation de Emacs pgdevenv + M-x shell
+*** Jeu de couleurs différents sur des frames / escreen
+** Extensions Emacs pgdevenv
+*** C-M-h runs the command mark-query
+*** C-M-x envoie la requête courrante à un process
+    choix du process la première fois ou avec C-u
+    completing-read sur les versions de PG configurées
+    affichage side-to-side buffer SQL et psql
+** Monitoring Interactif
+*** Faire une mini appli web CL+JS
+*** Text Area SQL nom/requête
+*** Affichage 1 ligne de donnée par colonnes en timeline
+** 5 démos, 3 "normales", 2 repmgr
+*** Streaming Rep
+*** Monitoring
+*** Sync Rep
+*** Failure Modes & repmgr autofailover
+    Installation de repmgr
+    Setup initial
+    promotion d'un nœud manuelle
+    promotion d'un nœud automatique
+*** Failover & Reattach
+    Avec repmgr toujours
+
