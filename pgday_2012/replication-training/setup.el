@@ -1,0 +1,10 @@
+;; Setup 3 shells
+(let ((default-directory (expand-file-name "~")))
+  (setenv "PAGER" "/bin/cat")
+  (shell)
+  (with-current-buffer (shell "*Primary Shell*")
+    (insert "psql")
+    (comint-send-input nil t))
+  (with-current-buffer (shell "*Standby Shell*")
+    (insert "psql --cluster 9.2/standby")
+    (comint-send-input nil t)))
