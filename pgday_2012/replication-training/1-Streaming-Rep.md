@@ -63,8 +63,8 @@ Don't start the standby now. It would **not** be a standby yet.
 Edit `recovery.conf` so that the standby stay in crash recovery mode and
 connect to the master:
 
-    /sudo::/var/lib/postgresql/9.2/standby2/recovery.conf
-	$ sudo pg_ctlcluster 9.2 standby2 start
+    /sudo::/var/lib/postgresql/9.2/standby/recovery.conf
+	$ sudo pg_ctlcluster 9.2 standby start
 	$ sudo tail /var/log/postgresql/postgresql-9.2-standby.log
 	$ pg_lsclusters
 
@@ -72,7 +72,7 @@ connect to the master:
 
 First test is to be able to actually connect to the standby:
 
-	$ psql --cluster 9.2/standby2 -U postgres
+	$ psql --cluster 9.2/standby -U postgres
 	=# select pg_is_in_recovery();
 	
 Let's create a database and some table in it on the master:
