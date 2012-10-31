@@ -9,6 +9,11 @@ PostgreSQL 9.2 in squeeze, don't forget to install the signing key:
     $ deb http://atalia.postgresql.org/pgapt/pub/repos/apt/ squeeze-pgdg main
     $ sudo apt-get install postgresql-9.2 postgresql-contrib-9.2
 
+    $ echo 'deb http://apt.postgresql.org/pub/repos/apt/ squeeze-pgdg main' \
+	  | sudo tee /etc/apt/sources.list.d/postgresql.org.list
+	$ sudo apt-get update
+	
+
 How to find the configuration files easily when you didn't install the
 system or are not familiar with a particular distribution/OS:
 

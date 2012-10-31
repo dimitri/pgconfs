@@ -1,0 +1,33 @@
+* PostgreSQL pour les développeurs
+  See http://video.sdruby.org/video/120_postgres.m4v
+  PostgreSQL is Just Easier
+** Extensions
+** Data Types
+*** Boolean, numeric, ip4r / cidr, UUID, XML, JSON, Geographic
+*** Custom data types
+** Transaction
+*** MVCC, Isolation
+*** Transactional DDL
+** Functions
+*** Included
+*** Make your own
+*** Stats, Full Text, Window Functions
+** CTE
+** Recursive CTE
+** Range Data Type
+** NoSQL in my SQL
+*** Hstore
+*** Arrays
+** PL stuff
+
+* Enregistrement de métriques
+  Décrire un exemple de cas d'utilisation
+** DDL
+*** Range Types
+*** Contraintes d'exclusions ?
+** Présentation du problème
+** Requêtes simples pour comprendre le jeu de données
+*** Exemples d'implémentation côté code
+*** Ne montrer que les requêtes simples
+** Ajouter de la logique dans le SQL
+** CTE, wCTE
