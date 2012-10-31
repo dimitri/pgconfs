@@ -9,6 +9,8 @@
 
 \documentclass{beamer}
 
+\usepackage{minted}
+%% \usemintedstyle{emacs}
 \usepackage{beamerthemesplit}
 \usepackage[utf8]{inputenc}
 %% \usetheme{AnnArbor}
@@ -129,13 +131,13 @@ Indexes:
 \begin{frame}[fragile]
   \frametitle{Simplifions pour la présentation}
 
-\begin{verbatim}
+\begin{minted}{postgresql}
 create table measures(tick int, nb int);
 
 insert into measures
      values (1, 0), (2, 10), (3, 20), (4, 30), (5, 40),
             (6, 0), (7, 20), (8, 30), (9, 60);
-\end{verbatim}
+\end{minted}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -145,7 +147,7 @@ insert into measures
   \textit{reset} en milieu de cycle. La consommation globale est ici
   \alert{\texttt{40 + 60 = 100}}.
 
-\begin{verbatim}
+\begin{minted}{postgresql}
 select * from measures;
  tick | nb 
 ------+----
@@ -159,19 +161,19 @@ select * from measures;
     8 | 30
     9 | 60
 (9 rows)
-\end{verbatim}
+\end{minted}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{PostgreSQL sait travailler avec des tableaux}
 
-\begin{verbatim}
+\begin{minted}{postgresql}
 select array_agg(nb) from measures;
          array_agg          
 ----------------------------
  {0,10,20,30,40,0,20,30,60}
 (1 row)
-\end{verbatim}
+\end{minted}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -181,7 +183,7 @@ select array_agg(nb) from measures;
 \column{.65\textwidth}
 \center{\textit{Écrire une requête \alert{SQL} ici}}
 \column{.35\textwidth}
-\begin{verbatim}
+\begin{minted}{postgresql}
  tick | nb | max 
 ------+----+-----
     1 |  0 |    
@@ -194,7 +196,7 @@ select array_agg(nb) from measures;
     8 | 30 |    
     9 | 60 |  60
 (9 rows)
-\end{verbatim}
+\end{minted}
 \end{columns}
 \end{frame}
 
@@ -203,15 +205,15 @@ select array_agg(nb) from measures;
 
 \begin{columns}
 \column{.65\textwidth}
-\begin{verbatim}
+\begin{minted}{postgresql}
   select tick,
          nb,
          lead(nb) over (order by tick)
     from measures;
-\end{verbatim}
+\end{minted}
 
 \column{.35\textwidth}
-\begin{verbatim}
+\begin{minted}{postgresql}
  tick | nb | lead 
 ------+----+------
     1 |  0 |   10
@@ -224,7 +226,7 @@ select array_agg(nb) from measures;
     8 | 30 |   60
     9 | 60 |     
 (9 rows)
-\end{verbatim}
+\end{minted}
 \end{columns}
 \end{frame}
 
@@ -233,7 +235,7 @@ select array_agg(nb) from measures;
 
 \begin{columns}
 \column{.65\textwidth}
-\begin{verbatim}
+\begin{minted}{postgresql}
   select tick, nb,
          case when lead(nb) over w < nb
               then nb
@@ -245,9 +247,9 @@ select array_agg(nb) from measures;
           end as max
     from measures
   window w as (order by tick);
-\end{verbatim}
+\end{minted}
 \column{.35\textwidth}
-\begin{verbatim}
+\begin{minted}{postgresql}
  tick | nb | max 
 ------+----+-----
     1 |  0 |    
@@ -260,14 +262,14 @@ select array_agg(nb) from measures;
     8 | 30 |    
     9 | 60 |  60
 (9 rows)
-\end{verbatim}
+\end{minted}
 \end{columns}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Window Functions et clause \texttt{WHERE}}
 
-\begin{verbatim}
+\begin{minted}{postgresql}
 with t(tick, nb, max) as (
   select tick, nb,
          case when lead(nb) over w < nb then nb
@@ -283,13 +285,13 @@ select tick, nb, max from t where max is not null;
     5 | 40 |  40
     9 | 60 |  60
 (2 rows)
-\end{verbatim}
+\end{minted}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Common Table Expressions avec \texttt{WITH}}
 
-\begin{verbatim}
+\begin{minted}{postgresql}
 with t(tops) as (
   select case when lead(nb) over w < nb then nb
               when lead(nb) over w is null then nb
@@ -303,7 +305,7 @@ select sum(tops) from t;
 -----
  100
 (1 row)
-\end{verbatim}
+\end{minted}
 \end{frame}
 
 \frame{
@@ -317,17 +319,17 @@ select sum(tops) from t;
 \begin{frame}[fragile]
   \frametitle{Création de plusieurs cycles}
 
-\begin{verbatim}
+\begin{minted}{postgresql}
 insert into measures
      values (10, 0), (11, 10), (12, 30), (13, 35), (14, 45),
             (15, 25), (16, 50), (17, 100), (18, 110);
-\end{verbatim}
+\end{minted}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Visualisation de plusieurs cycles}
 
-\begin{verbatim}
+\begin{minted}{postgresql}
 with t(tick, nb, max) as (
   select tick, nb,
          case when lead(nb) over w < nb then nb
@@ -345,14 +347,14 @@ select tick, nb, max from t where max is not null;
    14 |  45 |  45
    18 | 110 | 110
 (4 rows)
-\end{verbatim}
+\end{minted}
 \end{frame}
 
 
 \begin{frame}[fragile]
   \frametitle{Consommation globale avec plusieurs cycles}
 
-\begin{verbatim}
+\begin{minted}{postgresql}
 with t(tops) as (
   select case when lead(nb) over w < nb then nb
               when lead(nb) over w is null then nb
@@ -366,7 +368,7 @@ select sum(tops) from t;
 -----
  255
 (1 row)
-\end{verbatim}
+\end{minted}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -382,14 +384,14 @@ select sum(tops) from t;
 
 \begin{columns}
 \column{.65\textwidth}
-\begin{verbatim}
+\begin{minted}{postgresql}
 select tick, nb
   from measures
  where tick >= 4 and tick < 14;
-\end{verbatim}
+\end{minted}
 
 \column{.35\textwidth}
-\begin{verbatim}
+\begin{minted}{postgresql}
  tick | nb 
 ------+----
     4 | 30
@@ -402,7 +404,7 @@ select tick, nb
    11 | 10
    12 | 30
    13 | 35
-\end{verbatim}
+\end{minted}
 \end{columns}
 \end{frame}
 
@@ -411,7 +413,7 @@ select tick, nb
 
 \begin{columns}
 \column{.65\textwidth}
-\begin{verbatim}
+\begin{minted}{postgresql}
   select nb,
      first_value(nb) over w as first,
      case when lead(nb) over w < nb
@@ -425,10 +427,10 @@ select tick, nb
     from measures
    where tick >= 4 and tick < 14
   window w as (order by tick);
-\end{verbatim}
+\end{minted}
 
 \column{.35\textwidth}
-\begin{verbatim}
+\begin{minted}{postgresql}
  nb | first | max 
 ----+-------+-----
  30 |    30 |    
@@ -442,14 +444,14 @@ select tick, nb
  30 |    30 |    
  35 |    30 |  35
 (10 rows)
-\end{verbatim}
+\end{minted}
 \end{columns}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Consommation globale dans une période limitée}
 
-\begin{verbatim}
+\begin{minted}{postgresql}
 with t as (
   select tick,
          first_value(nb) over w as first,
@@ -466,7 +468,7 @@ select sum(max) - min(first) as sum from t;
 -----
  105
 (1 row)
-\end{verbatim}
+\end{minted}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -481,7 +483,7 @@ select sum(max) - min(first) as sum from t;
 \begin{frame}[fragile]
   \frametitle{Partitionnement par \textit{reset}}
 
-\begin{verbatim}
+\begin{minted}{postgresql}
 with tops as (
   select tick, nb,
          case when lead(nb) over w < nb then nb
@@ -498,7 +500,7 @@ with tops as (
         order by t2.tick
            limit 1) as p
     from tops t1;
-\end{verbatim}
+\end{minted}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -506,7 +508,7 @@ with tops as (
 
 \begin{columns}
 \column{.5\textwidth}
-\begin{verbatim}
+\begin{minted}{postgresql}
  tick | nb  | max | p  
 ------+-----+-----+----
     1 |   0 |     |  5
@@ -518,10 +520,10 @@ with tops as (
     7 |  20 |     |  9
     8 |  30 |     |  9
     9 |  60 |  60 |  9
-\end{verbatim}
+\end{minted}
 
 \column{.5\textwidth}
-\begin{verbatim}
+\begin{minted}{postgresql}
  tick | nb  | max | p  
 ------+-----+-----+----
    10 |   0 |     | 14
@@ -533,7 +535,7 @@ with tops as (
    16 |  50 |     | 18
    17 | 100 |     | 18
    18 | 110 | 110 | 18
-\end{verbatim}
+\end{minted}
 \end{columns}
 \end{frame}
 
@@ -542,7 +544,7 @@ with tops as (
 
 \begin{columns}
 \column{.65\textwidth}
-\begin{verbatim}
+\begin{minted}{postgresql}
 with tops as ( <case lead() over()> ),
      parts as ( <self join limit 1> ),
      ranges as (
@@ -556,10 +558,10 @@ with tops as ( <case lead() over()> ),
 )
 select * from ranges
  where max is not null;
-\end{verbatim}
+\end{minted}
 
 \column{.35\textwidth}
-\begin{verbatim}
+\begin{minted}{postgresql}
  start | end | max 
 -------+-----+-----
      1 |   5 |  40
@@ -567,7 +569,7 @@ select * from ranges
     10 |  14 |  45
     15 |  18 | 110
 (4 rows)
-\end{verbatim}
+\end{minted}
 \end{columns}
 \end{frame}
 
@@ -576,7 +578,7 @@ select * from ranges
 
 \begin{columns}
 \column{.65\textwidth}
-\begin{verbatim}
+\begin{minted}{postgresql}
 with tops as ( <case lead() over()> ),
      parts as ( <self join limit 1> ),
      ranges as (
@@ -592,9 +594,9 @@ with tops as ( <case lead() over()> ),
 select range, compteur
   from ranges
  where compteur is not null;
-\end{verbatim}
+\end{minted}
 \column{.35\textwidth}
-\begin{verbatim}
+\begin{minted}{postgresql}
   range  | compteur 
 ---------+----------
  [1,6)   |       40
@@ -602,7 +604,7 @@ select range, compteur
  [10,15) |       45
  [15,19) |      110
 (4 rows)
-\end{verbatim}
+\end{minted}
 \end{columns}
 \end{frame}
 
@@ -611,7 +613,7 @@ select range, compteur
 
 \begin{columns}
 \column{.65\textwidth}
-\begin{verbatim}
+\begin{minted}{postgresql}
 with tops as ( <case lead() over()> ),
      parts as ( <self join limit 1> ),
      ranges as ( <int4range()
@@ -621,15 +623,15 @@ select range, compteur
   from ranges
  where compteur is not null
        and range @> 11;
-\end{verbatim}
+\end{minted}
 
 \column{.35\textwidth}
-\begin{verbatim}
+\begin{minted}{postgresql}
   range  | compteur 
 ---------+----------
  [10,15) |       45
 (1 row)
-\end{verbatim}
+\end{minted}
 \end{columns}
 \end{frame}
 

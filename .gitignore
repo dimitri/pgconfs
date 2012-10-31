@@ -7,6 +7,9 @@
 *.toc
 *.vrb
 *.pdf
+# Pygments output
+*.pyg
+# diagrams
 /pgcon_2010/architecture_a.png
 /pgcon_2010/architecture_c.png
 /pgcon_2010/architecture_e.png
