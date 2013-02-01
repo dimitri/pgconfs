@@ -207,7 +207,7 @@ END;';
 \begin{frame}[fragile]
   \frametitle{SQL \textbf{\texttt{DDL}} primer}
 
-  \center{Data Definition Language}
+  \center{\textit{\textbf{D}ata \textbf{D}efinition \textbf{L}anguage}}
   \vfill
 
 \begin{minted}{postgresql}
@@ -296,9 +296,16 @@ CREATE EVENT TRIGGER abort_ddl ON ddl_command_start
 \begin{frame}[fragile]
   \frametitle{Event Trigger Primer}
 
+  \center{Of course, the usual \texttt{ALTER} and \texttt{DROP} commands}
+  \vfill
+
 \begin{minted}{postgresql}
 ALTER EVENT TRIGGER abort_ddl DISABLE;
-DROP EVENT TRIGGER abort_ddl DISABLE;
+ALTER EVENT TRIGGER abort_ddl ENABLE replica|always;
+ALTER EVENT TRIGGER abort_ddl OWNER TO bob;
+ALTER EVENT TRIGGER abort_ddl RENAME TO assimilated;
+
+DROP EVENT TRIGGER abort_ddl;
 \end{minted}
 \end{frame}
 
@@ -315,18 +322,271 @@ DROP EVENT TRIGGER abort_ddl DISABLE;
   \end{itemize}
 }
 
-\frame{
-  \frametitle{Information}
+\section{Event Trigger Tags}
 
-  \center{}
+\begin{frame}[fragile]
+  \frametitle{Tags \texttt{1/3}}
+
+\begin{minted}{postgresql}
+~# create table bar(a int, b int);
+CREATE TABLE
+
+~# create function add1(int) returns int
+   language sql as 'select \$1+1';
+CREATE FUNCTION
+
+~# drop function add1(int);
+DROP FUNCTION
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Tags \texttt{2/3}}
+
+\begin{minted}{postgresql}
+create function test_event_trigger()
+        returns event_trigger as '
+BEGIN
+    RAISE NOTICE ''test_event_trigger: % %'', tg_event, tg_tag;
+END
+' language plpgsql;
+
+create function test_event_trigger_drop_function()
+        returns event_trigger as '
+BEGIN
+    drop function test_event_trigger() cascade;
+END
+' language plpgsql;
+
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Tags \texttt{3/3}}
+
+  \center{And now let's have some fun}
+  \vfill
+
+\begin{minted}{postgresql}
+create event trigger drop_test_b on "ddl_command_start"
+   execute procedure test_event_trigger();
+
+create event trigger drop_test_a on "ddl_command_start"
+    when tag in ('create table')
+   execute procedure test_event_trigger_drop_function();
+
+create table event_trigger_fire1 (a int);
+\end{minted}
+\end{frame}
+
+
+\section{Event Trigger Information}
+
+\frame{
+  \frametitle{Event Triggers Information}
+
+  \center{Currently given as magic variables available in \texttt{PLpgSQL}}
+  \vfill
+
+\begin{columns}[c]
+\column{.5\textwidth} 
+  \center{We have}
+
+  \begin{itemize}
+    \item \texttt{TG\_EVENT}
+    \item \texttt{TG\_TAG}
+      \newline
+      \newline
+      \newline
+      \newline
+  \end{itemize}
+
+\column{.5\textwidth}
+  \center{We want to add}
+
+  \begin{itemize}
+    \item \texttt{TG\_OPERATION}
+    \item \texttt{TG\_OBTYPENAME}
+    \item \texttt{TG\_OBJECTID}
+    \item \texttt{TG\_OBJECTNAME}
+    \item \texttt{TG\_SCHEMANAME}
+  \end{itemize}
+\end{columns}
+}
+
+\begin{frame}[fragile]
+  \frametitle{What about \textit{generated} commands?}
+
+  \center{Current proposal is \texttt{TG\_CONTEXT}. See the worked out
+    tracking examples at
+    \url{http://www.postgresql.org/message-id/m2han7xyzp.fsf@2ndQuadrant.fr}
+  }
+  \vfill
+
+\begin{minted}{postgresql}
+create event trigger track_table on ddl_command_trace
+    when tag in ('create table', 'alter table', 'drop table')
+ and context in ('toplevel', 'generated', 'subcommand')
+execute procedure public.track_table_activity();
+\end{minted}
+\end{frame}
+
+\section{Command String Normalisation}
+
+\begin{frame}[fragile]
+  \frametitle{Command String Normalisation \texttt{1/4}}
+
+  \center{And still some more}
+  \vfill
+
+\begin{minted}{postgresql}
+create schema baz
+  authorization dim
+
+  create table distributors
+    (
+     did  serial primary key,
+     name varchar(40),
+     f2   text check (upper(f2) = f2),
+
+     unique(name) with (fillfactor=70)
+    )
+    with (fillfactor=70);
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Command String Normalisation \texttt{2/4}}
+
+\begin{minted}{postgresql}
+NOTICE:  snitch event: ddl_command_end, context: GENERATED,
+         tag: CREATE SEQUENCE, operation: CREATE,
+        type: SEQUENCE
+NOTICE:  oid: 41633, schema: baz, name: distributors_did_seq
+NOTICE: command: CREATE SEQUENCE baz.distributors_did_seq;
+
+NOTICE:  snitch event: ddl_command_end, context: SUBCOMMAND,
+         tag: CREATE TABLE, operation: CREATE, type: TABLE
+NOTICE:  oid: 41635, schema: baz, name: distributors
+NOTICE: command: CREATE TABLE baz.distributors
+ (did integer,
+  name pg_catalog.varchar, 
+  f2 text,
+  CHECK ((upper(f2) = f2))) WITH (fillfactor=70);
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Command String Normalisation \texttt{3/4}}
+
+\begin{minted}{postgresql}
+NOTICE:  snitch event: ddl_command_end, context: GENERATED,
+         tag: CREATE INDEX, operation: CREATE, type: INDEX
+NOTICE:  oid: 41643, schema: baz, name: distributors_pkey
+NOTICE: command: CREATE UNIQUE INDEX distributors_pkey
+                 ON baz.distributors USING btree (did);
+
+NOTICE:  snitch event: ddl_command_end, context: GENERATED,
+         tag: CREATE INDEX, operation: CREATE, type: INDEX
+NOTICE:  oid: 41645, schema: baz, name: distributors_name_key
+NOTICE: command: CREATE UNIQUE INDEX distributors_name_key
+                 ON baz.distributors USING btree (name)
+                 WITH (fillfactor=70);
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Command String Normalisation \texttt{4/4}}
+
+\begin{minted}{postgresql}
+NOTICE:  snitch event: ddl_command_end, context: GENERATED,
+         tag: ALTER SEQUENCE, operation: ALTER, type: SEQUENCE
+NOTICE:  oid: 41633, schema: baz, name: distributors_did_seq
+NOTICE: command: ALTER SEQUENCE baz.distributors_did_seq
+                 OWNED BY baz.distributors.did;
+
+NOTICE:  snitch event: ddl_command_end, context: TOPLEVEL,
+         tag: CREATE SCHEMA, operation: CREATE, type: SCHEMA
+NOTICE:  oid: 41632, schema: <NULL>, name: baz
+NOTICE: command: CREATE SCHEMA baz AUTHORIZATION dim;
+
+CREATE SCHEMA
+\end{minted}
+\end{frame}
+
+\frame{
+  \frametitle{\texttt{TG\_CONTEXT}}
+
+  \center{How to get at \textit{generated} commands?}
+  \newline
+
+\begin{columns}[c]
+\column{.5\textwidth} 
+  \center{\alert{PRO}}
+  \vfill
+  \begin{itemize}
+    \item consider them \texttt{DDL}s
+    \item ProcessUtility()
+    \item \texttt{ProcessUtilityContext}
+  \end{itemize}
+
+\column{.5\textwidth}
+  \center{\alert{CONS}}
+  \vfill
+  \begin{itemize}
+    \item the user didn't type a command
+    \item clean up the code
+    \item it's another kind of event
+  \end{itemize}
+\end{columns}
+}
+
+\section{future}
+
+\frame{
+  \frametitle{Next features}
+
+  \center{Some features are still on the \textit{todo} list}
   \vfill
 
   \begin{itemize}
-    \item
-    \item
-    \item
+  \item<1-> \texttt{INSTEAD OF}
+  \item<2-> \textit{table rewrite}
+  \item<3-> \textit{create table on insert}
+  \item<4-> \textit{add column on update}
   \end{itemize}
 }
+
+\section{Instead Of Event Triggers}
+
+\begin{frame}[fragile]
+  \frametitle{Instead Of Event Triggers \texttt{1/2}}
+
+\begin{minted}{postgresql}
+create event trigger my_create_extension
+          instead of 'create extension'
+   execute procedure my_create_extension();
+
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Instead Of Event Triggers \texttt{2/2}}
+
+\begin{minted}{postgresql}
+create function my_create_extension()
+        returns event_trigger
+       language plpgsql
+as '
+begin
+   alter event trigger my_create_extension disable;
+   -- do some stuff here
+   create extension tg_objectid;
+   -- do some more stuff here, presumably
+end;
+';
+\end{minted}
+\end{frame}
 
 \section{Conclusion}
 
