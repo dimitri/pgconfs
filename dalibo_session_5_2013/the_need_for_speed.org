@@ -1,0 +1,47 @@
+* The Need For Speed
+  Who Why What When How 
+** Présentation du conférencier
+*** PostgreSQL Major Contributor
+*** Quelques expériences de perfs
+    Migration Oracle, 1h30 → 5 mins
+    pgloader, réécriture en cours en CL
+    optimisations facteur 400 sur une requête : extract('month' from date)
+** Pourquoi ?
+*** Performance Club
+    http://fetter.org/optimization.html
+*** Diminishing returns
+*** Qualité de service
+*** Amazon 2ms 20% CA
+** Mais au fait c'est quoi la performance ?
+*** Mesures
+*** Loi d'Amdhal
+*** EXPLAIN (ANALYZE, VERBOSE, BUFFERS) vs \timing
+*** Round-trip
+*** Bande passante
+** Quand faut-il s'y intéresser ?
+*** Jamais trop tôt
+*** Avant qu'il ne soit trop tard
+*** Préparation d'une phase de croissance
+*** Réduction des dépenses énergétique
+*** Réduction de la facture d'hébergement
+*** Meilleur service aux utilisateurs
+** Comment améliorer les performances
+*** Approche globale
+**** Ne pas exécuter la requête
+**** Batch
+**** Faire la requête hors-ligne (PGQ, LISTEN/NOTIFY)
+**** 
+*** Outils d'analyze de requête
+**** EXPLAIN, EXPLAIN (ANALYZE, VERBOSE, BUFFERS)
+**** attention au nested loop
+**** explain.depesz.org
+**** Y compris les INSERT, UPDATE, DELETE (triggers)
+**** ROLLBACK
+**** pg_locks
+**** pg_activity
+*** Outils de réécriture de requête
+**** 80% du boulot est dans le schéma
+**** Tableaux
+**** WITH
+**** Window Function
+**** 
