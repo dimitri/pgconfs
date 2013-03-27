@@ -24,6 +24,26 @@
 \date{28 Mars 2013}
 \logo{\includegraphics[height=0.4cm]{2ndQuadrant-cross.png}}
 
+%% http://www.latex-community.org/forum/viewtopic.php?f=44&t=7211
+\newcommand{\lsidequotesize}{40}
+\newcommand{\lsidequotecoeff}{0.325}
+\definecolor{quotemarkcolor}{rgb}{0.5,0.5,0.5}
+
+\newenvironment{lsidequote}{%
+  \begin{quotation}%
+    \setbox0=\hbox{\fontsize{\lsidequotesize}{0}\selectfont{\color{quotemarkcolor}``}}%
+    \setlength{\dimen0}{\ht0 - \heightof{A}}%
+    \noindent\llap{\smash{\lower\dimen0\box0}}%
+}{%
+  {%
+    \newlength{\lastquoteheight}%
+    \setbox0=\hbox{\fontsize{\lsidequotesize}{0}\selectfont{\color{quotemarkcolor}''}\setlength{\dimen0}{\heightof{''}}\global\lastquoteheight=\dimen0}%
+    \setlength{\dimen0}{\ht0 - \lsidequotecoeff\lastquoteheight}%
+    \unskip\hfill\llap{\smash{\lower\dimen0\box0\hskip\linewidth}}%
+  }%
+  \end{quotation}
+}
+
 \begin{document}
 
 \frame{\titlepage}
@@ -44,11 +64,11 @@
 \column{.75\textwidth} 
 
   \begin{itemize}
-   \item<1-> \texttt{pgloader}, \texttt{prefix}, \texttt{skytools}, \texttt{debian}, …
-   \item<1-> \texttt{\textbf{CREATE EXTENSION}}
-   \item<2-> \texttt{\textbf{CREATE EVENT TRIGGER}}
-   \item<3-> \textit{Bi-Directional Réplication}
-   \item<4-> \textit{Partitionnement}
+   \item \texttt{pgloader}, \texttt{prefix}, \texttt{skytools}, \texttt{debian}, …
+   \item \texttt{\textbf{CREATE EXTENSION}}
+   \item \texttt{\textbf{CREATE EVENT TRIGGER}}
+   \item \textit{Bi-Directional Réplication}
+   \item \textit{Partitionnement}
   \end{itemize}  
 
 \column{.25\textwidth}
@@ -57,6 +77,25 @@
 \end{center}
 \end{columns}
 \end{frame}
+
+\begin{frame}[fragile]
+
+  \center{\Huge{Performances}}
+
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{center}
+  \includegraphics[height=16em]{fast-truck.jpg}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{center}
+  \includegraphics[height=22em]{loaded-truck.jpg}
+\end{center}
+\end{frame}
+
 
 \begin{frame}[fragile]
   \frametitle{Optimisation SQL}
@@ -90,9 +129,24 @@
 
 \begin{minted}{postgresql}
 select f1, f2, f3, d
-  from table t
+  from t
  where   extract('month' from t.d)
-       = extract('month' from now());
+       = extract('month' from now())
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Extract Month From date, THE HORROR}
+
+  \center{Ah, tiens, un index !}
+  \vfill
+
+\begin{minted}{postgresql}
+select f1, f2, f3, d
+  from t
+ where     t.d >= date_trunc('month', now())
+       and t.d  <   date_trunc('month', now())
+                  + interval '1 month'
 \end{minted}
 \end{frame}
 
@@ -113,13 +167,12 @@ select f1, f2, f3, d
     Optimization.
   \item<2-> If your app is running faster than the underlying transport
     protocol, the optimization is over.
-  \item<2-> One factor at a time.
+  \item<2-> \textbf{One factor at a time}.
   \item<2-> No marketroids, no marketroid schedules.
-  \item<3-> Testing will go on as long as it has to.
-  \item<4-> If this is your first night at Optimization Club, you have to
+  \item<2-> Testing will go on as long as it has to.
+  \item<2-> If this is your first night at Optimization Club, you have to
     write a test case.
   \end{enumerate}
-
 
 \column{.25\textwidth}
 \begin{center}
@@ -152,20 +205,23 @@ select f1, f2, f3, d
 \end{frame}
 
 \begin{frame}
-  \frametitle{Qualité de service}
+  \frametitle{La performance dans quel but}
 
-  \center{La performance de cette requête SQL a-t'elle un impact clair sur
-    la qualité de service offerte à vos clients ?}
+  \center{\url{http://www.copyblogger.com/website-speed-matters/}}
+  \vfill
 
 \begin{columns}[c]
 \column{.6\textwidth} 
 
-  \begin{itemize}
-    \item \textit{A one second delay in page-load can cause 7\% loss in customer conversions}
-    \item \url{http://econsultancy.com/fr/blog/10936-site-speed-case-studies-tips-and-tools-for-improving-your-conversion-rate}
-    \item \textit{If you make \$1,000 a month from your site — that’s seventy bucks a month you are losing — and \$840 a year. Can you afford to just throw away \$70 a month? \$840 a year?}
-    \item \url{http://www.copyblogger.com/website-speed-matters/}
-  \end{itemize}
+\begin{quote}
+A one second delay in page-load can cause 7\% loss in customer conversions.
+\end{quote}
+
+\begin{quotation}
+If you make \$1,000 a month from your site — that’s seventy bucks a month
+you are losing — and \$840 a year. Can you afford to just throw away \$70 a
+month? \$840 a year?
+\end{quotation}
 
 \column{.4\textwidth}
 \begin{center}
@@ -211,7 +267,7 @@ select f1, f2, f3, d
   \begin{itemize}
   \item \texttt{EXPLAIN}
   \item \texttt{EXPLAIN (VERBOSE, BUFFERS, ANALYZE)}
-  \item \texttt{psql \\timing}
+  \item \texttt{{\textbackslash}timing}
   \end{itemize}
 
 \column{.3\textwidth}
@@ -245,25 +301,24 @@ select f1, f2, f3, d
 \section{When}
 
 \begin{frame}
-  \frametitle{La performance : quand s'y intéresser ?}
+  \frametitle{Premature optimization is the root of all evil}
 
-  \center{Premature optimization is the root of all evil}
+  \center{\textbf{Donald Knuth},
+    \href{http://pplab.snu.ac.kr/courses/adv_pl05/papers/p261-knuth.pdf}{Structured
+      Programming with go to Statements}}
   \vfill
 
 \begin{columns}[c]
 \column{.75\textwidth} 
 
-In \textbf{Donald Knuth}'s paper \textit{Structured Programming with go to
-  Statements} at
-\url{http://pplab.snu.ac.kr/courses/adv_pl05/papers/p261-knuth.pdf}
-\linebreak \vfill
-
+\begin{lsidequote}
 Programmers waste enormous amounts of time thinking about, or worrying
 about, the speed of noncritical parts of their programs, and these attempts
 at efficiency actually have a strong negative impact when debugging and
 maintenance are considered. We should forget about small efficiencies, say
 about 97\% of the time: premature optimization is the root of all evil. Yet
 we should not pass up our opportunities in that critical 3\%.
+\end{lsidequote}
 
 \column{.25\textwidth}
 \begin{center}
@@ -302,14 +357,13 @@ we should not pass up our opportunities in that critical 3\%.
 \begin{frame}
   \frametitle{Comment améliorer les performances}
 
-  \center{Approche globale pour améliorer les performances}
+  \center{Premier réflexe : \textbf{ne pas} exécuter la requête !}
   \vfill
 
 \begin{columns}[c]
 \column{.6\textwidth} 
 
 \begin{itemize}
-  \item Optimisation optimale : \textbf{ne pas} exécuter la requête !
   \item Traitements par lots (\textit{batch})
   \item Traitements hors lignes (\textit{asynchrone})
   \item \texttt{PGQ}
@@ -355,7 +409,7 @@ we should not pass up our opportunities in that critical 3\%.
 \begin{columns}[c]
 \column{.6\textwidth} 
 \begin{itemize}
-  \item \texttt{Nested Loops}
+  \item Un mot sur les \texttt{Nested Loops}
   \item \url{http://explain.depesz.com/}
   \item \texttt{SELECT * FROM pg\_locks;}
   \item \texttt{pg\_activity}
@@ -368,18 +422,47 @@ we should not pass up our opportunities in that critical 3\%.
 \end{columns}
 \end{frame}
 
+\begin{frame}
+  \includegraphics[height=23em]{declarative.png}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Optimisation}
+
+  \center{Les approches essentielles}
+  \vfill
+
+\begin{columns}[c]
+\column{.5\textwidth} 
+\begin{itemize}
+  \item<1-> Identifier les requêtes
+  \item<1-> Réécrire les requêtes
+  \item<2-> \textit{Traiter moins de données}
+  \item<2-> Revoir les \textbf{Types de données}
+  \item<2-> Revoir l'utilisation des indexes
+  \item<2-> Utiliser des tableaux
+  \item<3-> \texttt{WITH} et \texttt{OFFSET}
+\end{itemize}
+
+\column{.5\textwidth}
+\begin{center}
+  \includegraphics[height=11em]{declarative.png}
+\end{center}
+\end{columns}
+\end{frame}
+
 \section{Conclusion}
 
 \frame{
   \frametitle{Conclusion}
 
 \begin{center}
-  SQL fait partie de vos outils de développeur, tirez-en le meilleur!
+  The \textbf{\textit{Need}} For \textit{Speed}.
   \linebreak
   \linebreak
 
   \begin{center}
-    \includegraphics[height=2.1in]{skill-set.jpg}
+    \includegraphics[height=2.1in]{Premier-bilan.jpg}
   \end{center}
 \end{center}
 }
