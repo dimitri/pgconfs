@@ -1,0 +1,11 @@
+
+* El-Get
+** Why should I care?
+** What's in it?
+*** Social Packaging, recipe sharing
+*** Active community
+*** Bleeding edge?
+*** 
+** How to use it
+** How to contribute recipes
+** Next wanted features

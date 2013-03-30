@@ -1,0 +1,418 @@
+\documentclass{beamer}
+
+\usepackage{minted}
+\usemintedstyle{emacs}
+\usepackage{beamerthemesplit}
+\usepackage[utf8]{inputenc}
+%% \usetheme{AnnArbor}
+\usetheme{Boadilla}
+%% \usetheme{Pittsburgh}
+%% \usecolortheme{beaver}
+\beamertemplatetransparentcovered
+
+\title{El-Get}
+\subtitle{\texttt{M-x apt-get}}
+\author{Dimitri Fontaine \url{dim@tapoueh.org}}
+\date{March, 30 2013}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section{Introduction}
+
+\begin{frame}[fragile]
+  \frametitle{Dimitri Fontaine}
+
+  \begin{center}
+    \textbf{2ndQuadrant France}
+    \linebreak
+    PostgreSQL Major Contributor
+    \linebreak
+    Emacs Lisp Hacker
+  \end{center}
+  \vfill
+
+\begin{columns}[c]
+\column{.75\textwidth} 
+
+  \begin{itemize}
+   \item \texttt{pgloader}, \texttt{prefix}, \texttt{skytools}, \texttt{debian}, …
+   \item \texttt{\textbf{CREATE EXTENSION}}
+   \item \texttt{\textbf{CREATE EVENT TRIGGER}}
+   \item \textit{El-Get}
+   \item \textit{Emacs Lisp, Common Lisp}
+  \end{itemize}  
+
+\column{.25\textwidth}
+\begin{center}
+  \includegraphics[height=5em]{bulle-blue-icon.png}
+\end{center}
+\end{columns}
+\end{frame}
+
+\section{before el-get}
+
+\begin{frame}[fragile]
+
+  \center{\Huge{Emacs: Emacs Lisp}}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{How I used to do things}
+  
+  \center{\texttt{C-x C-/ runs the command goto-last-change}}
+  \vfill
+
+  \begin{itemize}
+  \item Talk about it on IRC
+  \item Search for it in \url{http://emacswiki.org}
+  \item \texttt{wget} the file
+  \item Somewhere in your \texttt{load-path}
+  \item Beware of whole directories vs single file
+  \item Read installation notes, edit your setup to \texttt{require} it
+  \item Look for docs (\texttt{.info}) and install those yourself
+  \end{itemize}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{How I used to do things}
+  
+  \center{\texttt{C-x C-/ runs the command goto-last-change}}
+  \vfill
+
+  \begin{itemize}
+  \item Now try it!
+  \item If you like it, you're about done (\textit{customizing})
+  \item Just think about upgrading to a newer version, if needed
+  \item (e.g. to support a newer Emacs)
+  \item If you don't like it, undo all the previous bits
+  \end{itemize}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Managing Emacs Extensions}
+  
+  \center{Installing is but the first step}
+  \vfill
+
+  \begin{itemize}
+  \item Version Control as if it were yours
+  \item Sharing to other machines
+  \end{itemize}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{How much can you install and manage this way?}
+  
+  \center{You tend to only install \textit{trusted} extensions}
+
+\end{frame}
+
+\section{el-get}
+
+\begin{frame}[fragile] 
+  \begin{center}
+    \Huge{El-Get}
+    \vfill
+
+    \includegraphics[height=7em]{el-get-logo.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Think \texttt{apt-get} for Emacs}
+
+  \center{Social Package Management System}
+  \vfill
+
+\begin{columns}
+\column{.75\textwidth} 
+
+  \begin{itemize}
+   \item \texttt{M-x el-get-list-packages}
+   \item \texttt{M-x el-get-describe}
+   \item \texttt{M-x el-get-install}
+   \item \texttt{M-x el-get-update}, \texttt{M-x el-get-reload}
+   \item \texttt{M-x el-get-remove}
+   \item \texttt{M-x el-get-self-update}
+  \end{itemize}
+
+\column{.25\textwidth}
+  \begin{center}
+    \includegraphics[height=7em]{el-get-logo.png}
+  \end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Features}
+
+  \center{\textit{moar} please}
+  \vfill
+
+  \begin{itemize}
+   \item Package dependencies
+   \item Cleanup command (\textit{autoremove})
+   \item Extensive Info Documentation, with a Glossary!
+   \item Stable branch is very stable...
+   \item Easy install
+   \item Good default setup, more complex setup supported
+   \item Easy per-package setup (\texttt{el-get-user-package-directory})
+   \item Autoloads
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Features}
+
+  \center{\textit{moar} please}
+  \vfill
+
+  \begin{itemize}
+   \item Checksum support
+   \item git: Shallow clones
+   \item git: Submodules
+   \item Per \texttt{system-type} build commands
+   \item Windows support (users called) (yes they still exist)
+   \item Build commands, \texttt{byte-compile}
+   \item Recipe Checker
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Benefits}
+
+  \center{What happens at \texttt{el-get-install} time?}
+  \vfill
+
+  \begin{itemize}
+   \item El-Get knows how to fetch the extension
+   \item Even if it's more than a single file
+   \item The \textit{recipe} contains the necessary installation bits
+   \item Docs get installed and integrated into your \texttt{C-h i}
+   \item The package is \textit{byte-compiled}
+   \item Then \texttt{autoload}ed
+   \item If the \textit{recipe} says so, features are \texttt{require}d
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Setup}
+
+  \center{Hey it's Emacs, I want to do it my own way!}
+  \vfill
+
+  \begin{itemize}
+   \item Initializing a package involves custom actions
+   \item \texttt{el-get-sources}
+   \item \texttt{:before}, \texttt{:after}, \texttt{:features}
+   \item \texttt{el-get-user-package-directory}, \texttt{init-pkgname.el}
+   \item \texttt{M-x el-get-init}
+  \end{itemize}
+\end{frame}
+
+\section{recipes}
+
+\begin{frame}[fragile]
+  \begin{center}
+    \Huge{Recipes}
+    %% \includegraphics[height=18em]{el-get.big.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Gimme your recipes}
+
+  \center{All your recipes are belong to us!}
+  \vfill
+
+  \begin{itemize}
+   \item recipes are packaging script
+   \item can be pretty simple
+   \item can be pretty involved
+   \item easy enough to make your own locally
+   \item \texttt{el-get-sources} or in a local file
+   \item require no edits of upstream sources
+   \item find a recipe with \texttt{M-x el-get-find-recipe-file}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Recipe Example 1, el-get}
+
+  \center{\texttt{el-get} is self-hosted and has a \texttt{*scratch*}
+    installer} \vfill
+
+  \begin{minted}{cl}
+(:name el-get
+ :website "https://github.com/dimitri/el-get#readme"
+ :description "Manage the external elisp bits and pieces you depend upon."
+ :type github
+ :branch "4.stable"
+ :pkgname "dimitri/el-get"
+ :info    "."
+ :load    "el-get.el")
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Recipe Example 2, escreen}
+
+  Escreen is available on some website, not ELPA ready, Copyright 1992, 94,
+  95, 97, 2001, 2005 Noah S. Friedman \vfill
+
+  \begin{minted}{cl}
+(:name escreen
+ :description "Emacs window session manager"
+ :type http
+ :url "http://www.splode.com/~friedman/software/emacs-lisp/src/escreen.el"
+ :post-init (lambda ()
+              (autoload 'escreen-install "escreen" nil t)))
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Recipe Example 3}
+
+  Solarized is a recent color-theme, and has been a fast moving target,
+  hosted at github, not available as an ELPA package. \vfill
+
+  \begin{minted}{cl}
+(:name color-theme-solarized
+ :description "Emacs highlighting using Ethan Schoonover's Solarized color scheme"
+ :type github
+ :pkgname "sellout/emacs-color-theme-solarized"
+ :depends color-theme
+ :prepare (progn
+            (add-to-list 'custom-theme-load-path default-directory)
+            (autoload 'color-theme-solarized-light "color-theme-solarized"
+              "color-theme: solarized-light" t)
+            (autoload 'color-theme-solarized-dark "color-theme-solarized"
+              "color-theme: solarized-dark" t)))
+  \end{minted}
+\end{frame}
+
+\frame{
+  \frametitle{Sharing Recipes}
+
+  \center{Distributed packaging: the Emacs Packages Social Network}
+  \vfill
+
+  \begin{center}
+    Just email your recipe to your friend
+  \end{center}
+}
+
+\frame{
+  \frametitle{Sharing Recipes}
+
+  \center{Distributed packaging: the Emacs Packages Social Network}
+  \vfill
+
+  \begin{itemize}
+   \item Once tested, send them to me (github, mail)
+   \item Once pushed, \texttt{el-get-self-update}
+   \item Available in \texttt{M-x el-get-install}
+   \item and in \texttt{M-x el-get-describe}
+   \item and in \texttt{M-x el-get-list-packages}
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Where to get the packages from?}
+
+  \center{El-Get has more than one \textit{method} to fetch your package}
+  \vfill
+
+  \begin{itemize}
+   \item git (with branch support), git-svn
+   \item github, github-tar, github-zip
+   \item http, http-tar, http-zip, ftp
+   \item emacswiki, \texttt{M-x el-get-emacswiki-refresh}
+   \item emacsmirror
+   \item svn, bzr, darcs, cvs, hg, fossil
+   \item apt-get, pacman, fink, brew
+   \item elpa (multi repositories, \texttt{:repo})
+  \end{itemize}
+}
+
+\section{usage}
+
+\begin{frame}[fragile]
+  \begin{center}
+    \Huge{Installing and Using El-Get}
+    %% \includegraphics[height=18em]{el-get.big.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The \texttt{*scratch*} installer}
+
+  \begin{minted}{cl}
+;; So the idea is that you copy/paste this code into your *scratch* buffer,
+;; hit C-j, and you have a working el-get.
+(url-retrieve
+ "https://github.com/dimitri/el-get/raw/master/el-get-install.el"
+ (lambda (s)
+   (end-of-buffer)
+   (eval-print-last-sexp)))
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The initial setup in \texttt{.emacs}}
+
+  \begin{minted}{cl}
+(add-to-list 'load-path "~/.emacs.d/el-get/el-get")
+
+(unless (require 'el-get nil 'noerror)
+  (with-current-buffer
+      (url-retrieve-synchronously
+       "https://raw.github.com/dimitri/el-get/master/el-get-install.el")
+    (goto-char (point-max))
+    (eval-print-last-sexp)))
+
+(el-get 'sync)
+  \end{minted}
+\end{frame}
+
+\section{Community}
+
+\begin{frame}[fragile]
+  \begin{center}
+    \Huge{Active Community}
+    %% \includegraphics[height=18em]{el-get.big.png}
+  \end{center}
+\end{frame}
+
+\frame{
+  \frametitle{Some numbers, because we know you like them}
+
+  \begin{itemize}
+   \item 181 contributors
+   \item 748 recipes included
+   \item 1795 emacswiki files supported
+   \item 3054+ emacsmirror repositories
+   \item 7200+ lines of emacs-lisp fun (including 20\% of comments)
+   \item 2+ years old, long time stable, production ready
+  \end{itemize}
+}
+
+\section{Conclusion}
+
+\frame{
+
+\begin{center}
+  \textbf{El-Get}. Any question?
+  \linebreak
+  \linebreak
+
+  \begin{center}
+    \includegraphics[height=2.1in]{el-get-logo.png}
+  \end{center}
+\end{center}
+}
+
+\end{document}
