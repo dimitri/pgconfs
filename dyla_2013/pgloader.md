@@ -99,6 +99,13 @@ FROM 'cluttered/cluttered.data'
 WITH field_sep = ^, field_count = 3;
 ~~~
 
+This command would read as: please *copy* data from the
+`cluttered/cluttered.data` file which has *3 fields* separated by the `^`
+character, and which is not respecting the *CSV* format as the second column
+contains *newline* characters escaped with a *backslash*, unquoted. Also,
+the fields int the file are in order `(a, c, b)` when matching them with the
+names of the columns in the database table.
+
 And also a `LOAD` variant:
 
 ~~~ {.numberLines}
@@ -118,6 +125,19 @@ CASE WHEN 1:2 = "43"
  END
  SET maintenance_work_mem TO '128 MB';
 ~~~
+
+That `LOAD` command would load data from `path/to/file` into the table named
+`table`, into its columns `a` and `c`. It would deal with a very strange
+file format indeed, such as when the line begins with `"43"` then the file
+has a column followed by the `;` separator, then another column followed by
+the `=` separator, then a third column followed by a `;`. When the line
+begins with `"HDR"` then there's only one field separator and this times
+it's a comma (`,`).
+
+It's possible to find such file formats for real, generally it's easier to
+fix the exporting process though. Still, it's a feature set that's been
+asked by `pgloader` users used to other tools able to cope with such
+oddities.
 
 The main advantage of the `LOAD` variant is to stay away from PostgreSQL's
 own `COPY` command and syntax, as PostgreSQL already ships with both a
@@ -154,12 +174,20 @@ project.
 
 The first version of that code then was simple enough:
 
-  - the main entry function is responsible for fetching the current setup
+  - fetch the current setup to drive the run,
+  - init a loader object per command
+  - parse the file into *rows*,
+  - load the *rows* into PostgreSQL with a database object.
   
-  - then a loader object is given that setup and parses the file, handing
-    over the *rows* to
-    
-  - a database object implementing the actual loading of the data.
+This design is quite classic and *Object Oriented*: the work to be done has
+been organized into sub-parts, each of them being handled by a specific
+object that knows nothing about the rest of the system.
+
+While this design is good for code *modularity*, it's not good at all for
+*flexibility* and growing features into the code base, or even for design
+refactoring. Typically, adding *template* sections in the configuration file
+format and later *parallelism* to load the file both have included really
+disruptive changes in the code base.
 
 ## Handling errors in data
 
