@@ -53,11 +53,11 @@
 \column{.75\textwidth} 
 
   \begin{itemize}
-   \item<1-> \texttt{pgloader}, \texttt{prefix}, \texttt{skytools}, \texttt{debian}, …
-   \item<1-> \texttt{\textbf{CREATE EXTENSION}}
-   \item<2-> \texttt{\textbf{CREATE EVENT TRIGGER}}
-   \item<2-> \textit{Bi-Directional Replication}
-   \item<3-> \textit{Partitioning}
+   \item \texttt{pgloader}, \texttt{prefix}, \texttt{skytools}, \texttt{debian}, …
+   \item \texttt{\textbf{CREATE EXTENSION}}
+   \item \texttt{\textbf{CREATE EVENT TRIGGER}}
+   \item \textit{Bi-Directional Replication}
+   \item \textit{Partitioning}
   \end{itemize}  
 
 \column{.25\textwidth}
@@ -112,11 +112,11 @@
   Usual needs :
 
   \begin{itemize}
-   \item<2-> Reliability
-   \item<2-> Stability
-   \item<2-> Performances
-   \item<3-> Growth capacity (think commercial success)
-   \item<3-> Continuity and Innovation
+   \item Reliability
+   \item Stability
+   \item Performances
+   \item Growth capacity (think commercial success)
+   \item Continuity and Innovation
   \end{itemize}  
 
 \column{.25\textwidth}
@@ -139,10 +139,10 @@
 \column{.75\textwidth} 
 
   \begin{itemize}
-    \item<3,4,6> Availability \only<4->{\textit{of services or of data?}}
-    \item<2,6> Duralibity (ACI\alert{D})
-    \item<5,6> Architectures
-    \item<1,6> Replications
+    \item Availability \only<2->{\textit{of services or of data?}}
+    \item Duralibity (ACI\alert{D})
+    \item Architectures
+    \item Replications
   \end{itemize}  
 
 \column{.25\textwidth}
@@ -162,12 +162,12 @@
 \column{.75\textwidth} 
 
 \begin{itemize}
-  \item<1-> Start simple
-  \item<1-> Some first classic steps
-  \item<2-> High Availability of Data
-  \item<2-> High Availability of Services
-  \item<3-> Read Only Load Balancing
-  \item<3-> Read Write Load Balancing
+  \item Start simple
+  \item Some first classic steps
+  \item High Availability of Data
+  \item High Availability of Services
+  \item Read Only Load Balancing
+  \item Read Write Load Balancing
 \end{itemize}
 
 \column{.25\textwidth}
@@ -209,9 +209,9 @@
 
   \begin{itemize}
    \item<1-> Front servers are \textit{stateless}
-   \item<2-> Watch out for \texttt{max\_connections}
-   \item<2-> Don't you use persistent connections!
-   \item<3-> \texttt{pgbouncer}
+   \item<1-> Watch out for \texttt{max\_connections}
+   \item<1-> Don't you use persistent connections!
+   \item<2-> \texttt{pgbouncer}
   \end{itemize}  
 
 \column{.35\textwidth}
@@ -308,12 +308,12 @@
 \column{.65\textwidth} 
 
   \begin{itemize}
-   \item<1-> \alert{Point In Time Recovery}, 8.1
-   \item<2-> \textit{warm standby}, 8.2
-   \item<3-> Archiving and \textit{crash recovery}
-   \item<3-> \texttt{archive\_command}
-   \item<3-> \texttt{restore\_command}
-   \item<4-> \texttt{walmgr.py}, {\texttt{WAL-E}
+   \item \alert{Point In Time Recovery}, 8.1
+   \item \textit{warm standby}, 8.2
+   \item Archiving and \textit{crash recovery}
+   \item \texttt{archive\_command}
+   \item \texttt{restore\_command}
+   \item \texttt{walmgr.py}, {\texttt{WAL-E}
   \end{itemize}  
 
 \column{.35\textwidth}
@@ -378,14 +378,14 @@
 \column{.6\textwidth} 
 
   \begin{itemize}
-   \item<1-> Mainly written in \texttt{PLpgSQL} (and \texttt{C})
-   \item<1-> Client \textit{API} for \texttt{python}
-   \item<1-> and \texttt{PHP}
-   \item<2-> some work is happening for \texttt{Java}
-   \item<3-> \textbf{Cooperative Worker} (Skytools 3)
+   \item Mainly written in \texttt{PLpgSQL} (and \texttt{C})
+   \item Client \textit{API} for \texttt{python}
+   \item and \texttt{PHP}
+   \item some work is happening for \texttt{Java}
+   \item \textbf{Cooperative Worker} (Skytools 3)
   \end{itemize}  
 
-  \onslide<4->{\center{\texttt{PGQ}: Stable, Reliable, Easy to monitor}}
+  \onslide<2->{\center{\texttt{PGQ}: Stable, Reliable, Easy to monitor}}
 
 \column{.4\textwidth}
 \includegraphics[height=9em]{drop-queue.png}
@@ -403,12 +403,12 @@
 
   \begin{itemize}
    \item<1-> \alert{Hot Standby}
-   \item<2-> \textit{(A)}Synchronous Replication
-   \item<2-> Standby connects with \texttt{libpq}
-   \item<3-> \texttt{recovery.conf}
-   \item<3-> Continue Archiving
-   \item<3-> Switchabe \textbf{per transaction}
-   \item<4-> Good performance level
+   \item<1-> \textit{(A)}Synchronous Replication
+   \item<1-> Standby connects with \texttt{libpq}
+   \item<1-> \texttt{recovery.conf}
+   \item<1-> Continue Archiving
+   \item<2-> Switchabe \textbf{per transaction}
+   \item<3-> Good performance level
   \end{itemize}  
 
 \column{.4\textwidth}
@@ -438,12 +438,12 @@
 \column{.6\textwidth} 
 
   \begin{itemize}
-   \item<1-> \textit{Scale-up} or \textit{Scale-out} ?
-   \item<2-> \textit{Remote Procedure Call}
-   \item<3-> \textit{Sharding}
-   \item<3-> Distributed database
-   \item<4-> Autonomous Transactions
-   \item<5-> \textbf{Stored Procedures}
+   \item \textit{Scale-up} or \textit{Scale-out} ?
+   \item \textit{Remote Procedure Call}
+   \item \textit{Sharding}
+   \item Distributed database
+   \item Autonomous Transactions
+   \item \textbf{Stored Procedures}
   \end{itemize}  
 
 \column{.4\textwidth}
@@ -467,6 +467,20 @@
   }
 }
 
+\subsection{Services and Data Availability}
+\frame{\tableofcontents[currentsubsection]}
+
+\frame{
+  \frametitle{Services and Data Availability}
+
+  \center{You need \textbf{two} standbies}
+  \vfill
+
+  \begin{center}
+    \includegraphics[height=1.9in]{archi_v8.png}
+  \end{center}
+}
+
 \section{Conclusion}
 \subsection{PostgreSQL Replication: Looking back, looking forward}
 \frame{\tableofcontents[currentsubsection]}
@@ -487,7 +501,8 @@
    \item<4-> \textbf{9.0}, Hot Standby
    \item<5-> \textbf{9.1}, Synchronous Replication
    \item<6-> \textbf{9.2}, Cascading Replication
-   \item<7-> \textbf{9.3}, \alert{Bi-Directional Replication}
+   \item<7-> \textbf{9.3}, \texttt{Event Triggers}, \textit{Refactoring}
+   \item<7-> \textbf{9.4}, \alert{Bi-Directional Replication}
   \end{itemize}  
 
 \column{.45\textwidth}

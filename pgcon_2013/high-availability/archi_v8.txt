@@ -1,0 +1,22 @@
++----------------+    +----------------+     +----------------+
+|  Front 1   cPNK|    |  Front 2   cPNK|     |  Front 3  cPNK |
+|   Apache       |    |   Apache       |     |   Apache       |
+| {pgbouncer}    |    | {pgbouncer}    |     | {pgbouncer}    |
++--+-------------+    +----+-----------+     +----+-----------+
+   |                       |                      |
+   |                       v                      |
+   |               +------------------+           |
+   |               |     database     |           |
+   |               |             cGRE |           |
+   +-------------->|     pgbouncer    |<----------+
+                   |     PostgreSQL   |
+                   +--------+---------+
+                            :				
+       	  +-----------------+--------------------+
+          |          Streaming Replication	 |	
+       	  v		    			 v
+    +------------------+              +--------------------+
+    |   Hot Standby    |              |	   Hot Standby 	   |
+    |             cBLU |    	      |		      cBLU |
+    |     PostgreSQL   |    	      |	    PostgreSQL     |
+    +------------------+	      +--------------------+
