@@ -1,0 +1,65 @@
+* Petabyte
+** Abstract
+   Les prochains développements à suivre pour le Big Data sans soucis sous
+   PostgreSQL.
+   
+   PostgreSQL est le système de gestion de bases de données dont la
+   progression est la plus rapide et la mieux soutenue. Il reste beaucoup à
+   apporter au projet afin de permettre d'exploiter sereinement quelques
+   Peta Octets de données. Cette présentation entend faire un tour des
+   projets les plus significatifs dans cette direction, qu'ils soient en
+   cours de conception, de réalisation ou bien encore embryonnaires.
+
+** C'est quoi un petabyte
+
+   Mise en perspective des différents volumes de bases de données
+
+** Big Data ?
+
+   C'est quoi le big data ? c'est vraiment le volume de données ? faut
+   combien en base pour parler de big data ?
+
+** Data → Information → Knowledge
+
+   http://cdn.information-management.com/media/newspics/OCDQ_cake1.jpg
+
+   Voir si Big Data est lié à la problématique d'interprétation des données
+
+** Taille bdd / index / table et volumes disques / RAM
+
+   Historique et perspectives sur les dimentions de bdd
+
+   Slide avec photo de 4TB de RAM dans un serveur
+
+** Maintenance des grosses bases de données
+*** Vacuum, autovacuum
+*** Indexes
+    taille, nombre de niveaux, coûts de parcours
+*** CHECKPOINT
+*** pg_dump
+*** backup physique, archivage
+    exemple Le Bon Coin
+*** PITR
+*** Réplication (mise en place)
+    et bande passante
+    
+** Développements en cours dans PostgreSQL
+
+*** CHECKSUM
+*** CONCURRENTLY
+*** VACUUM
+*** COPY FREEZE
+*** XID EPOCH
+*** Optimisations Mémoire
+    utilisation work_mem, tris
+*** (maintenance_)work_mem > 1 GB ?
+
+** Base distribués
+
+*** Perspective des problèmes
+    reprendre slides Heroku PVH sur évolution des problèmes en fonction des
+    volumes de base de données (Keynote PGCON 2012)
+*** FDW en écriture
+    9.3, awesome, suffisant ?
+*** Bi Directional Replication
+    Nouvelles architectures possibles
