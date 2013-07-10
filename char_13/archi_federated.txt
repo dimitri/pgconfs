@@ -1,0 +1,27 @@
+
+      +--------------+ 	       	      +--------------+ 	       	       	 +--------------+
+      |	   App-1     |                |    App-2     |                   |    App-3     |
+      |		 cPNK|                |          cPNK|                   |          cPNK|
+      |	 PostgreSQL  |	              |  PostgreSQL  |                   |  PostgreSQL  |
+      |	 Application |	              |  Application |                   |  Application |
+      +-----+--------+ 	       	      +-----+--------+                   +-----+--------+
+       	    ^		 	     	    :  	  		    	       :   	 
+      	    :		 	       	    |  	   +---------------------------+   	 
+ 	    |		 	     	    v	   |   	       	       	           	 
+ 	    |	 londiste	     +-------------+---+ 	    	           	 
+       	    +----------------------->+	   Central     |    londiste	 +--------------+
+       	       	      		     | 	       	 cBLU  +<--------------->+    App-N     |
+      +--------------+		     |		       |                 |          cPNK|
+      |    App-4     +<------------->+	  PostgreSQL   |                 |  PostgreSQL  |
+      |          cPNK| 	  +--------->+		       |                 |  Application |
+      |  PostgreSQL  | 	  |	     +---------+-------+                 +-----+--------+
+      |  Application | 	  |		       ^			       		 
+      +-----+--------+ 	  |		       |			       		 
+		       	  |	       	       :			       		 
+		       	  |    	     	       v       	       	       	       		 
+      +--------------+ 	  |    	      +--------+-----+ 	       	       	       	       	 
+      |    App-5     |    |           |    App-6     |			 
+      |          cPNK|    :           |          cPNK|			 ...
+      |  PostgreSQL  +<---+           |  PostgreSQL  |			 
+      |  Application |                |  Application |			 
+      +-----+--------+                +-----+--------+ 	       	       	 

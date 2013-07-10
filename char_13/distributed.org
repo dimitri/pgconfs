@@ -1,0 +1,24 @@
+* Advanced Distributed Architectures
+
+  This CHAR topic includes Replication, which is often used as a mean to
+  implement High Availability. This talk is about the other cases when you
+  need replication, and will explore interesting compromises that we
+  sometimes need to make in our implementations.
+
+** Glossary
+
+** Distributed Architectures
+   How is data distributed among servers?
+
+** Load balancing reads
+   Streaming Replication
+
+** Load balancing writes
+   plproxy, modèle fotolog
+
+** Multiple active nodes
+   federation, modèle Eurovox
+   split responsibility, modèle Allopass
+
+** 
+

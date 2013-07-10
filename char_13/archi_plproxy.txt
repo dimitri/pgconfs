@@ -1,0 +1,26 @@
+    +----------------+    +----------------+    +----------------+
+    |  Front 1   cPNK|    |  Front 2   cPNK|    |  Front 3   cPNK|
+    |   Apache       |    |   Apache       |    |   Apache       |
+    |  pgbouncer     |    |  pgbouncer     |    |  pgbouncer     |
+    |  PostgreSQL    |    |  PostgreSQL    |    |  PostgreSQL    |
+    |   PL/proxy     |    |   PL/proxy     |    |   PL/proxy     |
+    +--+---+-----+---+    +--+----+----+---+    +--+----+----+---+
+       :   |     |
+       |   |     +---=----------------------------------+
+       |   +-=------------------+      Sharding         |
+       |                        |                       |
+       v                        v                       v
++------------------+     +------------------+    +------------------+
+|      BDD p0      |     |      BDD p1      |    |      BDD p2      |
+|             cGRE |     |             cGRE |    |             cGRE |   ...
+|     pgbouncer    |     |     pgbouncer    |    |     pgbouncer    |
+|     PostgreSQL   |     |     PostgreSQL   |    |     PostgreSQL   |
++--------+---------+     +--------+---------+    +--------+---------+
+         :                        :                       :
+         |      Streaming         |   archive_command     |
+         V                        v                       V
++------------------+     +------------------+    +------------------+
+|   Hot Standby p0 |     |  Hot Standby p1  |    |  Hot Standby p2  |
+|             cBLU |     |             cBLU |    |             cBLU |  ...
+|     PostgreSQL   |     |     PostgreSQL   |    |     PostgreSQL   |
++--------+---------+     +--------+---------+    +--------+---------+
