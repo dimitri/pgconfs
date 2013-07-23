@@ -1,0 +1,154 @@
+* An Emacs Workshop for Beginners
+  It's all about discovering Emacs Really
+
+** Install
+*** Emacs 24.3
+    http://emacsformacosx.com/
+    http://emacs.naquadah.org/
+    http://ftp.gnu.org/pub/gnu/emacs/windows/
+
+** Conventions and docs
+   How not to get lost.
+
+*** Starting and Quitting Emacs
+*** Keyboard notations
+    C-x C-c
+    self-insert-command, Universal Argument, keymaps    
+
+*** Canceling what you're doing
+    C-g
+    ESC ESC ESC
+    C-[ C-[ C-[
+*** Keyboard lossage
+    C-h l
+*** The Emacs tutorial
+    C-h t
+*** Info documentation and Help system
+    C-h r, C-h C-h, C-h i
+    C-x C-h
+*** Glossary
+    Buffer, Frame, Window, Fringe, Mode Line, Echo Area, Mini Buffer, etc
+*** Input Methods
+*** Major Modes
+*** Minor Modes
+*** Logs! aka *Messages*
+
+** Usage
+*** Visiting and saving files
+    C-x C-f, C-x C-v
+    C-x C-s, C-x C-w
+    C-x i
+    M-x revert-buffer
+*** Entering text
+    C-o
+    M-o
+*** Selecting text
+    C-SPC
+    C-M-SPC
+    C-M-h
+*** Yanking and Killing text (aka copy/paste)
+    cua-mode C-w M-w C-y M-y
+    C-S-backspace
+    (transient-mark-mode 1)
+    (delete-selection-mode)
+    (setq x-select-enable-clipboard t)
+*** Moving around
+    C-a, C-e, M-m, M-f, M-b
+    C-M-h, C-M-a, C-M-e
+*** Search and Replace
+    C-s C-r C-M-% C-M-s
+*** Undo, Point and Mark
+    C-/ C-x / C-_
+*** Auto Indenting
+    TAB C-i
+*** Commenting
+    M-;
+*** Operating on rectangles
+    C-x r k
+*** Keyboard Macros with Counters, muti buffers
+    F3 F4 F4
+    ~/dev/tapoueh.org/blog/2012/11/06-About-vimgolf.muse
+*** Buffers and windows and frames
+    C-x o
+    C-x b, C-x C-b
+    C-x 5 2, C-x 5 o, C-x 5 0
+*** M-/ runs the command hippie-expand
+*** M-x dired or C-x d or C-x C-j
+*** M-x ifconfig
+*** M-x calc
+*** Encoding
+    C-x =, C-u C-x =
+    C-x RET C-h
+
+** Setup, kickstart
+   Have your setup in a git controled directory, really
+*** Emacs -Q and Emacs -q
+*** howto bind keys
+    (global-set-key (kbd "C-x C-j") 'dired-jump)
+*** visual tweaking
+    (set-face-font 'default "Andale Mono-14")
+    (set-fontset-font t 'symbol (font-spec :family "FreeSerif"))
+*** ido
+    C-x C-f runs the command ido-find-file
+*** ffap
+    (setq ido-enable-flex-matching t)
+*** themes
+*** desktop-save
+*** transient-mark-mode, delete-selection-mode, show-paren-mode
+*** global-hl-line-mode
+*** linum-mode
+*** global-auto-revert-mode
+
+** Advanced
+*** org-mode
+*** emacsclient
+*** gnus
+*** rcirc
+*** TRAMP, sudo
+*** windmove
+*** dired-x and C-x C-j
+*** M-x shell
+*** M-x ielm
+
+** Extras
+   Non default packages to install for a better experience
+*** el-get, MELPA, Marmalade
+*** smex
+    M-x t-d-o-er
+*** browse-kill-ring
+    M-y
+*** goto-last-change
+    C-x C-/ runs the command goto-last-change
+*** multiple cursors
+    C-M-< runs the command mc/edit-lines
+    C-> runs the command mc/mark-next-like-this
+    C-< runs the command mc/mark-previous-like-this
+    C-M-> runs the command mc/mark-all-like-this
+*** magit, psvn
+    C-x C-z runs the command magit-status
+*** escreen
+    M-[ runs the command escreen-goto-prev-screen
+    M-] runs the command escreen-goto-next-screen
+    C-M-0 runs the command escreen-goto-screen-0
+    C-\ c runs the command escreen-create-screen
+    C-\ C-\ runs the command escreen-goto-last-screen
+*** buffer-move
+    <C-S-left> runs the command buf-move-left
+*** popwin
+    C-h k runs the command describe-key
+*** switch-window
+    C-x o runs the command switch-window
+*** keywiz
+*** muse, to show embedded images
+    /Users/dim/dev/tapoueh.org/blog/2012/11/06-About-vimgolf.muse
+*** paredit
+*** powerline
+*** projects
+
+** Elisp
+   The secret weapon
+*** mha:kill-other-buffers
+*** dim:kill-buffer-name
+*** goto-match-paren
+*** dim:increment-number-at-point
+*** regexp replace and ,\(elisp-here)
