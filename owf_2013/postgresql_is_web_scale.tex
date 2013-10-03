@@ -1,0 +1,189 @@
+%%% PostgreSQL is Web Scale, Open World Forum, 4/10/2013, 10h
+%%%
+%%% We call it the world's most advanced open source database, and we are
+%%% actually offering in the same package full ACID compliance per default
+%%% and advanced trade-offs to reach any kind of flexibility needed, all
+%%% with per-transaction controls. That's including your replication and
+%%% High Availability setup. Given proper use of those controls and some
+%%% schemaless extensions, PostgreSQL really is web scale!
+
+\documentclass{beamer}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{beamerthemesplit}
+\usetheme{Boadilla}
+\setbeamertemplate{itemize items}{\checkmark}
+\beamertemplatetransparentcovered
+
+\usepackage{multicol}
+
+\title{PostgreSQL is web scale}
+\subtitle{Open World Forum 2013}
+\author{Dimitri Fontaine \texttt{dimitri@2ndQuadrant.fr}}
+\date{October, 4 2013}
+\logo{\includegraphics[height=0.4cm]{2ndQuadrant-cross.png}}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\begin{frame}[fragile]
+  \frametitle{Dimitri Fontaine}
+
+  \begin{center}
+    \textbf{2ndQuadrant France}
+    \linebreak
+    PostgreSQL Major Contributor
+  \end{center}
+  \vfill
+
+\begin{columns}[c]
+\column{.75\textwidth} 
+
+  \begin{itemize}
+   \item<1-> \texttt{pgloader}, \texttt{prefix}, \texttt{skytools}, …
+   \item<1-> \texttt{apt.postgresql.org}
+   \item<2-> \texttt{\textbf{CREATE EXTENSION}}
+   \item<2-> \texttt{\textbf{CREATE EVENT TRIGGER}}
+   \item<3-> MySQL migration tool, new \texttt{pgloader} version
+  \end{itemize}  
+
+\column{.25\textwidth}
+\begin{center}
+  \includegraphics[height=7em]{2ndQuadrant-cross.png}
+\end{center}
+\end{columns}
+\end{frame}
+
+\section{PostgreSQL History}
+
+\frame{
+  \frametitle{What is PostgreSQL?}
+
+  \begin{itemize}
+  \item Michael Stonebreaker
+  \item Open Source PostgreSQL
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Project organisation}
+
+  \begin{itemize}
+  \item Contributors, Enterprises, Sponsors
+  \item Mailing lists
+  \item Release Model, Major and Minor releases
+  \item Stable Versions, Current Versions
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Pace of development}
+
+  \begin{itemize}
+  \item Catch-up with alternatives mainly has been done already
+  \item Too many patches: Commit Fests
+  \item Very fast innovation
+  \item Yearly release cycle
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Strong Selling Points}
+
+  \begin{itemize}
+  \item Fully ACID: \textbf{trusted data}, \textbf{transactions}, \textbf{durability}
+  \item Durability reads as expensive, reads also as \textbf{Crash Safety}
+  \item Query planner and optimizer
+  \item Advanced Indexing (BTree, GiST, GIN, SP-GiST)
+  \item Procedure Languages (PL/C, PL/SQL, PL/pgSQL, PL/tcl, PL/perl, PL/python)
+  \item Extensibility (data types, functions, operators, indexes)
+  \end{itemize}
+}
+
+\section{NoSQL}
+
+\frame{
+  \frametitle{Understanding NoSQL}
+
+  \begin{itemize}
+  \item Don't like SQL the language, use APIs
+  \item Schemas are ony useful when you know what you're doing...
+  \item ACID certainly is not \textbf{fast enough}
+  \item Sharding and Multi Nodes Setup
+  \end{itemize}
+}
+
+\section{Modern PostgreSQL}
+
+\frame{
+  \frametitle{Performances}
+
+  %% TODO: Haas IBM tests with 350 000 tps
+  %% TODO: Geoghegan tests with Group Commit
+  \begin{center}
+    \includegraphics[height=7em]{}
+  \end{center}
+}
+
+\frame{
+  \frametitle{Schemaless development with PostgreSQL}
+
+  \begin{itemize}
+  \item hstore
+  \item XML
+  \item JSON
+  \item PL/V8
+  \item Indexing
+  \end{itemize}  
+}
+
+\frame{
+  \frametitle{Durability trade-offs}
+
+  \begin{itemize}
+  \item Sometimes disks are just too slow
+  \item \texttt{synchronous\_commit = off}
+  \item Per Transaction
+  \item Enable \textbf{Synchronous Replication} from within a trigger!
+  \end{itemize}  
+}
+
+\frame{
+  \frametitle{Asychronous Notifications}
+
+  \begin{itemize}
+  \item Pooling is not effective
+  \item Receive messages when something happens
+  \item \texttt{LISTEN}
+  \item \texttt{NOTIFY}
+  \item Send a JSON payload!
+  \end{itemize}
+}
+
+\section{Conclusion}
+
+\frame{
+  \frametitle{PostgreSQL is YeSQL!}
+
+\begin{center}
+  Yes, it really is. Welcome to YeSQL!
+  \vfill
+
+  \includegraphics[height=9em]{fly.png}
+\end{center}
+}
+
+\frame{
+  \frametitle{Questions?}
+
+\begin{center}
+  Now is the time to ask!
+  \vfill
+
+  \includegraphics[height=9em]{fly.png}
+\end{center}
+}
+
+\end{document}

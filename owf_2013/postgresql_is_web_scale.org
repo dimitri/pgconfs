@@ -1,0 +1,45 @@
+* PostgreSQL is Web Scale
+
+  We call it the world's most advanced open source database, and we are
+  actually offering in the same package full ACID compliance per default and
+  advanced trade-offs to reach any kind of flexibility needed, all with
+  per-transaction controls. That's including your replication and High
+  Availability setup. Given proper use of those controls and some schemaless
+  extensions, PostgreSQL really is web scale!
+
+** PostgreSQL?
+*** some early history, background
+*** current project organisation
+*** PostgreSQL Strong Selling Points
+    Full ACID compliance
+    Query planner and optimiser
+    Full integration of every feature (Full Text and Transactions)
+    Advanced Indexing
+    Procedure Languages
+    Extensibility
+*** pace of development
+    from crash recovery to streaming replication
+    catching up: replication, window functions, LATERAL, 
+    innovating: Arrays, Range Types, SSI, per-transaction sync rep, wCTE
+** NewSQL
+*** The NoSQL promises
+    SQL is awkward, we developprs want APIs
+    Schemas are ony useful when you know what you're doing...
+    Transactions? you don't need that
+    Durability? What about only using RAM instead, so much faster...
+    Transparent Multi Nodes Setup, dynamic node adding and removal, sharding
+*** The NoSQL achievements
+    APIs means the developer is asked to do the planner and optimiser work
+    Transparent Sharding
+** Modern PostgreSQL
+*** Schemaless development with PostgreSQL
+    hstore, XML, JSON, PLv8
+    Indexing with PLv8, functional indexing, partial indexing
+*** Trading off durability for performances
+    synchronous_commit = off, local, remote_write, on
+    PER TRANSACTION (change your mind in the middle or a trigger)
+*** Asynchronous notifications
+    LISTEN / NOTIFY
+    JSON payload
+*** Streaming protocol
+** PostgreSQL is YeSQL
