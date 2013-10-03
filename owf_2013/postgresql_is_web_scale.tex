@@ -42,11 +42,11 @@
 \column{.75\textwidth} 
 
   \begin{itemize}
-   \item<1-> \texttt{pgloader}, \texttt{prefix}, \texttt{skytools}, …
-   \item<1-> \texttt{apt.postgresql.org}
-   \item<2-> \texttt{\textbf{CREATE EXTENSION}}
-   \item<2-> \texttt{\textbf{CREATE EVENT TRIGGER}}
-   \item<3-> MySQL migration tool, new \texttt{pgloader} version
+   \item \texttt{pgloader}, \texttt{prefix}, \texttt{skytools}, …
+   \item \texttt{apt.postgresql.org}
+   \item \texttt{\textbf{CREATE EXTENSION}}
+   \item \texttt{\textbf{CREATE EVENT TRIGGER}}
+   \item MySQL migration tool, new \texttt{pgloader} version
   \end{itemize}  
 
 \column{.25\textwidth}
@@ -58,28 +58,61 @@
 
 \section{PostgreSQL History}
 
-\frame{
+\begin{frame}[fragile]
   \frametitle{What is PostgreSQL?}
 
-  \begin{itemize}
-  \item Michael Stonebreaker
-  \item Open Source PostgreSQL
-  \end{itemize}
-}
+  \center{PostgreSQL has roots in Database History}
 
-\frame{
+\begin{columns}[c]
+\column{.55\textwidth} 
+
+  \begin{itemize}
+  \item \textbf{UC Berkeley}
+  \item 1973 INGRES
+  \item 1986 Postgres
+  \item 1996 PostgreSQL, Open Source BSD Licence
+  \end{itemize}
+
+\column{.45\textwidth}
+\begin{center}
+  \includegraphics[height=7em]{021909_Stonebraker_Michael_250_large.jpg}
+  \linebreak
+  Michael Stonebraker
+\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Project organisation}
+
+  \center{Core team, Committers, Contributors, Sponsors}
+
+\begin{columns}[c]
+\column{.55\textwidth} 
 
   \begin{itemize}
   \item Contributors, Enterprises, Sponsors
   \item Mailing lists
-  \item Release Model, Major and Minor releases
+  \item Release Model
+  \item Minor and Major Versions
   \item Stable Versions, Current Versions
   \end{itemize}
-}
 
-\frame{
+\column{.45\textwidth}
+\begin{center}
+  \includegraphics[height=7em]{elite_contributors.jpg}
+\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Pace of development}
+
+  \center{Thanks to a very active \textbf{community}, PostgreSQL is moving \textit{real fast.}}
+  \vfill
+
+\begin{columns}[c]
+\column{.65\textwidth} 
 
   \begin{itemize}
   \item Catch-up with alternatives mainly has been done already
@@ -87,48 +120,99 @@
   \item Very fast innovation
   \item Yearly release cycle
   \end{itemize}
-}
 
-\frame{
+\column{.35\textwidth}
+\begin{center}
+  \includegraphics[height=10em]{innovation.jpg}
+\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Strong Selling Points}
 
+  \center{PostgreSQL strenghts make it disruptive}
+  \vfill
+
+\begin{columns}[c]
+\column{.5\textwidth} 
+
   \begin{itemize}
-  \item Fully ACID: \textbf{trusted data}, \textbf{transactions}, \textbf{durability}
-  \item Durability reads as expensive, reads also as \textbf{Crash Safety}
+  \item Fully ACID
+  \item \textbf{trusted data}
+  \item \textbf{transactions}
+  \item \textbf{durability}
+  \item \textbf{Crash Safety}
+  \end{itemize}
+
+\column{.5\textwidth}
+
+  \begin{itemize}
   \item Query planner and optimizer
-  \item Advanced Indexing (BTree, GiST, GIN, SP-GiST)
-  \item Procedure Languages (PL/C, PL/SQL, PL/pgSQL, PL/tcl, PL/perl, PL/python)
+  \item Advanced Indexing
+  \item Procedure Languages
   \item Extensibility (data types, functions, operators, indexes)
   \end{itemize}
-}
+\end{columns}
+
+\vfill
+
+\begin{center}
+  \includegraphics[height=8em]{disruptive-innovationn.jpg}
+\end{center}
+\end{frame}
 
 \section{NoSQL}
 
-\frame{
+\begin{frame}[fragile]
   \frametitle{Understanding NoSQL}
 
+  \center{The NoSQL Offering, simplified}
+  \vfill
+
+\begin{columns}[c]
+\column{.5\textwidth} 
+
   \begin{itemize}
-  \item Don't like SQL the language, use APIs
-  \item Schemas are ony useful when you know what you're doing...
-  \item ACID certainly is not \textbf{fast enough}
+  \item \textbf{API} rather than SQL
+  \item No Schemas
+  \item is ACID \textbf{fast enough}?
   \item Sharding and Multi Nodes Setup
   \end{itemize}
-}
+
+\column{.35\textwidth}
+\begin{center}
+  \includegraphics[height=8em]{nosql.png}
+\end{center}
+\end{columns}
+\end{frame}
 
 \section{Modern PostgreSQL}
 
 \frame{
   \frametitle{Performances}
 
-  %% TODO: Haas IBM tests with 350 000 tps
-  %% TODO: Geoghegan tests with Group Commit
   \begin{center}
-    \includegraphics[height=7em]{}
+    \includegraphics[height=20em]{read-scaling-power.png}
   \end{center}
 }
 
 \frame{
+  \frametitle{Performances}
+
+  \begin{center}
+    \includegraphics[height=20em]{insert_w_master_delay.png}
+  \end{center}
+}
+
+\begin{frame}[fragile]
   \frametitle{Schemaless development with PostgreSQL}
+
+  \center{PostgreSQL welcomes Engineers without a plan}
+  \vfill
+
+\begin{columns}[c]
+\column{.35\textwidth} 
 
   \begin{itemize}
   \item hstore
@@ -137,21 +221,51 @@
   \item PL/V8
   \item Indexing
   \end{itemize}  
-}
 
-\frame{
+\column{.65\textwidth}
+\begin{center}
+  \includegraphics[height=12em]{Data-is-the-new-oil-Concentra.jpg}
+  \linebreak
+  Data is the New Oil!
+\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Durability trade-offs}
+
+  \center{When availability is about service, not data}
+  \vfill
+
+\begin{columns}[c]
+\column{.55\textwidth} 
 
   \begin{itemize}
   \item Sometimes disks are just too slow
   \item \texttt{synchronous\_commit = off}
-  \item Per Transaction
-  \item Enable \textbf{Synchronous Replication} from within a trigger!
+  \item Per Transaction Control
   \end{itemize}  
-}
 
-\frame{
+\column{.45\textwidth}
+\begin{center}
+  \includegraphics[height=8em]{Seagate_ST33232A_hard_disk_head_and_platters_detail.jpg}
+\end{center}
+\end{columns}
+
+\vfill
+  \begin{center}
+    {Enable \textbf{Synchronous Replication} from within a trigger!
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Asychronous Notifications}
+
+  \center{Don't buzy loop until it changes, process incoming messages.}
+  \vfill
+
+\begin{columns}[c]
+\column{.55\textwidth} 
 
   \begin{itemize}
   \item Pooling is not effective
@@ -160,7 +274,13 @@
   \item \texttt{NOTIFY}
   \item Send a JSON payload!
   \end{itemize}
-}
+
+\column{.45\textwidth}
+\begin{center}
+  \includegraphics[height=8em]{masthead-jsonrpc2base.jpg}
+\end{center}
+\end{columns}
+\end{frame}
 
 \section{Conclusion}
 
@@ -171,7 +291,7 @@
   Yes, it really is. Welcome to YeSQL!
   \vfill
 
-  \includegraphics[height=9em]{fly.png}
+  \includegraphics[height=9em]{elephant_upgrade.jpg}
 \end{center}
 }
 
