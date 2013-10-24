@@ -74,11 +74,6 @@
 
 \begin{minted}{postgresql}
 select col1, col2 from table where col1 = 'something';
-
-  SELECT col
-    FROM table
-   WHERE stamped > date 'today' - interval '1 day';
-
 \end{minted}
 \end{frame}
 
@@ -86,13 +81,71 @@ select col1, col2 from table where col1 = 'something';
   \frametitle{PostgreSQL Extensibility}
 
 \begin{minted}{postgresql}
-select actor from products where actor % 'tomy';
+  SELECT col
+    FROM table
+   WHERE stamped > date 'today' - interval '1 day';
 \end{minted}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{PostgreSQL Extensibility}
 
+\begin{columns}
+\column{.7\textwidth}
+\begin{minted}{postgresql}
+select iprange, locid
+  from geolite.blocks
+ where iprange >>= '91.121.37.122';
+
+
+          iprange          | locid 
+---------------------------+-------
+ 91.121.0.0-91.121.159.255 |    75
+(1 row)
+
+Time: 1.220 ms
+\end{minted}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{PostgreSQL Extensibility: Operator Classes}
+
+  \center{SQL Operators are all dynamic and found in the catalogs}
+  \vfill
+
+\begin{columns}
+\column{.7\textwidth}
+\begin{minted}{postgresql}
+select amopopr::regoperator
+  from pg_opclass c
+  join pg_am am
+    on am.oid = c.opcmethod
+  join pg_amop amop
+    on amop.amopfamily = c.opcfamily
+ where opcintype = 'ip4r'::regtype
+   and am.amname = 'gist';
+\end{minted}  
+\column{.3\textwidth}
+\begin{minted}{postgresql}
+    amopopr     
+----------------
+ >>=(ip4r,ip4r)
+ <<=(ip4r,ip4r)
+ >>(ip4r,ip4r)
+ <<(ip4r,ip4r)
+ &&(ip4r,ip4r)
+ =(ip4r,ip4r)
+(6 rows)
+\end{minted}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{PostgreSQL Extensibility}
+
+\begin{columns}
+\column{.8\textwidth}
 \begin{minted}{postgresql}
     select name,
            pos <@> point(-0.12,51.516) as miles
@@ -100,11 +153,14 @@ select actor from products where actor % 'tomy';
   order by pos <-> point(-0.12,51.516) desc
      limit 5;
 \end{minted}
+\end{columns}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{PostgreSQL Extensibility}
 
+\begin{columns}
+\column{.7\textwidth}
 \begin{minted}{postgresql}
    select id, name, pos,
           pos <@> point(-0.12,51.516) as miles
@@ -112,6 +168,7 @@ select actor from products where actor % 'tomy';
  order by pos <-> point(-0.12,51.516)
     limit 10;
 \end{minted}
+\end{columns}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -311,6 +368,523 @@ with geoloc as (
 \end{columns}
 \end{frame}
 
+\section{IP Ranges with ip4r}
+
+\begin{frame}[fragile]
+  \frametitle{IP Ranges, \texttt{ip4r}}
+
+\begin{center}
+  \includegraphics[height=6em]{ip-address.png}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{IP Ranges, \texttt{ip4r}}
+
+\begin{columns}
+\column{.7\textwidth}
+\begin{minted}{postgresql}
+table geolite.blocks limit 10;
+        iprange        | locid 
+-----------------------+-------
+ 1.0.0.0/24            |    17
+ 1.0.1.0-1.0.3.255     |    49
+ 1.0.4.0/23            | 14409
+ 1.0.6.0/23            |    17
+ 1.0.8.0/21            |    49
+ 1.0.16.0/20           | 14614
+ 1.0.32.0/19           | 47667
+ 1.0.64.0/18           |   111
+ 1.0.128.0-1.0.147.255 |   209
+ 1.0.148.0/24          | 22537
+(10 rows)
+\end{minted}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{IP Ranges, \texttt{ip4r}, Geolocation}
+
+  \center{PostgreSQL allows using SQL and JOINs to match IP4R with geolocation.}
+  \vfill
+
+\begin{columns}
+\column{.45\textwidth}
+\begin{minted}{postgresql}
+ select *
+   from geolite.blocks
+   join geolite.location
+        using(locid)
+  where iprange
+            >>=
+        '74.125.195.147';
+\end{minted}
+\column{.55\textwidth}
+\begin{center}
+  \includegraphics[height=9em]{geolocation-clic.png}
+\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{IP Ranges, \texttt{ip4r}, Geolocation}
+
+  \center{PostgreSQL allows using SQL and JOINs to match IP4R with geolocation.}
+  \vfill
+
+\begin{columns}
+\column{.45\textwidth}
+\begin{minted}{postgresql}
+ select *
+   from geolite.blocks
+   join geolite.location
+        using(locid)
+  where iprange
+            >>=
+        '74.125.195.147';
+\end{minted}
+\column{.55\textwidth}
+\begin{minted}{postgresql}
+-[ RECORD 1 ]----------------------------
+locid      | 2703
+iprange    | 74.125.189.24-74.125.255.255
+country    | US
+region     | CA
+city       | Mountain View
+postalcode | 94043
+location   | (-122.0574,37.4192)
+metrocode  | 807
+areacode   | 650
+
+Time: 1.335 ms
+\end{minted}
+\end{columns}
+\end{frame}
+
+\section{Earth Distance}
+
+\begin{frame}[fragile]
+  \frametitle{Earth Distance}
+
+\begin{center}
+  \includegraphics[height=15em]{latitude_and_longitude.jpg}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{How Far is The Nearest Pub}
+
+  \center{The \texttt{point} datatype is in-core}
+  \vfill
+
+\begin{columns}[c]
+\column{.45\textwidth} 
+
+\begin{minted}{postgresql}
+#  CREATE TABLE pubnames
+   (
+     id   bigint,
+     pos  POINT,
+     name text
+   );
+\end{minted}  
+
+\column{.55\textwidth}
+\begin{center}
+  \includegraphics[height=9em]{ltlng.jpg}
+\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{How Far is The Nearest Pub}
+
+\begin{minted}{postgresql}
+  select name, pos
+    from pubnames
+order by pos <-> point(-6.25,53.346)
+    limit 3;
+
+          Pub Name          |           pos           
+----------------------------+-------------------------
+ Ned's                      | (-6.2519967,53.3458267)
+ Sub Lounge                 | (-6.2542332,53.3469085)
+ O'Neill's of Pearse Street | (-6.2524389,53.3448589)
+(3 rows)
+
+Time: 18.679 ms
+\end{minted}  
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{How Far is The Nearest Pub}
+
+\begin{center}
+\begin{minted}{postgresql}
+CREATE INDEX on pubnames USING GIST(pos);
+\end{minted}  
+\end{center}
+\vfill
+
+\begin{columns}
+\column{.65\textwidth}
+\begin{minted}{postgresql}
+  select name,
+         pos
+    from pubnames
+order by pos <-> point(-0.12,51)
+   limit 3;
+\end{minted}  
+
+\column{.35\textwidth}
+\begin{minted}{postgresql}
+  name  |      pos           
+--------+--------------
+ Ned's  | (-6.25,53.34)
+ Sub Lo | (-6.25,53.34)
+ O'Neil | (-6.25,53.34)
+(3 rows)
+
+Time: 0.849 ms
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{How Far is The Nearest Pub, in Miles please.}
+
+\begin{minted}{postgresql}
+create extension cube;
+create extension earthdistance;
+\end{minted}  
+\vfill
+
+\begin{columns}
+\column{.65\textwidth}
+\begin{minted}{postgresql}
+  select name,
+   pos <@> point(-6.25,53.34) miles
+    from pubnames
+order by pos <-> point(-6.25,53.34)
+   limit 3;
+\end{minted}  
+\column{.35\textwidth}
+\begin{minted}{postgresql}
+  name  | miles 
+--------+-------
+ Ned's  |  0.06
+ Sub Lo |  0.07
+ O'Neil |  0.12
+(3 rows)
+
+Time: 1.335 ms
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Some pubs far away from here...}
+
+\begin{columns}
+\column{.65\textwidth}
+\begin{minted}{postgresql}
+  select c.name as city,
+  pos <@> point(-6.25,53.34) as miles
+   from pubnames p,
+     lateral (select name
+                from cities c
+            order by c.pos <-> p.pos
+               limit 1) c
+ order by pos <-> point(-6.25,53.34)
+           desc
+    limit 5;
+\end{minted}  
+\column{.35\textwidth}
+\begin{minted}{postgresql}
+    city    |  miles       
+------------+--------
+ Canterbury | 399.44
+ Canterbury | 378.91
+ Canterbury | 392.08
+ Canterbury | 397.30
+ Canterbury | 379.68
+(5 rows)
+
+Time: 636.445 ms
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Geolocation: \texttt{ip4r} meets \text{earthdistance}}
+
+\begin{center}
+  \includegraphics[height=12em]{geolocation.png}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Some pubs nearby... some place...}
+
+\begin{columns}
+\column{.5\textwidth}
+\begin{minted}{postgresql}
+with geoloc as
+ (
+  select location as l
+    from location
+    join blocks using(locid)
+   where iprange
+         >>=
+         '212.58.251.195'
+ )
+  select name,
+         pos <@> l miles
+    from pubnames, geoloc
+order by pos <-> l
+   limit 10;
+\end{minted}  
+\column{.5\textwidth}
+\begin{minted}{postgresql}
+        name        | miles 
+--------------------+-------
+ Blue Anchor        | 0.299
+ Dukes Head         | 0.360
+ Blue Ball          | 0.337
+ Bell (aka The Rat) | 0.481
+ on the Green       | 0.602
+ Fox & Hounds       | 0.549
+ Chequers           | 0.712
+ Sportsman          | 1.377
+ Kingswood Arms     | 1.205
+ Tattenham Corner   | 2.007
+(10 rows)
+
+Time: 3.275 ms
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\section{Trigrams}
+
+\begin{frame}[fragile]
+  \frametitle{Trigrams}
+
+\begin{center}
+  \includegraphics[height=12em]{trigramme.png}
+\end{center}
+\end{frame}
+
+\section{Indexing Tag Searches}
+
+\begin{frame}[fragile]
+  \frametitle{Advanced Array Indexing with \texttt{intarray}}
+
+\begin{center}
+  \includegraphics[height=15em]{wordpres-seo-categories-tags.jpg}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Last.fm allows users to tag tracks}
+
+\begin{columns}
+\column{.4\textwidth}
+\begin{minted}{postgresql}
+  select t.tag,
+         count(tt.tid) n
+    from tid_tag tt
+    join tags t
+      on tt.tag = t.rowid
+   where t.tag ~* 'setzer'
+group by t.tag;
+\end{minted}  
+\column{.6\textwidth}
+\begin{minted}{postgresql}
+             tag             |  n 
+-----------------------------+----
+ the brian setzer orchestra  |  1
+ setzer                      | 13
+ rockabilly setzer style     |  4
+ setzer is a true guitarhero |  9
+ brian setzer orchestra      |  3
+ brian setzer is god         |  1
+ brian setzer                |  1
+ brain setzer orchestra      |  2
+(8 rows)
+
+time: 644.826 ms
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Last.fm allows users to tag tracks}
+
+\begin{minted}{postgresql}
+create extension intarray;
+\end{minted}
+\vfill
+
+\begin{columns}
+\column{.7\textwidth}
+\begin{minted}{postgresql}
+  select tt.tid,
+         array_agg(tags.rowid) tags
+    from tags
+         join tid_tag tt
+           on tags.rowid = tt.tag
+group by tt.tid
+   limit 3;
+\end{minted}  
+\column{.3\textwidth}
+\begin{minted}{postgresql}
+ tid |   tags    
+-----+-----------
+   1 | {1,2}
+   2 | {3,4}
+   3 | {5,6,7,8}
+(3 rows)
+
+time: 942.074 ms
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Prepare for \texttt{intarray} indexing}
+
+  \center{Denormalize the data set thanks to PostgreSQL Arrays}
+  \vfill
+  
+\begin{minted}{postgresql}
+create table track_tags as
+   select tt.tid, array_agg(tags.rowid) as tags
+     from tags join tid_tag tt on tags.rowid = tt.tag
+ group by tt.tid;
+
+create index on track_tags using gin(tags gin__int_ops);
+\end{minted}  
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Search for several tags at once}
+
+  \center{Intersection of multiple criteria}
+  \vfill
+
+\begin{columns}
+\column{.6\textwidth}
+\begin{minted}{postgresql}
+select array_agg(rowid)
+  from tags
+ where tag = 'blues'
+    or tag = 'rhythm and blues';
+\end{minted}  
+\column{.4\textwidth}
+\begin{minted}{postgresql}
+ array_agg 
+-----------
+ {3,739}
+(1 row)
+
+time: 0.684 ms
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The \texttt{query\_int} data type}
+
+  \center{\texttt{intarray} has powerful indexing and searching facilities}
+  \vfill
+
+\begin{columns}
+\column{.6\textwidth}
+\begin{minted}{postgresql}
+select format('(%s)',
+        array_to_string(
+         array_agg(rowid), '&')
+       )::query_int as query
+  from tags
+ where tag = 'blues'
+    or tag = 'rhythm and blues';
+\end{minted}  
+\column{.4\textwidth}
+\begin{minted}{postgresql}
+  query  
+---------
+ 3 & 739
+(1 row)
+
+time: 0.747 ms
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Putting it all together}
+
+\begin{columns}
+\column{.6\textwidth}
+\begin{minted}{postgresql}
+with t(query) as (
+ select format('(%s)',
+         array_to_string(
+          array_agg(rowid), '&')
+        )::query_int as query
+   from tags
+  where tag = 'blues'
+     or tag = 'rhythm and blues'
+)
+ select track.tid
+   from track_tags tt
+   join tids track
+     on tt.tid = track.rowid, t
+  where tt.tags @@ t.query
+  limit 10;
+\end{minted}  
+\column{.4\textwidth}
+\begin{minted}{postgresql}
+        tid         
+--------------------
+ TRCJLCC12903CBF4AE
+ TRCIFOV128F92F6F4C
+ TRCYUVJ128F425C8F1
+ TRCNTFO128F92F6564
+ TRCDRGT12903CE64BF
+ TRCWAED128F42A837B
+ TRCWFEM128F9320F94
+ TRCQCQH128F932E707
+ TRCUMTA12903CD67EE
+ TRJJYUT12903CFB13B
+(10 rows)
+
+Time: 7.630 ms
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\section{HStore}
+
+\begin{frame}[fragile]
+  \frametitle{HStore}
+
+\begin{center}
+  \includegraphics[height=9em]{hstore.png}
+\end{center}
+\end{frame}
+
+\section{plproxy}
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{PL/Proxy}}
+
+\begin{center}
+  \includegraphics[height=18em]{distribution.jpg}
+\end{center}
+\end{frame}
+
 \section{HyperLogLog}
 
 \begin{frame}[fragile]
@@ -368,17 +942,26 @@ WITH hll(agg) AS (
 \begin{frame}[fragile]
   \frametitle{Daily Reporting}
 
+\begin{columns}
+\column{.5\textwidth}
 \begin{minted}{postgresql}
 with stats as (
-  select date, #users as daily,
-         #hll_union_agg(users) over() as total
+  select date,
+         #users as daily,
+
+         #hll_union_agg(users)
+         over() as total
+
     from daily_uniques
 )
   select date,
-         round(daily) as daily,
-         round((daily/total*100)::numeric, 2) as percent
+         daily,
+         daily/total*100
     from stats
 order by date;
+\end{minted}  
+\column{.5\textwidth}
+\begin{minted}{postgresql}
     date    | daily  | percent 
 ------------+--------+---------
  2013-02-22 | 401677 |   25.19
@@ -387,172 +970,29 @@ order by date;
  2013-02-25 | 154996 |    9.72
 (4 rows)
 \end{minted}  
+\end{columns}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Monthly Reporting}
 
+\begin{columns}
+\column{.65\textwidth}
 \begin{minted}{postgresql}
-   select to_char(date, 'YYYY/MM') as month,
-          round(#hll_union_agg(users)) as monthly
-     from daily_uniques group by 1;
-     
+  select to_char(date, 'YYYY/MM'),
+         #hll_union_agg(users)
+    from daily_uniques
+group by 1;
+\end{minted}  
+\column{.35\textwidth}
+\begin{minted}{postgresql}     
   month  | monthly 
 ---------+---------
  2013/02 | 1960380
 (1 row)
 \end{minted}  
+\end{columns}
 \end{frame}
-
-\section{Earth Distance}
-
-\begin{frame}[fragile]
-  \frametitle{Earth Distance}
-
-\begin{center}
-  \includegraphics[height=15em]{latitude_and_longitude.jpg}
-\end{center}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{How Far is The Nearest Pub}
-
-  \center{The \texttt{point} datatype is in-core}
-  \vfill
-
-\begin{minted}{postgresql}
-#  CREATE TABLE pubnames (id bigint, pos POINT, name text);
-
-#  select name, pos
-     from pubnames
- order by pos <-> point(-0.12,51.516)
-    limit 3;
-
-          name          |           pos           
-------------------------+-------------------------
- All Bar One            | (-0.1192746,51.5163499)
- The Shakespeare's Head | (-0.1194731,51.5167871)
- The Newton Arms        | (-0.1209811,51.5163032)
-(3 rows)
-
-Time: 18.679 ms
-\end{minted}  
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{How Far is The Nearest Pub}
-
-  \center{KNN indexing is in core too!}
-  \vfill
-
-\begin{minted}{postgresql}
-#  CREATE INDEX on pubnames USING GIST(pos);
-
-#  select name, pos
-     from pubnames
- order by pos <-> point(-0.12,51.516)
-    limit 3;
-
-          name          |           pos           
-------------------------+-------------------------
- All Bar One            | (-0.1192746,51.5163499)
- The Shakespeare's Head | (-0.1194731,51.5167871)
- The Newton Arms        | (-0.1209811,51.5163032)
-(3 rows)
-
-Time: 0.849 ms
-\end{minted}  
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{How Far is The Nearest Pub, in Miles please.}
-
-\begin{minted}{postgresql}
-#  create extension cube;
-#  create extension earthdistance;
-
-#  select name,
- round((pos <@> point(-0.12,51.516))::numeric, 3) as miles
-     from pubnames
- order by pos <-> point(-0.12,51.516)
-    limit 10;
-          name          | miles 
-------------------------+-------
- All Bar One            | 0.039
- The Shakespeare's Head | 0.059
- The Newton Arms        | 0.047
-(3 rows)
-
-Time: 1.335 ms
-\end{minted}  
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Some pubs far away from a random London based location.}
-
-\begin{minted}{postgresql}
-#   select c.name as city, p.name,
-           round((pos <@> point(-0.12,51.516))::numeric, 3) as miles
-      from pubnames p,
-           lateral (select name
-                      from cities c
-                  order by c.pos <-> p.pos
-                     limit 1) c
-  order by pos <-> point(-0.12,51.516) desc
-     limit 5;
-  city  |      name       |  miles  
---------+-----------------+---------
- Galway | Tig Bhric       | 440.194
- Galway | TP's            | 439.779
- Galway | Begley's        | 439.752
- Galway | Ventry Inn      | 438.962
- Cork   | Fisherman's Bar | 439.153
-(5 rows)
-
-Time: 636.445 ms
-\end{minted}  
-\end{frame}
-
-\section{HStore}
-
-\begin{frame}[fragile]
-  \frametitle{HStore}
-
-\begin{center}
-  \includegraphics[height=9em]{hstore.png}
-\end{center}
-\end{frame}
-
-\section{Trigrams}
-
-\begin{frame}[fragile]
-  \frametitle{Trigrams}
-
-\begin{center}
-  \includegraphics[height=12em]{trigramme.png}
-\end{center}
-\end{frame}
-
-\section{IP Ranges with ip4r}
-
-\begin{frame}[fragile]
-  \frametitle{IP Ranges, \texttt{ip4r}}
-
-\begin{center}
-  \includegraphics[height=6em]{ip-address.png}
-\end{center}
-\end{frame}
-
-\section{plproxy}
-
-\begin{frame}[fragile]
-  \frametitle{\texttt{PL/Proxy}}
-
-\begin{center}
-  \includegraphics[height=18em]{distribution.jpg}
-\end{center}
-\end{frame}
-
 
 \section{base64}
 
