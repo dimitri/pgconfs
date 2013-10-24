@@ -675,6 +675,154 @@ Time: 3.275 ms
 \end{center}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Trigrams and similarity}
+
+  \center{\textit{similar} but not quite \textit{like} the same}
+  \vfill
+
+\begin{columns}
+\column{.9\textwidth}
+\begin{minted}{postgresql}
+create extension pg_trgm;
+
+select show_trgm('tomy') as tomy,
+       show_trgm('Tomy') as "Tomy",
+       show_trgm('tom torn') as "tom torn",
+       similarity('tomy', 'tom'),
+       similarity('dim', 'tom');
+
+-[ RECORD 1 ]-------------------------------------
+tomy       | {"  t"," to","my ",omy,tom}
+Tomy       | {"  t"," to","my ",omy,tom}
+tom torn   | {"  t"," to","om ",orn,"rn ",tom,tor}
+similarity | 0.5
+similarity | 0
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Trigrams and typos}
+
+  \center{Use your data to help your users out}
+  \vfill
+
+\begin{columns}
+\column{.5\textwidth}
+\begin{minted}{postgresql}
+select actor
+  from products
+ where actor ~* 'tomy';
+  actor   
+----------
+
+
+(0 rows)
+
+Time: <unregistered>
+\end{minted}  
+\column{.5\textwidth}
+\begin{minted}{postgresql}
+select actor
+  from products
+ where actor % 'tomy';
+  actor   
+----------
+ TOM TORN
+ TOM DAY
+(2 rows)
+
+Time: 26.972 ms
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Trigrams search indexing}
+
+\begin{minted}{postgresql}
+create index on products using gist(actor gist_trgm_ops);
+\end{minted}
+\vfill
+
+\begin{columns}
+\column{.5\textwidth}
+\begin{center}
+  \includegraphics[height=9em]{macrex-index.png}
+\end{center}
+\column{.5\textwidth}
+\begin{minted}{postgresql}
+select actor
+  from products
+ where actor % 'tomy';
+  actor   
+----------
+ TOM TORN
+ TOM DAY
+(2 rows)
+
+Time: 2.695 ms
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Trigrams and autocompletion}
+
+  \center{Use your data to help your users out}
+  \vfill
+
+\begin{columns}
+\column{.9\textwidth}
+\begin{minted}{postgresql}
+explain (costs off)
+ select * from products where actor ~* 'tomy';
+                   QUERY PLAN                    
+-------------------------------------------------
+ Index Scan using products_actor_idx on products
+   Index Cond: ((actor)::text ~* 'tomy'::text)
+(2 rows)
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Trigrams and autocompletion}
+
+  \center{Use your data to help your users out}
+  \vfill
+
+\begin{columns}
+\column{.5\textwidth}
+\begin{minted}{postgresql}
+  select actor
+    from products
+   where actor % 'fran'
+order by actor <-> 'fran'
+   limit 10;
+\end{minted}  
+\column{.5\textwidth}
+\begin{minted}{postgresql}
+    actor     
+--------------
+ FRANK HAWKE
+ FRANK BERRY
+ FRANK POSEY
+ FRANK HAWKE
+ FRANCES DEE
+ FRANK LEIGH
+ FRANCES DAY
+ FRANK FOSTER
+ FRANK HORNE
+ FRANK TOMEI
+(10 rows)
+
+Time: 2.960 ms
+\end{minted}  
+\end{columns}
+\end{frame}
+
 \section{Indexing Tag Searches}
 
 \begin{frame}[fragile]
