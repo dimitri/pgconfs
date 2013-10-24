@@ -1083,11 +1083,11 @@ duration | 00:10:00
 
 \begin{columns}
 \column{.8\textwidth}
-\begin{verbatim}
+\begin{minted}{postgresql}
 create or replace function tg_duration()
  returns trigger
  language plpgsql
-as $$
+as '
 declare
    hash hstore := hstore(NEW);
    duration interval;
@@ -1099,8 +1099,8 @@ begin
 
    RETURN NEW;
 end;
-$$;
-\end{verbatim}
+';
+\end{minted}
 \end{columns}
 \end{frame}
 
@@ -1128,7 +1128,7 @@ $$;
 
 \begin{columns}
 \column{.6\textwidth}
-\begin{minted}{postgresql}
+\begin{minted}[linenos]{postgresql}
 truncate foo;
 insert into foo(d_start, d_end)
      select now()
@@ -1168,6 +1168,239 @@ select duration
 \begin{center}
   \includegraphics[height=18em]{distribution.jpg}
 \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{PL/Proxy}}
+
+  \center{PL/Proxy is all about \textit{Sharding}}
+  \vfill
+  \vfill
+  \begin{center}
+    \includegraphics[height=9em]{riak_nodes.png}
+  \end{center}
+  \center{We're going to use it for \textit{Remote Procedure Call}}
+  \vfill
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Classic Auditing}
+
+\begin{columns}
+\column{.4\textwidth}
+\begin{minted}{postgresql}
+create table example
+ (
+   id serial,
+   f1 text,
+   f2 text
+ );
+\end{minted}  
+\column{.6\textwidth}
+\begin{minted}{postgresql}
+create table audit
+ (
+  change_date timestamptz
+              default now(),
+  before hstore,
+  after  hstore
+ );
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Classic trigger based Auditing}
+
+\begin{columns}
+\column{.8\textwidth}
+\begin{minted}{postgresql}
+~# begin;
+~*# update example set f1 = 'b' where id = 1;
+~*# rollback;
+
+~# select * from audit;
+ change_date | before | after 
+-------------+--------+-------
+(0 rows)
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Seting up \texttt{PL/Proxy}}
+
+\begin{columns}
+\column{.8\textwidth}
+\begin{minted}{postgresql}
+create extension plproxy;
+
+       create server local
+foreign data wrapper plproxy
+             options (p0 'dbname=dim');
+
+create user mapping
+                for public
+             server local
+            options (user 'dim');
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{PL/Proxy}: Basic Testing}
+
+\begin{columns}
+\column{.5\textwidth}
+\begin{minted}{postgresql}
+create function test_proxy
+           (i int)
+   returns int
+  language plproxy
+as '
+  cluster ''local'';
+  select i;
+';
+\end{minted}  
+
+\column{.5\textwidth}
+\begin{minted}{postgresql}
+select test_proxy(1);
+ test_proxy 
+------------
+          1
+(1 row)
+
+Time: 0.866 ms
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Implementing Autonomous Transactions for Auditing}
+
+\begin{center}
+  \includegraphics[height=9em]{Stealth-Remote-Trigger.jpg}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Trigger Functions 1/3: the trigger}
+
+\begin{columns}
+\column{.8\textwidth}
+\begin{minted}{postgresql}
+create function audit_trigger()
+  returns trigger
+  language plpgsql
+as '
+begin
+  perform audit_proxy(old, new);
+  return new;
+end;
+';
+\end{minted}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Trigger Functions 2/3: the proxy}
+
+\begin{columns}
+\column{.8\textwidth}
+\begin{minted}{postgresql}
+create function audit_proxy
+ (
+  old example,
+  new example
+ )
+  returns void
+  language plproxy
+as '
+  cluster ''local'';
+  target audit;
+';
+\end{minted}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Trigger Functions 3/3: the implementation}
+
+\begin{columns}
+\column{.8\textwidth}
+\begin{minted}{postgresql}
+create function audit
+ (
+  old example,
+  new example
+ )
+  returns void
+  language SQL
+as '
+  INSERT INTO audit(before, after)
+       SELECT hstore(old), hstore(new);   
+';
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Trigger Definition}
+
+\begin{columns}
+\column{.8\textwidth}
+\begin{minted}{postgresql}
+      drop trigger if exists audit on example;
+
+    create trigger audit
+      after update on example
+          for each row
+          -- careful, defaults to FOR EACH STATEMENT!
+ execute procedure audit_trigger();
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Autonomous Auditing Tranasction}
+
+\begin{columns}
+\column{.8\textwidth}
+\begin{minted}{postgresql}
+~# begin;
+BEGIN
+
+~*# update example set f1 = 'b' where id = 1;
+UPDATE 1
+
+~*# rollback;
+ROLLBACK
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Autonomous Auditing Tranasction}
+
+  \center{We did \texttt{ROLLBACK;} the transaction}
+  \vfill
+
+\begin{columns}
+\column{.8\textwidth}
+\begin{minted}{postgresql}
+~# select change_date,
+          before,
+          after,
+          after - before as diff
+     from audit;
+-[ RECORD 1 ]--------------------------------
+change_date | 2013-10-14 14:29:09.685105+02
+before      | "f1"=>"a", "f2"=>"a", "id"=>"1"
+after       | "f1"=>"b", "f2"=>"a", "id"=>"1"
+diff        | "f1"=>"b"
+\end{minted}  
+\end{columns}
 \end{frame}
 
 \section{HyperLogLog}
