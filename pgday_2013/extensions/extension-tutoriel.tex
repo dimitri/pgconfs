@@ -1023,6 +1023,143 @@ Time: 7.630 ms
 \end{center}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{HStore and Parametrized Triggers}
+
+\begin{center}
+  \includegraphics[height=15em]{dunlop-trigger-84fg-gold.jpg}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Compute \textit{duration} in a before trigger}
+
+  \center{We need a table and some data}
+  \vfill
+  
+\begin{columns}
+\column{.8\textwidth}
+\begin{minted}{postgresql}
+create table foo
+(
+  id       serial      primary key,
+  d_start  timestamptz default now(),
+  d_end    timestamptz,
+  duration interval
+);
+
+insert into foo(d_start, d_end)
+     select now() - 10 * random() * interval '1 min',
+            now() + 10 * random() * interval '1 min'
+       from generate_series(1, 10);
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Populating an \texttt{hstore} from a \texttt{record}}
+
+  \center{Filling in a column when the name is a parameter}
+  \vfill
+  
+\begin{columns}
+\column{.8\textwidth}
+\begin{minted}{postgresql}
+select (foo #= hstore('duration', '10 mins')).*
+  from foo
+  limit 1;
+
+-[ RECORD 1 ]---------------------------
+id       | 1
+d_start  | 2013-10-24 18:57:36.725212+02
+d_end    | 2013-10-24 19:04:56.171473+02
+duration | 00:10:00
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The \texttt{hstore} based \textit{parametrized} trigger}
+
+\begin{columns}
+\column{.8\textwidth}
+\begin{verbatim}
+create or replace function tg_duration()
+ returns trigger
+ language plpgsql
+as $$
+declare
+   hash hstore := hstore(NEW);
+   duration interval;
+begin
+   duration :=  (hash -> TG_ARGV[1])::timestamptz
+              - (hash -> TG_ARGV[0])::timestamptz;
+
+   NEW := NEW #= hstore(TG_ARGV[2], duration::text);
+
+   RETURN NEW;
+end;
+$$;
+\end{verbatim}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Installing the trigger}
+
+  \center{To be able to modify what's inserted we need a \texttt{before} trigger}
+  \vfill
+
+\begin{columns}
+\column{.8\textwidth}
+\begin{minted}{postgresql}
+    create trigger compute_duration
+     before insert on foo
+          for each row
+ execute procedure tg_duration('d_start',
+                               'd_end',
+                               'duration');
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Using the trigger: watch the \texttt{duration}}
+
+\begin{columns}
+\column{.6\textwidth}
+\begin{minted}{postgresql}
+truncate foo;
+insert into foo(d_start, d_end)
+     select now()
+          - 10 * random()
+               * interval '1 min',
+            now()
+          + 10 * random()
+            * interval '1 min'
+       from generate_series(1, 10);
+\end{minted}  
+\column{.4\textwidth}
+\begin{minted}{postgresql}
+select duration
+  from foo;
+    duration     
+-----------------
+ 00:03:48.003135
+ 00:10:57.727407
+ 00:01:13.637183
+ 00:10:33.820578
+ 00:13:11.607287
+ 00:04:41.224213
+ 00:08:26.842229
+ 00:12:16.630843
+ 00:09:51.418547
+ 00:08:52.968195
+(10 rows)
+\end{minted}  
+\end{columns}
+\end{frame}
+
 \section{plproxy}
 
 \begin{frame}[fragile]
