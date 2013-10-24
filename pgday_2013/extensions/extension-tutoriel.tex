@@ -1512,7 +1512,7 @@ group by 1;
 \end{columns}
 \end{frame}
 
-\section{base64}
+\section{base36}
 
 \begin{frame}[fragile]
   \frametitle{Let's make a new one!}
@@ -1523,10 +1523,306 @@ group by 1;
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{A new integer data type: \texttt{base36}}
+
+  \center{Internally store \texttt{bigint}, reuse \textit{internals}}
+  \vfill
+
+  \begin{center}
+    \includegraphics[height=6em]{input-output.png}
+  \end{center}
+
+  \begin{center}
+    Only code the \textit{input/output} functions, in \texttt{C}
+  \end{center}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{A new integer data type: \texttt{base36}}
+
+  \begin{minted}{postgresql}
+    create extension base36;
+  \end{minted}  
+  \vfill
+
+\begin{columns}
+\column{.25\textwidth}
+\begin{minted}{postgresql}
+  i | x    
+ ---+----
+  0 | 0
+  1 | 1
+  2 | 2
+  3 | 3
+  4 | 4
+  5 | 5
+  6 | 6
+  7 | 7
+  8 | 8
+  9 | 9
+ 10 | A
+\end{minted}  
+\column{.25\textwidth}
+\begin{minted}{postgresql}     
+    i   |   x    
+ -------+------
+  10000 | 7PS
+  10001 | 7PT
+  10002 | 7PU
+  10003 | 7PV
+  10004 | 7PW
+  10005 | 7PX
+  10006 | 7PY
+  10007 | 7PZ
+  10008 | 7Q0
+  10009 | 7Q1
+  10010 | 7Q2
+\end{minted}  
+\column{.50\textwidth}
+\begin{minted}{postgresql}     
+      i     |   x    
+ -----------+--------
+  100000000 | 1NJCHS
+  100000001 | 1NJCHT
+  100000002 | 1NJCHU
+  100000003 | 1NJCHV
+  100000004 | 1NJCHW
+  100000005 | 1NJCHX
+  100000006 | 1NJCHY
+  100000007 | 1NJCHZ
+  100000008 | 1NJCI0
+  100000009 | 1NJCI1
+  100000010 | 1NJCI2
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Input Output Functions}
+
+\begin{minted}{postgresql}
+CREATE OR REPLACE FUNCTION base36_in(cstring)
+RETURNS base36
+AS '$libdir/base36'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION base36_out(base36)
+RETURNS cstring
+AS '$libdir/base36'
+LANGUAGE C IMMUTABLE STRICT;
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Input Output Functions}
+
+\begin{minted}{postgresql}
+CREATE OR REPLACE FUNCTION base36_recv(internal)
+RETURNS base36
+AS '$libdir/base36'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION base36_send(base36)
+RETURNS bytea
+AS '$libdir/base36'
+LANGUAGE C IMMUTABLE STRICT;
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Some C code}
+
+\begin{minted}{c}
+#include "postgres.h"
+
+#ifndef PG_VERSION_NUM
+#error "Unsupported too old PostgreSQL version"
+#endif
+
+#if  PG_VERSION_NUM / 100 != 903 \
+  && PG_VERSION_NUM / 100 != 904
+#error "Unknown or unsupported PostgreSQL version"
+#endif
+
+PG_MODULE_MAGIC;
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Some C code}
+
+\begin{minted}{c}
+static inline
+base36 base36_from_str(const char *str)
+{
+  /* ... C code here ... */
+}
+
+static inline
+char *base36_to_str(base36 c)
+{
+  /* ... C code here ... */
+}
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Interfacing with PostgreSQL}
+
+\begin{minted}{c}
+Datum base36_in(PG_FUNCTION_ARGS);
+Datum base36_out(PG_FUNCTION_ARGS);
+Datum base36_recv(PG_FUNCTION_ARGS);
+Datum base36_send(PG_FUNCTION_ARGS);
+Datum base36_cast_to_text(PG_FUNCTION_ARGS);
+Datum base36_cast_from_text(PG_FUNCTION_ARGS);
+Datum base36_cast_to_bigint(PG_FUNCTION_ARGS);
+Datum base36_cast_from_bigint(PG_FUNCTION_ARGS);
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Interfacing with PostgreSQL}
+
+\begin{minted}{c}
+PG_FUNCTION_INFO_V1(base36_in);
+Datum
+base36_in(PG_FUNCTION_ARGS)
+{
+    char *str = PG_GETARG_CSTRING(0);
+    PG_RETURN_INT64(base36_from_str(str));
+}
+
+PG_FUNCTION_INFO_V1(base36_out);
+Datum
+base36_out(PG_FUNCTION_ARGS)
+{
+  base36 c = PG_GETARG_INT64(0);
+  PG_RETURN_CSTRING(base36_to_str(c));
+}
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{CREATE TYPE}}
+
+\begin{minted}[]{postgresql}
+CREATE TYPE base36 (
+        INPUT          = base36_in,
+        OUTPUT         = base36_out,
+        RECEIVE        = base36_recv,
+        SEND           = base36_send,
+        LIKE           = bigint,
+        CATEGORY       = 'N'
+);
+COMMENT ON TYPE base36
+     IS 'bigint written in base36: [0-9A-Z]+';
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{A minimum amount of \texttt{CAST}}
+
+\begin{columns}
+\column{.50\textwidth}
+\begin{minted}{postgresql}
+CREATE FUNCTION text(base36)
+RETURNS text
+AS '$libdir/base36',
+   'base36_cast_to_text'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE CAST (text as base36)
+  WITH FUNCTION base36(text)
+    AS IMPLICIT;
+\end{minted}  
+\column{.50\textwidth}
+\begin{minted}{postgresql}
+CREATE CAST (base36 as text)
+  WITH FUNCTION text(base36);
+
+CREATE CAST (bigint as base36)
+    WITHOUT FUNCTION
+         AS IMPLICIT;
+CREATE CAST (base36 as bigint)
+    WITHOUT FUNCTION
+         AS IMPLICIT;
+\end{minted}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Reuse \textit{internals}: comparison functions}
+
+\begin{minted}{postgresql}
+CREATE OR REPLACE FUNCTION base36_eq(base36, base36) 
+RETURNS boolean LANGUAGE internal IMMUTABLE AS 'int8eq';
+
+CREATE OR REPLACE FUNCTION base36_ne(base36, base36) 
+RETURNS boolean LANGUAGE internal IMMUTABLE AS 'int8ne';
+
+CREATE OR REPLACE FUNCTION base36_lt(base36, base36) 
+RETURNS boolean LANGUAGE internal IMMUTABLE AS 'int8lt';
+
+CREATE OR REPLACE FUNCTION base36_le(base36, base36) 
+RETURNS boolean LANGUAGE internal IMMUTABLE AS 'int8le';
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Reuse \textit{internals}: comparison functions}
+
+\begin{minted}{postgresql}
+CREATE OR REPLACE FUNCTION base36_gt(base36, base36) 
+RETURNS boolean LANGUAGE internal IMMUTABLE AS 'int8gt';
+
+CREATE OR REPLACE FUNCTION base36_ge(base36, base36) 
+RETURNS boolean LANGUAGE internal IMMUTABLE AS 'int8ge';
+
+CREATE OR REPLACE FUNCTION base36_cmp(base36, base36) 
+RETURNS integer LANGUAGE internal IMMUTABLE AS 'btint8cmp';
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Register operators}
+
+\begin{minted}{postgresql}
+CREATE OPERATOR = (
+          LEFTARG = base36,
+         RIGHTARG = base36,
+        PROCEDURE = base36_eq,
+       COMMUTATOR = '=',
+          NEGATOR = '<>',
+         RESTRICT = eqsel,
+             JOIN = eqjoinsel
+);
+COMMENT ON OPERATOR =(base36, base36) IS 'equals?';
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Add in \texttt{btree} index support, stolen from \texttt{bigint}}
+
+\begin{minted}{postgresql}
+CREATE OPERATOR CLASS btree_base36_ops
+DEFAULT FOR TYPE base36 USING btree
+AS
+        OPERATOR        1       <  ,
+        OPERATOR        2       <= ,
+        OPERATOR        3       =  ,
+        OPERATOR        4       >= ,
+        OPERATOR        5       >  ,
+        FUNCTION        1       base36_cmp(base36, base36);
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Packaging an extension}
 
 \begin{center}
-  \includegraphics[height=18em]{software-upgrade.png}
+  \includegraphics[height=12em]{software-upgrade.png}
 \end{center}
 \end{frame}
 
@@ -1537,8 +1833,9 @@ group by 1;
   \vfill
 
 \begin{minted}{make}
-EXTENSION   = base64
-MODULES     = base64
+EXTENSION   = base36
+MODULES     = base36
+DATA        = base36--1.0.sql base36.control
 
 LDFLAGS=-lrt
 
@@ -1546,6 +1843,107 @@ PG_CONFIG ?= pg_config
 PGXS = $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
 \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Installing an extension}
+
+\begin{minted}{console}
+$ make install
+/usr/local/bin/ccache /usr/bin/gcc -O2 -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -g  -I. -I./ -I/Users/dim/pgsql/ddl/include/server -I/Users/dim/pgsql/ddl/include/internal   -c -o base36.o base36.c -MMD -MP -MF .deps/base36.Po
+/usr/local/bin/ccache /usr/bin/gcc -O2 -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -g  -L/Users/dim/pgsql/ddl/lib -Wl,-dead_strip_dylibs   -bundle -bundle_loader /Users/dim/pgsql/ddl/bin/postgres -o base36.so base36.o
+/bin/sh /Users/dim/pgsql/ddl/lib/pgxs/src/makefiles/../../config/install-sh -c -d '/Users/dim/pgsql/ddl/share/extension'
+/bin/sh /Users/dim/pgsql/ddl/lib/pgxs/src/makefiles/../../config/install-sh -c -d '/Users/dim/pgsql/ddl/share/extension'
+/bin/sh /Users/dim/pgsql/ddl/lib/pgxs/src/makefiles/../../config/install-sh -c -d '/Users/dim/pgsql/ddl/lib'
+/usr/bin/install -c -m 644 base36.control '/Users/dim/pgsql/ddl/share/extension/'
+/usr/bin/install -c -m 644 base36--1.0.sql base36.control '/Users/dim/pgsql/ddl/share/extension/'
+/usr/bin/install -c -m 755  base36.so '/Users/dim/pgsql/ddl/lib/'
+\end{minted}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Enjoying our new extension}
+
+\begin{minted}{postgresql}
+create extension base36;
+    
+create table demo(i bigint, x base36);
+
+insert into demo(i, x)
+     select n, n::bigint
+       from generate_series(0, 10) t(n);
+    
+insert into demo(i, x)
+     select n, n::bigint
+       from generate_series(10000, 10010) t(n);
+    
+insert into demo(i, x)
+     select n, n::bigint
+       from generate_series(100000000, 100000010) t(n);
+
+create index on demo(x);
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{A new integer data type: \texttt{base36}}
+
+  \begin{minted}{postgresql}
+    create extension base36;
+  \end{minted}  
+  \vfill
+
+\begin{columns}
+\column{.25\textwidth}
+\begin{minted}{postgresql}
+  i | x    
+ ---+----
+  0 | 0
+  1 | 1
+  2 | 2
+  3 | 3
+  4 | 4
+  5 | 5
+  6 | 6
+  7 | 7
+  8 | 8
+  9 | 9
+ 10 | A
+\end{minted}  
+\column{.25\textwidth}
+\begin{minted}{postgresql}     
+    i   |   x    
+ -------+------
+  10000 | 7PS
+  10001 | 7PT
+  10002 | 7PU
+  10003 | 7PV
+  10004 | 7PW
+  10005 | 7PX
+  10006 | 7PY
+  10007 | 7PZ
+  10008 | 7Q0
+  10009 | 7Q1
+  10010 | 7Q2
+\end{minted}  
+\column{.50\textwidth}
+\begin{minted}{postgresql}     
+      i     |   x    
+ -----------+--------
+  100000000 | 1NJCHS
+  100000001 | 1NJCHT
+  100000002 | 1NJCHU
+  100000003 | 1NJCHV
+  100000004 | 1NJCHW
+  100000005 | 1NJCHX
+  100000006 | 1NJCHY
+  100000007 | 1NJCHZ
+  100000008 | 1NJCI0
+  100000009 | 1NJCI1
+  100000010 | 1NJCI2
+\end{minted}  
+\end{columns}
 \end{frame}
 
 \frame{
