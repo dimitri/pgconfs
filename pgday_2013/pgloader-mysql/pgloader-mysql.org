@@ -1,0 +1,59 @@
+* MySQL Migration
+
+  A presentation of some tooling I'm building to take care of all the boring
+  steps of the migration in a single easy and fast step: schema, handling
+  types and default values, auto-increment and sequences, data, constraints,
+  indexes.
+
+  That feature set actually works already, only missing is a little glue and
+  a user language to drive the tool, and that's in good progress already.
+  The tool would definitely be ready for a full demo at the conference.
+
+  Obviously the tool licence of choice is "The PostgreSQL Licence". Actually
+  it's part of the new version of pgloader
+
+** Example
+   Sample Command, Logs, and Summary
+
+   Find a public data set available as a MySQL dump maybe?
+   The Pagila database or the DELL DVD Store
+
+** MySQL and why migrating away
+*** Storage vs Service
+*** Single Application vs Application Suite
+*** Durability and Availability
+*** Consistency
+    The First Consistency rule certainly is the data type
+    Zero Dates, really?
+    Truncation by default
+    NULLs
+*** Transaction
+    You want both Full Text Search and Transactions
+    You want both Geographic data types and Transactions
+*** Documentation
+    Find examples
+*** Cost Analysis
+    data, code, QA, opportunity cost
+*** In Short: Free your Data!
+    Are your data valuable?
+
+** Incompatibilities
+*** Data Types
+*** NULL
+    A NULL text is returned as an empty string.
+
+** PostgreSQL COPY Protocol
+*** Streaming!
+*** 2 threads and a queue
+    async IO
+
+** PGLoader Command Syntax
+
+** Transforms
+
+** Casts
+** Limitations
+*** Will never as fast as straight COPY
+*** 
+
+** Conclusion
