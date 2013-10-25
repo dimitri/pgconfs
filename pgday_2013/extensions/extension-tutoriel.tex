@@ -56,6 +56,30 @@
 \end{columns}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Writing \& using Postgres Extensions}
+
+  \center{Agenda}
+  \vfill
+
+\begin{columns}
+\column{.7\textwidth}
+
+  \begin{itemize}
+  \item How PostgreSQL extensibility works
+  \item Things you can do with a PostgreSQL Extension
+  \item The PostgreSQL indexing Framework
+  \item \textbf{How to solve some practical use cases with existing extensions}
+  \item Developping a new extension
+  \end{itemize}
+
+\column{.3\textwidth}
+\begin{center}
+  \includegraphics[height=6em]{agenda.jpg}
+\end{center}
+\end{columns}
+\end{frame}
+
 \section{PostgreSQL Extensibility}
 
 \begin{frame}[fragile]
@@ -145,48 +169,15 @@ select amopopr::regoperator
   \frametitle{PostgreSQL Extensibility}
 
 \begin{columns}
-\column{.8\textwidth}
-\begin{minted}{postgresql}
-    select name,
-           pos <@> point(-0.12,51.516) as miles
-      from pubnames
-  order by pos <-> point(-0.12,51.516) desc
-     limit 5;
-\end{minted}
-\end{columns}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{PostgreSQL Extensibility}
-
-\begin{columns}
 \column{.7\textwidth}
 \begin{minted}{postgresql}
    select id, name, pos,
-          pos <@> point(-0.12,51.516) as miles
+          pos <@> point(-6.25,53.34) as miles
      from pubnames
- order by pos <-> point(-0.12,51.516)
+ order by pos <-> point(-6.25,53.34)
     limit 10;
 \end{minted}
 \end{columns}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{PostgreSQL Extensibility}
-
-\begin{minted}{postgresql}
-with geoloc as (
-    select location
-      from geolite.location l
-           join geolite.blocks using(locid)
-     where iprange >>= '212.58.251.195'
-)
-    select name,
-           pos <@> (select location from geoloc) as miles
-      from pubnames
-  order by pos <-> (select location from geoloc)
-     limit 10;
-\end{minted}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -331,11 +322,11 @@ with geoloc as (
 
 \column{.18\textwidth}
   \begin{itemize}
+   \item \alert{hll}
    \item cube
    \item \alert{ltree}
    \item citext
    \item \alert{hstore}
-   \item \alert{intagg}
   \end{itemize}
 
 \column{.25\textwidth}
@@ -351,7 +342,7 @@ with geoloc as (
   \begin{itemize}
    \item PostGIS
    \item \alert{ip4r}
-   \item \alert{hll}
+   \item \alert{intarray}
    \item \alert{prefix}
    \item pgfincore
   \end{itemize}
