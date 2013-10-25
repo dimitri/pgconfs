@@ -1503,10 +1503,109 @@ group by 1;
 \end{columns}
 \end{frame}
 
+\section{Background Workers}
+
+\begin{frame}[fragile]
+  \frametitle{New in 9.3: Background Workers}
+
+\begin{center}
+  \includegraphics[height=9em]{fork-bomb.png}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{New in 9.3: Background Workers}
+
+  \center{Start autonomous user processes within the database server}
+  \vfill
+
+\begin{columns}
+\column{.7\textwidth}
+  \begin{itemize}
+  \item Job Scheduler (autovacuum like maintainance)
+  \item PGQ Ticker
+  \item Replication Tasks
+  \item Parallel Queries
+  \end{itemize}
+\column{.3\textwidth}
+\begin{center}
+  \includegraphics[height=6em]{clock.png}
+\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Background Workers C API}
+
+\begin{minted}{c}
+void _PG_init(void)
+{
+  BackgroundWorker worker;
+
+  worker.bgw_flags = BGWORKER_SHMEM_ACCESS |
+       BGWORKER_BACKEND_DATABASE_CONNECTION;
+  worker.bgw_start_time   = BgWorkerStart_RecoveryFinished;
+  worker.bgw_main         = worker_spi_main;
+  worker.bgw_sighup       = worker_spi_sighup;
+  worker.bgw_sigterm      = worker_spi_sigterm;
+  worker.bgw_name         = "count relations";
+  worker.bgw_restart_time = BGW_NEVER_RESTART;
+  worker.bgw_main_arg     = NULL;
+  RegisterBackgroundWorker(&worker);
+
+  BackgroundWorkerInitializeConnection("dbname", "username");
+}
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Background Workers C API}
+
+  \center{\texttt{bgw\_start\_time}}
+  \vfill
+
+  \begin{itemize}
+  \item \texttt{BgWorkerStart\_PostmasterStart}
+  \item \texttt{BgWorkerStart\_ConsistentState}
+  \item \texttt{BgWorkerStart\_RecoveryFinished}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Background Workers and SPI}
+
+\begin{minted}{c}
+StartTransactionCommand();
+SPI_connect();
+PushActiveSnapshot(GetTransactionSnapshot());
+
+/* build query, might be static string */
+
+SPI_execute(query, true/false /* read only */, 0);
+
+/* process query results */
+
+SPI_finish();
+PopActiveSnapshot();
+CommitTransactionCommand();
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{New in 9.3: Background Workers}
+
+  \center{Can request \textit{shared memory}, server must be restarted.}
+  \vfill
+
+\begin{minted}{ini}
+shared_preload_libraries = 'count_relations'
+\end{minted}
+\end{frame}
+
 \section{base36}
 
 \begin{frame}[fragile]
-  \frametitle{Let's make a new one!}
+  \frametitle{Extensions: Let's make a new one!}
 
 \begin{center}
   \includegraphics[height=18em]{extension-update.png}
@@ -1955,12 +2054,13 @@ create index on demo(x);
 
   \begin{description}
   \item[ip4r] IP Ranges and Geolocation
-  \item[Earth Distance] computing distances on a map
+  \item[Earth] Longitude, Latitude, Computing distances on a map
   \item[Trigrams] Fixing typos, autocompletion
   \item[Intarray] Indexing Tag Searches
   \item[HStore] Schemaless development, Generic Auditing triggers
   \item[PL/Proxy] Sharding, RPC, Autonomous Transactions
-  \item[HyperLogLog] Cardinalities, Unique Visitors
+  \item[HLL] Cardinalities, Unique Visitors
+  \item[BGWorkers] PostgreSQL managed processes
   \item[base36] \texttt{bigints} with letters
   \end{description}
 }
