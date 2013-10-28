@@ -1010,8 +1010,123 @@ Time: 7.630 ms
   \frametitle{HStore}
 
 \begin{center}
-  \includegraphics[height=9em]{hstore.png}
+  \includegraphics[height=15em]{clock-key.jpg}
 \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{HStore: NoSQL meets PostgreSQL}
+
+\begin{columns}
+\column{.7\textwidth}
+  \begin{itemize}
+   \item Key-Value Store
+   \item Denormlisation
+   \item Indexing (GiST, GIN)
+   \item Operators
+   \item SQL
+  \end{itemize}  
+\column{.3\textwidth}
+\begin{center}
+  \includegraphics[height=6em]{hstore.png}
+\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{HStore: NoSQL meets PostgreSQL}
+
+\begin{columns}
+\column{.7\textwidth}
+\begin{minted}{postgresql}
+create table preferences
+(
+  email       text      primary key,
+  language    text,
+  timezone    text,
+  properies  hstore
+);
+\end{minted}  
+\column{.3\textwidth}
+\begin{center}
+  \includegraphics[height=6em]{hstore.png}
+\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{HStore: NoSQL meets PostgreSQL}
+
+\begin{minted}{postgresql}
+INSERT INTO preferences
+VALUES
+  ('dimitri@2ndQuadrant.fr', 'fr_FR', 'Europe/Paris',
+   'skills => PostgreSQL,
+    Extensions => "prefix, base64, pgextwlist, preprepare",
+    Software => "pgloader"'),
+
+  ('simon@2ndQuadrant.com', 'en_UK', 'Europe/London',
+   'skills => "PostgreSQL, Replication",
+    Software => "PostgreSQL, repmgr, pg_standby"');
+
+INSERT 0 2
+\end{minted}  
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{HStore: NoSQL meets PostgreSQL}
+
+\begin{minted}{postgresql}
+~# select * from preferences;
+-[ RECORD 1 ]------------------------------------------------------
+email     | dimitri@2ndQuadrant.fr
+language  | fr_FR
+timezone  | Europe/Paris
+properies | "skills"=>"PostgreSQL",
+            "Software"=>"pgloader",
+            "Extensions"=>"prefix, base64, pgextwlist, preprepare"
+-[ RECORD 2 ]-------------------------------------------
+email     | simon@2ndQuadrant.com
+language  | en_UK
+timezone  | Europe/London
+properies | "skills"=>"PostgreSQL, Replication",
+            "Software"=>"PostgreSQL, repmgr, pg_standby"
+\end{minted}  
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{HStore: NoSQL meets PostgreSQL}
+
+\begin{columns}
+\column{.8\textwidth}
+\begin{minted}{postgresql}
+~# select email
+     from preferences
+    where properies ? 'Extensions';
+         email          
+------------------------
+ dimitri@2ndQuadrant.fr
+(1 row)
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{HStore: NoSQL meets PostgreSQL}
+
+\begin{columns}
+\column{.8\textwidth}
+\begin{minted}{postgresql}
+~# select email
+     from preferences
+    where (properies -> 'skills') ~ 'PostgreSQL';
+         email          
+------------------------
+ dimitri@2ndQuadrant.fr
+ simon@2ndQuadrant.com
+(2 rows)
+\end{minted}  
+\end{columns}
 \end{frame}
 
 \begin{frame}[fragile]
