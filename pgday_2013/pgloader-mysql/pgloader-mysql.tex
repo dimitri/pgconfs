@@ -74,13 +74,15 @@
   \vfill
 
 \begin{verbatim}
-load database from mysql://localhost/adv
-              into postgresql://dim@localhost/adv
+load database from mysql://localhost/mydbname
+              into postgresql://dim@localhost/pgdbname
 
 with drop tables, truncate, create tables, create indexes,
-     reset sequences,
-     downcase identifiers
- set work_mem to '128MB', maintenance_work_mem to '512 MB'
+     reset sequences, downcase identifiers
+
+ set work_mem to '128MB',
+      maintenance_work_mem to '512 MB',
+     search_path to 'myschema'
 
 cast type datetime to timestamptz drop default using zero-dates-to-null,
      type date drop not null drop default using zero-dates-to-null,
@@ -95,17 +97,17 @@ cast type datetime to timestamptz drop default using zero-dates-to-null,
   \vfill
 
 \begin{verbatim}
-        table name   imported     errors       time
-------------------  ---------  ---------  ---------
-           extract          0          0      2.046
-       before load          0          0      0.032
-------------------  ---------  ---------  ---------
-  geolite.location     438386          0      9.194
-    geolite.blocks    1790461          0     18.021
-------------------  ---------  ---------  ---------
-           finally          0          0     31.593
-------------------  ---------  ---------  ---------
- Total import time    2228847          0   1m0.886s
+             table name   imported     errors       time
+-----------------------  ---------  ---------  ---------
+  station_mapping_cache          0          0      0.035
+  test case with errors          5          1      0.138
+                    geo          1          0      0.018
+ index build completion          0          0        0.0
+-----------------------  ---------  ---------  ---------
+           create index          7          0      0.082
+        reset sequences          1          0      0.023
+-----------------------  ---------  ---------  ---------
+   Total streaming time          6          1     0.213s
 \end{verbatim}
 \end{frame}
 
@@ -128,7 +130,7 @@ cast type datetime to timestamptz drop default using zero-dates-to-null,
   \item Data Loss with Replication
   \item Weak Data Types Validation
   \item Either transactions or
-  \item Loack of
+  \item Lack of
   \end{itemize}
 
 \column{.5\textwidth} 
@@ -141,7 +143,7 @@ cast type datetime to timestamptz drop default using zero-dates-to-null,
   \item Durability and Availability
   \item Consistency
   \item Full Text Search, PostGIS
-  \item Documentation
+  \item Proper Documentation
   \end{itemize}
 \end{columns}
 \end{frame}
@@ -177,6 +179,83 @@ cast type datetime to timestamptz drop default using zero-dates-to-null,
 \end{columns}
 \end{frame}
 
+\section{What}
+
+\begin{frame}[fragile]
+  \frametitle{What is the pgloader added value here?}
+  
+  \center{Some tooling already exists, after all.}
+  \vfill
+
+  \begin{itemize}
+  \item \texttt{mysql2pgsql} then edit the schema
+  \item \texttt{SELECT INFILE} on the server, then \texttt{COPY}
+  \item MySQL client claims to be sending CSV when redirected
+  \item worst case, some \texttt{awk} or \texttt{sed} hackery would do
+  \item EnterpriseDB MySQL Migration Wizard
+  \end{itemize}  
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{What is the pgloader added value here?}
+  
+  \center{pgloader is an all-automated declarative migration tool.}
+  \vfill
+
+\begin{center}
+  \includegraphics[height=12em]{toy-loader.jpg}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{What is pgloader?}
+  
+  \center{pgloader \texttt{3.x} features}
+  \vfill
+
+  \begin{itemize}
+  \item We're talking about \texttt{pgloader version "3.0.50.1"} and later.
+  \item Load data into PostgreSQL
+  \item Using the COPY protocol
+  \item Implementing support for bad rows triaging
+  \item And flexible data input parsing
+  \end{itemize}  
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{pgloader supported input}
+  
+  \center{pgloader data source}
+  \vfill
+
+  \begin{itemize}
+  \item CSV and CSV like files
+  \item with per-column \texttt{NULL} and \textit{empty string} definitions
+  \item SQLite databases
+  \item MySQL databases
+  \item DBF binary files
+  \item Archives (zip) of CSV or DBF files
+  \item Given as an HTTP URL
+  \end{itemize}  
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{pgloader feature set}
+  
+  \center{pgloader will happily}
+  \vfill
+
+  \begin{itemize}
+  \item create tables (auto-discovering their schema)
+  \item drop tables first if asked
+  \item or \texttt{truncate} them
+  \item create indexes (auto-discovering them)
+  \item in parallel, and in parallel with the next COPY
+  \item normalize identifiers (\textit{quote} or \textit{downcase})
+  \item reset sequences after the load
+  \end{itemize}  
+\end{frame}
+
 \section{How}
 
 \begin{frame}[fragile]
@@ -190,34 +269,112 @@ cast type datetime to timestamptz drop default using zero-dates-to-null,
 
   \begin{itemize}
   \item Streaming with the COPY protocol
-  \item Asynchornous IO with Threads
+  \item Asynchronous IO with Threads
   \item User Editable Casting Rules
-  \item Transforms
+  \item User provided Transforms Functions
   \end{itemize}  
 
 \column{.4\textwidth}
 \begin{center}
-  TODO: PICTURE
+  \includegraphics[height=7em]{toy-loader.jpg}
 \end{center}
 \end{columns}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{How pgloader migrates your data}
+  \frametitle{User Editable Casting Rules}
   
   \center{User Editable Casting Rules}
+  \vfill
+
+  \begin{itemize}
+  \item Used for \textit{schema} conversion
+  \item Including \textit{default} values handling
+  \item Defines \textit{transform functions}
+  \item Those are applied in the streaming \textit{pipeline}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{User Editable Casting Rules}
+  
+  \center{A detailed example}
+  \vfill
+
+\begin{columns}[c]
+\column{.5\textwidth}
+\begin{verbatim}
+type datetime
+  to timestamptz
+     drop default
+     drop not null
+     using zero-dates-to-null
+\end{verbatim}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{User Editable Casting Rules}
+  
+  \center{Some use cases}
+  \vfill
+
+  \begin{itemize}
+  \item Data types with different input/ouput behaviour
+  \item \texttt{int(11)} actually is a \texttt{bigint}
+  \item \texttt{auto\_increment} means \texttt{serial} or \texttt{bigserial}
+  \item \texttt{datetime} almost quite the same as \texttt{timestamptz}
+  \item \texttt{NULL} converted as zero dates on \texttt{INSERT}
+  \item no proper \texttt{boolean}, only \texttt{tinyint}
+  \item inline \texttt{ENUM} support to \texttt{CREATE TYPE}
+  \item geometric datatypes \textit{specific} input/output
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{How pgloader migrates your data}
   
-  \center{Transforms}
+  \center{User provided transformation functions}
+  \vfill
+
+  \begin{itemize}
+  \item On the fly client-side rewritting of values
+  \item Includes rewritting \textit{default} values
+  \item A set of transformation functions is included
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{User provided transformation functions}
+  
+  \center{Rewriting MySQL data on the fly, when necessary}
+  \vfill
+
+  \begin{itemize}
+  \item \texttt{zero-dates-to-null} handles \texttt{"0000-00-00"}
+  \item \texttt{date-with-no-separator} handles \texttt{"20041002152952"}
+  \item \texttt{tinyint-to-bolean}
+  \item \texttt{convert-mysql-point} expects \texttt{astext(column)} output
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Other necessary transformation}
+  
+  \center{Text like data and \texttt{NULL} values}
+  \vfill
+
+  \begin{itemize}
+  \item MySQL returns text \texttt{NULL} as an empty string
+  \item pgloader adds \texttt{column is null} output
+  \item and process the empty strings depending on \texttt{IS NULL} column
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{pgloader limitations}
   
-  \center{The 80\% rule}
+  \center{The 80\% rule, Not Implemented Yet are}
   \vfill
 
   \begin{itemize}
