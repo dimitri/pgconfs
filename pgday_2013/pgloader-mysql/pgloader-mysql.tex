@@ -93,7 +93,7 @@ cast type datetime to timestamptz drop default using zero-dates-to-null,
 \begin{frame}[fragile]
   \frametitle{Migrating from MySQL to PostgreSQL}
   
-  \center{TODO: prepare a real test case}
+  \center{Summary output}
   \vfill
 
 \begin{verbatim}
@@ -111,18 +111,24 @@ cast type datetime to timestamptz drop default using zero-dates-to-null,
 \end{verbatim}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Migrating from MySQL to PostgreSQL}
+  
+  \center{Source available at \url{http://git.tapoueh.org}}
+  \vfill
+  \center{\textit{The PostgreSQL Licence}}
+\end{frame}
+
 \section{Why}
 
 \begin{frame}[fragile]
   \frametitle{Why Migrating from MySQL to PostgreSQL?}
   
-  \center{Migrating is a costly process, why doing it?}
-  \vfill
-
 \begin{columns}[c]
 \column{.5\textwidth} 
 
-  \center{MySQL}
+\center{\textbf{MySQL}}
+  \vfill
 
   \begin{itemize}
   \item Storage Engine
@@ -135,7 +141,8 @@ cast type datetime to timestamptz drop default using zero-dates-to-null,
 
 \column{.5\textwidth} 
 
-  \center{PostgreSQL}
+  \center{\textbf{PostgreSQL}}
+  \vfill
 
   \begin{itemize}
   \item Data Access Service
@@ -179,22 +186,104 @@ cast type datetime to timestamptz drop default using zero-dates-to-null,
 \end{columns}
 \end{frame}
 
-\section{What}
-
 \begin{frame}[fragile]
-  \frametitle{What is the pgloader added value here?}
+  \frametitle{Plenty of tools are already available}
   
-  \center{Some tooling already exists, after all.}
+  \center{Those are not solving the \textit{interesting} problems}
   \vfill
 
   \begin{itemize}
   \item \texttt{mysql2pgsql} then edit the schema
-  \item \texttt{SELECT INFILE} on the server, then \texttt{COPY}
+  \item \texttt{SELECT INTO OUTFILE} on the server, then \texttt{COPY}
   \item MySQL client claims to be sending CSV when redirected
   \item worst case, some \texttt{awk} or \texttt{sed} hackery would do
   \item EnterpriseDB MySQL Migration Wizard
+  \item Python and Ruby scripts
   \end{itemize}  
 \end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Difficulties when migrating MySQL data}
+  
+  \center{MySQL dataype input functions are really \textit{sloppy}}
+  \vfill
+
+\begin{columns}
+\column{.6\textwidth}
+  \begin{itemize}
+  \item Text, empty string and \texttt{NULL}
+  \item Depends on the \texttt{DEFAULT} value
+  \end{itemize}
+\column{.4\textwidth}
+\begin{center}
+  \includegraphics[height=7em]{EmptySet_L.png}
+\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Difficulties when migrating MySQL data}
+  
+  \center{Dates and The \textit{Gregorian} Calendar}
+  \vfill
+
+\begin{verbatim}
+MariaDB [talk]> create table dates(d datetime);
+MariaDB [talk]> insert into dates
+   values('0000-00-00'), ('0000-10-31'), ('2013-10-00');
+
+MariaDB [talk]> select * from dates;
++---------------------+
+| d                   |
++---------------------+
+| 0000-00-00 00:00:00 |
+| 0000-10-31 00:00:00 |
+| 2013-10-00 00:00:00 |
++---------------------+
+3 rows in set (0.00 sec)
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Difficulties when migrating MySQL data}
+  
+  \center{MySQL dataype input functions are really \textit{sloppy}}
+  \vfill
+
+  \begin{itemize}
+  \item \texttt{int}, \texttt{bigint} and \texttt{int(11)}
+  \item \texttt{decimal(20,2)} and \texttt{float(20,2)}
+  \end{itemize}
+  \vfill
+
+\begin{center}
+  \includegraphics[height=7em]{int-bigint.png}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Difficulties when migrating MySQL data}
+  
+  \center{No proper \textit{boolean}, but \textit{sets}}
+  \vfill
+
+  \begin{itemize}
+  \item \texttt{tinyint} and \texttt{boolean}
+  \item Inline \texttt{ENUM} and \texttt{SET}
+  \item Geometric datatypes input/output...
+  \end{itemize}
+
+\begin{columns}
+\column{.6\textwidth}
+\begin{verbatim}
+CREATE TABLE sizes (
+    name ENUM('small', 'medium', 'large')
+);
+\end{verbatim}
+\end{columns}
+\end{frame}
+
+\section{What}
 
 \begin{frame}[fragile]
   \frametitle{What is the pgloader added value here?}
@@ -233,7 +322,7 @@ cast type datetime to timestamptz drop default using zero-dates-to-null,
   \item with per-column \texttt{NULL} and \textit{empty string} definitions
   \item SQLite databases
   \item MySQL databases
-  \item DBF binary files
+  \item dBase \texttt{DBF} binary files
   \item Archives (zip) of CSV or DBF files
   \item Given as an HTTP URL
   \end{itemize}  
@@ -254,6 +343,190 @@ cast type datetime to timestamptz drop default using zero-dates-to-null,
   \item normalize identifiers (\textit{quote} or \textit{downcase})
   \item reset sequences after the load
   \end{itemize}  
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Loading zipped dBase files over HTTP}
+  
+\begin{verbatim}
+LOAD DBF
+    FROM http://www.insee.fr/.../.../historiq2013.zip
+    INTO postgresql:///pgloader
+    WITH truncate, create table
+     SET client_encoding TO 'latin1';
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Loading CSV data with some \textit{projections}}
+  
+\begin{verbatim}
+LOAD CSV
+    FROM INLINE
+    INTO postgresql:///pgloader?nulls (f1, f2, f3)
+    WITH truncate,
+    	 keep unquoted blanks,
+         fields optionally enclosed by '"',
+         fields escaped by double-quote,
+         fields terminated by ','
+
+  BEFORE LOAD DO
+   $$ drop table if exists nulls; $$,
+   $$ create table if not exists nulls
+      (id serial, f1 text, f2 text, f3 text);
+   $$;
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Some test data}
+
+\begin{verbatim}
+"quoted empty string","","should be empty string"
+"no value between separators",,"should be null"
+"quoted blanks","    ","should be blanks"
+"unquoted blanks",    ,"should be null"
+"unquoted string",no quote,"should be 'no quote'"
+"quoted separator","a,b,c","should be 'a,b,c'"
+"keep extra blanks",  test string  , "should be '  test string  '"
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Loading several CSV files in a ZIP archive over HTTP, 1/6}
+  
+\begin{verbatim}
+LOAD ARCHIVE
+   FROM /Users/dim/Downloads/GeoLiteCity-latest.zip
+   INTO postgresql:///ip4r
+
+   BEFORE LOAD DO
+     $$ create extension if not exists ip4r; $$,
+     $$ create schema if not exists geolite; $$,
+     $$ create table if not exists geolite.location
+       (
+          locid      integer primary key,
+          country    text,
+          region     text,
+          city       text,
+          postalcode text,
+          location   point,
+          metrocode  text,
+          areacode   text
+       );
+     $$,
+\end{verbatim}
+\end{frame}
+\begin{frame}[fragile]
+  \frametitle{Loading several CSV files in a ZIP archive over HTTP, 2/6}
+  
+\begin{verbatim}
+     $$ create table if not exists geolite.blocks
+       (
+          iprange    ip4r,
+          locid      integer
+       );
+     $$,
+     $$ drop index if exists geolite.blocks_ip4r_idx; $$,
+     $$ truncate table geolite.blocks, geolite.location cascade; $$
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Loading several CSV files in a ZIP archive over HTTP, 3/6}
+  
+\begin{verbatim}
+   LOAD CSV
+        FROM FILENAME MATCHING ~/GeoLiteCity-Location.csv/
+             WITH ENCODING iso-8859-1
+             (
+                locId,
+                country,
+                region     null if blanks,
+                city       null if blanks,
+                postalCode null if blanks,
+                latitude,
+                longitude,
+                metroCode  null if blanks,
+                areaCode   null if blanks
+             )
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Loading several CSV files in a ZIP archive over HTTP, 4/6}
+  
+\begin{verbatim}
+        INTO postgresql:///ip4r?geolite.location
+             (
+                locid,country,region,city,postalCode,
+
+                location point
+         using (format nil "(~a,~a)" longitude latitude),
+
+                metroCode,areaCode
+             )
+        WITH skip header = 2,
+             fields optionally enclosed by '"',
+             fields escaped by double-quote,
+             fields terminated by ','
+\end{verbatim}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Loading several CSV files in a ZIP archive over HTTP, 5/6}
+  
+\begin{verbatim}
+  AND LOAD CSV
+        FROM FILENAME MATCHING ~/GeoLiteCity-Blocks.csv/
+             WITH ENCODING iso-8859-1
+             (
+                startIpNum, endIpNum, locId
+             )
+        INTO postgresql:///ip4r?geolite.blocks
+             (
+                iprange ip4r
+                  using (ip-range startIpNum endIpNum),
+                locId
+             )
+        WITH skip header = 2,
+             fields optionally enclosed by '"',
+             fields escaped by double-quote,
+             fields terminated by ','
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Loading several CSV files in a ZIP archive over HTTP, 6/6}
+  
+\begin{verbatim}
+   FINALLY DO
+     $$ create index blocks_ip4r_idx
+                  on geolite.blocks
+               using gist(iprange);
+     $$;
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Loading several CSV files in a ZIP archive over HTTP}
+
+  \center{1,790,461 rows imported in 18s is about \textbf{100,000 rows/s}}
+  
+\begin{verbatim}
+         table name  imported     errors       time
+------------------- ---------  ---------  ---------
+            extract         0          0       1.01
+        before load         0          0      0.077
+------------------- ---------  ---------  ---------
+   geolite.location    438386          0     10.352
+     geolite.blocks   1790461          0     18.045
+------------------- ---------  ---------  ---------
+            finally         0          0     31.108
+------------------- ---------  ---------  ---------
+  Total import time   2228847          0   1m0.592s
+\end{verbatim}
 \end{frame}
 
 \section{How}
@@ -287,12 +560,19 @@ cast type datetime to timestamptz drop default using zero-dates-to-null,
   \center{User Editable Casting Rules}
   \vfill
 
+\begin{columns}
+\column{.7\textwidth}
   \begin{itemize}
   \item Used for \textit{schema} conversion
   \item Including \textit{default} values handling
   \item Defines \textit{transform functions}
   \item Those are applied in the streaming \textit{pipeline}
   \end{itemize}
+\column{.3\textwidth}
+\begin{center}
+  \includegraphics[height=6em]{cast.jpg}
+\end{center}
+\end{columns}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -355,6 +635,7 @@ type datetime
   \item \texttt{date-with-no-separator} handles \texttt{"20041002152952"}
   \item \texttt{tinyint-to-bolean}
   \item \texttt{convert-mysql-point} expects \texttt{astext(column)} output
+  \item \texttt{astext} used automatically for \texttt{point}
   \end{itemize}
 \end{frame}
 
@@ -377,6 +658,9 @@ type datetime
   \center{The 80\% rule, Not Implemented Yet are}
   \vfill
 
+\begin{columns}
+\column{.6\textwidth}
+
   \begin{itemize}
   \item Views
   \item Triggers
@@ -385,6 +669,12 @@ type datetime
   \item Geometric datatypes
   \item Per Column Casting Rules
   \end{itemize}
+
+\column{.4\textwidth}
+\begin{center}
+  \includegraphics[height=12em]{niy.jpg}
+\end{center}
+\end{columns}
 \end{frame}
 
 \section{Conclusion}
@@ -394,6 +684,8 @@ type datetime
 
 \begin{center}
   Now is the time to ask!
+  \vfill
+  \begin{center}\url{http://2013.pgconf.eu/feedback}\end{center}
   \vfill
 
   \includegraphics[height=9em]{fly.png}
