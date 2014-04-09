@@ -1,0 +1,157 @@
+* Logiciel Libre
+  http://upsilon.cc/~zack/teaching/1314/ll4/
+
+** Présentation
+   Dimitri Fontaine, PostgreSQL Major Contributor
+   2ndQuadrant
+
+** Histoire personnelle du logiciel libre
+
+*** années 1990, Atari, programmation frustration
+    sans internet on échange des disquettes
+    les logiciels sont payants
+    et les copains qui en possèdent sont rares
+    la plupart du temps ce sont des copies illégales
+    comme quoi la loi est à revoir, mais c'est un autre sujet
+
+*** premier PC en 1996, IUT Génie Informatique Vélizy
+    Installation Linux Slackare depuis un CD vendu dans un livre
+    Toujours pas internet
+    Livre de 1000 pages, très vite lu
+    Fondamentaux install et admin, awk
+
+*** véritable apprentissage
+    Programmation en C à la maison
+    Lecture des pages de manuel
+    Apprentissage des outils unix
+    
+    Téléchargement d'une nouvelle version de x.org en 45 disquettes
+    Linux Kernel experimental pour support carte mère SCSI
+    
+    Exposition légère à la culture unix
+    dd -- convert and copy a file
+    projet de fin d'année en perl, formulaires HTML, bdd
+    stage de fin d'année windows, IIS et ASP 4
+
+*** ISTY
+    environnement HPUX, Terminaux X
+    pas d'administrateur système
+    très peu d'outils, propriétaires, nuls
+    recompilations locales
+    projet bdd → admin PostgreSQL
+    refonte site école, PHP (.phtml), HTML
+
+*** IDEALX
+    stage de fin d'études d'école d'ingénieurs, 6 mois
+    stage rémunéré
+    rencontres (dont PostgreSQL)
+    Erlang, Python
+
+*** CVF
+    Développeur Java
+    Boulot pas intéressant
+    Contributions Tutos, PHP
+    Administration système debian, PostgreSQL, Apache, PHP
+
+*** dalibo
+    Les bons copains ne font pas de bons associés
+    Vision commune
+
+*** Hi-Media
+    DBA PostgreSQL
+    Contributions et conférences
+    prefix
+
+*** 2ndQuadrant
+    PostgreSQL Major Contributor
+    Expertise PostgreSQL
+    Business Model Open Source
+
+** Open Source Business Model
+
+*** Service, Service and Service
+    Le produit est accessible à tous
+    Chacun peut y contribuer
+    Le business consiste à apporter les parties manquantes aux entreprises
+
+*** Ce que les entreprises veulent
+    Le même service que d'habitude
+    Quelqu'un à accuser pour ne pas se faire virer en cas de mauvais choix
+    Pouvoir se concentrer sur leur métier
+    En *utilisant* des produits qu'on leur fournit, avec support et docs
+
+*** Les apparences sont parfois trompeuses
+    Dans un projet Open Source la clé de voute est la documentation
+    Cela permet aux utilisateurs de devenir experts
+    Cela permet aux utilisateurs de contribuer
+    Et permet de partager une vision commune du produit
+
+*** Apparté : Méthode de développement
+    Un code sans spécifications n'est qu'un troupeau de bugs
+    README DRIVEN DEVELOPMENT
+    Toujours écrire en premier le README : à quoi sert le projet
+
+*** Gestion de projet
+    Assurer une vision d'ensemble
+    Objectif commun
+    Gestion des moyens mis en œuvres
+    Validation des progrès
+    Garanties de livraison 
+
+*** L'enseignement Open Source
+    It's released when it's ready
+    Au choix : deadline based or features based
+    On trouve de tout dans les projets Open Source
+    PostgreSQL mélangeait les deux, aujourd'hui “deadline based”
+
+*** Il existe des chefs de projets dans l'Open Source
+    En général ils sont les créateurs du projet
+    Imposent leur vision et leurs choix techniques
+    Terme de “benevolent dictator for life”
+    Steering Commitee
+    En cas de désaccords (fréquents), apparitions de forks
+
+** Open Source Business Model
+
+*** Les services clés
+    Support
+    Formation
+    Accompagnement
+    Sorties de crises
+    Transfert de compétences
+
+*** Consultants Open Source
+    Apport de solutions
+    Relations commerciales simplifiées : pas de produit à vendre
+    Liberté de fournisseur de la part du client
+    Choix total du rôle d'intervention
+
+*** Rôles du consultant Open Source
+    Ingénieur Avant-Vente
+    Ingénieur Commercial (euh…)
+    Administrateur système, réseau, etc
+    Architecte (code, services, etc)
+    Développeur
+    Rédacteur (rapports, documentations, préconisations, devis)
+
+*** Conditions de travail et écologie (planète 2.0)
+    En mixant ces rôles il est facile de travailler souvent à la maison
+    En travaillant à la maison il est assez facile de choisir ses horaires
+    Dans certaines limites
+    En particulier quand on travaille à son compte
+
+*** Justifier son expertise, ou une position sénior
+    Histoire de confiance
+    Plus simple à obtenir dans l'Open Source, car contributions vérifiables
+    Expert Open Source = Contributeur
+    Outils modernes tels que github et google aident
+
+*** 
+
+** Reseau, contacts, job
+   Petites annonces == échec de trouver le candidat
+   Boulots intéressants par bouche à oreille
+   Peer review
+   Travailler ensemble sans avoir le même employeur
+
+** 
