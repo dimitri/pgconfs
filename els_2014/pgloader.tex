@@ -171,46 +171,4 @@ compiled with SBCL 1.1.17
   \end{center}
 \end{frame}
 
-\begin{frame}[fragile]
-  \frametitle{A simple test using SBCL}
-
-\begin{verbatim}
-$ /usr/bin/pgloader --version
-pgloader version "3.0.9a90be1"
-compiled with SBCL 1.1.17
-
-$ ./build/bin/pgloader \
-      /Users/dim/dev/pgloader/test/csv-districts.load
-
-       table name       read             time
------------------  ---------   --------------
-      before load          2           0.033s
------------------  ---------   --------------
-        districts        440           0.070s
------------------  ---------   --------------
-Total import time        440           0.103s
-\end{verbatim}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{The same simple test using Clozure-CL}
-
-\begin{verbatim}
-$ /usr/bin/pgloader --version
-pgloader version "3.0.c9f7e48"
-compiled with Clozure Common Lisp Version 1.9-r15758  (DarwinX8632)
-
-$ ./build/bin/pgloader \
-      /Users/dim/dev/pgloader/test/csv-districts.load
-
-       table name       read             time
------------------  ---------   --------------
-      before load          2           0.015s
------------------  ---------   --------------
-        districts        440           0.039s
------------------  ---------   --------------
-Total import time        440           0.054s
-\end{verbatim}
-\end{frame}
-
 \end{document}
