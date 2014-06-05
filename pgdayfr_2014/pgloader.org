@@ -1,0 +1,91 @@
+* Intégrer des données dans PostgreSQL
+
+  Qu'il s'agisse de données au format CSV, dBase SQLite ou MySQL, et bientôt
+  JSON ou XML, pgloader 3.1 est fait pour vous aider à normaliser et
+  importer vos données externes dans PostgreSQL. Cette présentation détaille
+  comment utiliser pgloader afin de résoudre les problèmes habituels de
+  chargement de données.
+
+** Intégration de données, cas d'usages
+*** Fournisseurs extérieurs
+
+** Intégration de données, techniques connues
+*** ETL
+*** ELT
+
+** Présentation de pgloader
+*** Historique
+    10 ans, TCL, Python, Common Lisp
+*** Spécifications
+    Cas concrets issus de besoins clients
+    Utilisation en production
+*** Solution    
+*** Language de commande
+*** Performances
+
+** Gestion du projet
+*** github
+*** Issues & Pull Requests
+*** Release Management
+    Versionning, 3.0.99
+*** packaging (debian)
+
+** Sources de données
+*** CSV, Fixed Width
+*** file, http, zip, inline, stdin
+*** dBase
+*** SQLite
+*** MySQL
+
+** Transformation des données
+*** Exemple Geolite
+*** Transformation intégrées
+*** Comment ajouter des transformations
+*** Limitations
+    Les transformations se font sur des colonnes déjà parsées
+    Doivent être écrites en Common Lisp
+
+** Migration de MySQL à PostgreSQL
+*** Use case, problèmes habituels
+*** Éléments de syntaxe
+    identifiers, quoting
+*** Contraintes d'intégrité
+    à commencer par l'encodage et les types de données
+    clés primaires, unique
+    clés étrangères
+*** Encodage
+*** Types de données
+*** CASTing rules
+*** Vues
+*** Vues matérialisées
+    Implémente les transformations pour migration à un nouveau schéma
+
+** Support de SQLite
+*** Schéma, FK
+*** Casting Rules « en dur »
+
+** dBase
+*** Schéma, 1 seule table
+*** casting en dur
+
+** Autres sources de données
+*** conception extensible
+*** Oracle, SQL Server
+*** Informix, Sybase
+*** JSON, XML
+*** Excel?
+*** Autres archives (.zip seulement aujourd'hui)
+
+** Compatibilité
+*** pgloader v2
+*** SQL*Loader
+*** Vues, donc conversion de dialectes SQL
+*** Procédures Stockées, compilateur PL/A → PL/B
+
+** Chargement parallèle
+*** Implémentation actuelle déjà parallèle
+    read/write en parallèle, I/O asynchrones
+*** Transformation des données
+    ajouter un « étage » de transformation des données ?
+*** aiguillage
+*** 1 reader / N writers
