@@ -302,6 +302,16 @@ LOAD CSV
 \end{verbatim}
 \end{frame}
 
+\begin{frame}
+  \frametitle{pgloader : Transformer les données à la volée}
+
+  \center{\url{http://pgloader.io/}}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{huge-full-outer-join.jpg}
+  \end{center}
+\end{frame}
+
 \begin{frame}[fragile]
   \frametitle{Transformation de données}
 
@@ -346,13 +356,185 @@ INTO postgresql:///ip4r?geolite.location
 \section{MySQL}
 
 \begin{frame}
-  \frametitle{de MySQL à PostgreSQL}
+  \frametitle{Migration complète de MySQL à PostgreSQL}
 
   \center{\url{http://www.galaxya.fr/}}
   
   \begin{center}
     \includegraphics[height=2.1in]{tv.png}
   \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Pour Galaxya, utilisation des outils habituels}
+  
+  \center{Mais les vrais problèmes ne sont pas résolus...}
+  \vfill
+
+  \begin{itemize}
+  \item \texttt{mysql2pgsql}, puis édition manuelle du schema
+  \item \texttt{SELECT INTO OUTFILE} sur le server, puis \texttt{COPY}
+  \item Le client MySQL prétend donner du CSV avec une redirection
+  \item On ajoute toujours une étape \texttt{awk} ou \texttt{sed}
+  \item On trouve quelques scripts en Python et en Ruby
+  \end{itemize}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{MySQL et les types de données}
+
+  \center{Text vide ou NULL, valeurs par défaut, dates à
+    \texttt{0000-00-00}, \texttt{int(11)}, \texttt{float(20,2)},
+    \texttt{tinyint} mais pas de \texttt{boolean}, \texttt{sets}, encodage,
+    ... }
+  
+  \begin{center}
+    \includegraphics[height=2.1in]{type-casting-machine.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{MySQL : édition des règles de transtypages}
+
+\begin{verbatim}
+LOAD DATABASE
+     FROM      mysql://root@unix:/tmp/mysql.sock:/goeuro
+     INTO postgresql://dim@unix:/tmp:/godollar
+
+CAST type datetime to timestamptz
+                 drop default drop not null
+                using zero-dates-to-null,
+
+     column bools.a to boolean drop typemod
+                 using tinyint-to-boolean,
+
+     type char when (= precision 1)
+       to char keep typemod,
+
+     column enumerate.foo
+      using empty-string-to-null
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{MySQL : MATERIALIZE VIEWS}
+
+  \center{Changer de schéma pendant la migration, c'est possible}
+  \vfill
+  
+\begin{verbatim}
+ MATERIALIZE VIEWS foo,
+   d as $$
+       select cast(d as date) as d, count(*) as n
+         from plop
+        where d > '2013-10-02'
+     group by cast(d as date);
+   $$
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Limites de pgloader}
+  
+  \center{Il reste beaucoup de travail}
+  \vfill
+
+  \begin{itemize}
+  \item Vues (dialectes SQL différents)
+  \item Triggers
+  \item Procédures Stockées
+  \item Types de données géométriques
+  \end{itemize}  
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Les autres bases de données supportées}
+
+  \begin{columns}[c]
+    \column{.4\textwidth} 
+    \begin{center}
+      \includegraphics[height=1.4in]{dBase.png}
+    \end{center}
+
+    \column{.6\textwidth} 
+    \begin{center}
+      \includegraphics[height=1.4in]{SQLite.png}
+    \end{center}
+  \end{columns}
+\end{frame}
+
+\section{Avenir}
+
+\begin{frame}
+  \frametitle{À suivre}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{avenir.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{De nouvelles sources de données}
+
+  \center{Chargement avec éventuelle \textit{normalisation} des données}
+  
+  \begin{columns}[c]
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=9em]{xml.png}
+    \end{center}
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=9em]{logo-json.png}
+    \end{center}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{De nouvelles connections}
+
+  \begin{columns}[c]
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=4em]{oracle-logo.png}
+    \end{center}
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=2em]{Informix_d1323_450x450.png}
+    \end{center}
+  \end{columns}
+  \vfill
+
+  \begin{columns}[c]
+    \column{.5\textwidth} 
+    \begin{center}
+      \includegraphics[height=4em]{mssql.png}
+    \end{center}
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=3em]{sybase_logo.png}
+    \end{center}
+  \end{columns}
+\end{frame}
+
+\section{Conclusion}
+
+\begin{frame}[fragile]
+  \begin{center}
+    \includegraphics[height=18em]{free-our-open-data.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Questions?}
+
+\begin{center}
+  Now is the time to ask!
+  \vfill
+
+  \includegraphics[height=9em]{fly.png}
+\end{center}
 \end{frame}
 
 \end{document}
