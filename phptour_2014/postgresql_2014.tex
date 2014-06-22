@@ -1,0 +1,723 @@
+%%% PHP Tour 2014, Utiliser PostgreSQL en 2014
+%%%
+%%% À l'heure où le NoSQL passe de mode doucement, il est temps de se poser
+%%% les bonnes questions vis à vis des technologies de bases de données à
+%%% utiliser, comment et pourquoi. PostgreSQL entre de plein droit dans la
+%%% case des SGBD relationnels classiques, aussi nous commencerons par
+%%% étudier ce que de ces outils apportent. Puis nous ferons le tour des
+%%% fonctionnalités avancées de PostgreSQL, qui le positionnent comme un
+%%% élément clé de votre architecture d'application.
+
+\documentclass{beamer}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows,backgrounds,snakes,shadows}
+
+\usepackage{minted}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{beamerthemesplit}
+\usetheme{Boadilla}
+%\setbeamertemplate{itemize items}{\checkmark}
+\setbeamertemplate{itemize items}[circle]
+\beamertemplatetransparentcovered
+
+\usepackage{multicol}
+
+\title{\textsc{Utiliser PostgreSQL en 2014}}
+\subtitle{PHP Tour, 2014}
+\author{\textit{Dimitri Fontaine} \texttt{dimitri@2ndQuadrant.fr}
+  \linebreak
+  \url{@tapoueh}}
+\date{23 juin 2014}
+\logo{\includegraphics[height=0.4cm]{2ndQuadrant-cross.png}}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section{Introduction}
+
+\begin{frame}
+  \frametitle{Dimitri Fontaine}
+
+  \center{\Large \textsc{Principal Consultant at 2ndQuadrant}}
+  \begin{center}
+    \includegraphics[height=1.1in]{2ndquadrant_logo_full_color.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Dimitri Fontaine}
+
+  \begin{center}
+    {\Large \textsc{PostgreSQL Major Contributor}}
+  \end{center}
+
+  \begin{columns}[c]
+    \column{.5\textwidth} 
+
+    \begin{itemize}
+    \item \texttt{pgloader}
+    \item \texttt{prefix}, \texttt{skytools}
+    \item \texttt{apt.postgresql.org}
+    \item \texttt{\textbf{CREATE EXTENSION}}
+    \item \texttt{\textbf{CREATE EVENT TRIGGER}}
+    \item \textit{Bi-Directional Réplication}
+    \item \texttt{pginstall}
+    \end{itemize}  
+
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=9em]{postgres-logo.png}
+    \end{center}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Système de Gestion de Bases de données Relationnelles}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{machine-d-Anticythere-c.jpg}
+  \end{center}
+
+  \vfill
+  \begin{center}
+    \textit{La Fabuleuse machine d'Anticythère}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Système de Gestion de Bases de données Relationnelles}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{anticy6.jpg}
+  \end{center}
+
+  \vfill
+  \begin{center}
+    \textit{La Fabuleuse machine d'Anticythère}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Système de Gestion de Bases de données Relationnelles}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{IBM_Electronic_Data_Processing_Machine_-_GPN-2000-001881.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Système de Gestion de Bases de données Relationnelles}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{caution_acid.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Transactions}
+
+  \begin{center}
+    \includegraphics[height=1.6in]{rollback-wordmark.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Transactions}
+
+  \begin{minted}{postgresql}
+    BEGIN;
+      DROP TABLE donnees_critiques;
+    ROLLBACK;
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Transactions}
+
+  \begin{minted}{postgresql}
+    START TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+      DROP TABLE donnees_critiques;
+    ROLLBACK;
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Transactions}
+
+  \begin{minted}{postgresql}
+    BEGIN;
+      CREATE INDEX ... ON ...;
+      EXPAIN ANALYZE SELECT ...;
+    ROLLBACK;
+  \end{minted}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Backups cohérents à chaud}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{online-backup.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Disponibilité des services et des données}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{distribution.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Disponibilité des services et des données}
+
+  \begin{center}
+    \begin{tikzpicture}[thick]
+      \tikzstyle{node}=[minimum width=2.3cm,minimum height=1.3cm,
+        rectangle,rounded corners=10pt,draw,
+        fill=blue!20]
+
+      \node[node]                 (P)  at (0,0)   {\Large Primary};
+      \node[node][fill=orange!40] (A)  at (0,-3.2)  {\Large Archive};
+      \node[node][fill=violet!20] (S1) at (-4,-5.2) {\Large Standby 1};
+      \node[node][fill=violet!40] (S2) at (4,-5.2)  {\Large Standby 2};
+
+      \tikzstyle{sr}=[->,dotted,very thick,>=latex]
+      \tikzstyle{ar}=[->,>=latex]
+      \tikzstyle{rc}=[->,dashed,>=latex]
+
+      \draw[ar] (P) -- (A)
+      node [midway,fill=white] {\texttt{archive\_command}};
+
+      \draw[sr] (P) edge[bend right]
+      node[pos=0.5,fill=white] {\textbf{Streaming Replication}}
+      (S1);
+
+      \draw[sr] (P) edge[bend left]
+      node[pos=0.5,fill=white,text=violet]
+      {\textbf{\textit{Streaming Replication}}}
+      (S2);
+
+      \draw[rc] (A) |- (S2)
+      node [midway,fill=white,text=violet]
+      {\texttt{restore\_command}};
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Cohérence des données}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{bits.jpeg}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Type de données et contraintes}
+
+  \begin{minted}{postgresql}
+    CREATE TABLE reservation (
+        during tsrange NOT NULL,
+        EXCLUDE USING gist (during WITH &&)
+    );
+    
+    CREATE TABLE circles (
+      c circle,
+      EXCLUDE USING gist (c WITH &&)
+    );
+  \end{minted}
+\end{frame}
+
+\begin{frame}
+  \frametitle{La console interactive \texttt{psql}}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{repl.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Types de données avancés}
+
+\begin{columns}
+\column{.7\textwidth}
+\begin{minted}{postgresql}
+select iprange, locid
+  from geolite.blocks
+ where iprange >>= '91.121.37.122';
+
+
+          iprange          | locid 
+---------------------------+-------
+ 91.121.0.0-91.121.159.255 |    75
+(1 row)
+
+Time: 1.220 ms
+\end{minted}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{IP Ranges, \texttt{ip4r}, Geolocation}
+
+  \center{Géolocalisation et méta-données obtenues sur une jointure}
+  \vfill
+
+\begin{columns}
+\column{.45\textwidth}
+\begin{minted}{postgresql}
+ select *
+   from geolite.blocks
+   join geolite.location
+        using(locid)
+  where iprange
+            >>=
+        '74.125.195.147';
+\end{minted}
+\column{.55\textwidth}
+\begin{minted}{postgresql}
+-[ RECORD 1 ]----------------------------
+locid      | 2703
+iprange    | 74.125.189.24-74.125.255.255
+country    | US
+region     | CA
+city       | Mountain View
+postalcode | 94043
+location   | (-122.0574,37.4192)
+metrocode  | 807
+areacode   | 650
+
+Time: 1.335 ms
+\end{minted}
+\end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{\textsc{Structured Query Language}}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{sql.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{How Far is The Nearest Pub}
+
+  \center{The \texttt{point} datatype is in-core}
+  \vfill
+
+\begin{columns}[c]
+\column{.45\textwidth} 
+
+\begin{minted}{postgresql}
+   CREATE TABLE pubnames
+   (
+     id   bigint,
+     pos  POINT,
+     name text
+   );
+\end{minted}  
+
+\column{.55\textwidth}
+\begin{center}
+  \includegraphics[height=9em]{ltlng.jpg}
+\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{How Far is The Nearest Pub, in Miles please.}
+
+\begin{minted}{postgresql}
+create extension cube;
+create extension earthdistance;
+\end{minted}  
+\vfill
+
+\begin{columns}
+\column{.65\textwidth}
+\begin{minted}{postgresql}
+  select name,
+   pos <@> point(-6.25,53.34) miles
+    from pubnames
+order by pos <-> point(-6.25,53.34)
+   limit 3;
+\end{minted}  
+\column{.35\textwidth}
+\begin{minted}{postgresql}
+  name  | miles 
+--------+-------
+ Ned's  |  0.06
+ Sub Lo |  0.07
+ O'Neil |  0.12
+(3 rows)
+
+Time: 1.335 ms
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Geolocalisation et meta-données}
+
+\begin{columns}
+\column{.5\textwidth}
+\begin{minted}{postgresql}
+with geoloc as
+ (
+  select location as l
+    from location
+    join blocks using(locid)
+   where iprange
+         >>=
+         '212.58.251.195'
+ )
+  select name,
+         pos <@> l miles
+    from pubnames, geoloc
+order by pos <-> l
+   limit 10;
+\end{minted}  
+\column{.5\textwidth}
+\begin{minted}{postgresql}
+        name        | miles 
+--------------------+-------
+ Blue Anchor        | 0.299
+ Dukes Head         | 0.360
+ Blue Ball          | 0.337
+ Bell (aka The Rat) | 0.481
+ on the Green       | 0.602
+ Fox & Hounds       | 0.549
+ Chequers           | 0.712
+ Sportsman          | 1.377
+ Kingswood Arms     | 1.205
+ Tattenham Corner   | 2.007
+(10 rows)
+
+Time: 3.275 ms
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Trigrammes et autocompletion}
+
+\begin{columns}
+\column{.5\textwidth}
+\begin{minted}{postgresql}
+  select actor
+    from products
+   where actor % 'fran'
+order by actor <-> 'fran'
+   limit 10;
+\end{minted}  
+\column{.5\textwidth}
+\begin{minted}{postgresql}
+    actor     
+--------------
+ FRANK HAWKE
+ FRANK BERRY
+ FRANK POSEY
+ FRANK HAWKE
+ FRANCES DEE
+ FRANK LEIGH
+ FRANCES DAY
+ FRANK FOSTER
+ FRANK HORNE
+ FRANK TOMEI
+(10 rows)
+
+Time: 2.960 ms
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{PostgreSQL sait utiliser des tableaux}
+
+\begin{columns}
+\column{.7\textwidth}
+\begin{minted}{postgresql}
+  select tt.tid,
+         array_agg(tags.rowid) tags
+    from tags
+         join tid_tag tt
+           on tags.rowid = tt.tag
+group by tt.tid
+   limit 3;
+\end{minted}  
+\column{.3\textwidth}
+\begin{minted}{postgresql}
+ tid |   tags    
+-----+-----------
+   1 | {1,2}
+   2 | {3,4}
+   3 | {5,6,7,8}
+(3 rows)
+
+time: 942.074 ms
+\end{minted}  
+\end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Types de données composites}
+
+  \begin{columns}[c]
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=9em]{xml.png}
+    \end{center}
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=9em]{logo-json.png}
+    \end{center}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{SQL en 2014 : les \textit{window functions}}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{how-to-frame-a-partition-1.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Finding the last counter value before \textit{reset}}
+
+\begin{columns}
+\column{.65\textwidth}
+\center{\textit{Write some \alert{SQL} here}}
+\column{.35\textwidth}
+\begin{minted}{postgresql}
+ tick | nb | max 
+------+----+-----
+    1 |  0 |    
+    2 | 10 |    
+    3 | 20 |    
+    4 | 30 |    
+    5 | 40 |  40
+    6 |  0 |    
+    7 | 20 |    
+    8 | 30 |    
+    9 | 60 |  60
+(9 rows)
+\end{minted}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Window Functions: \texttt{lead() over()}}
+
+\begin{columns}
+\column{.65\textwidth}
+\begin{minted}{postgresql}
+  select tick,
+         nb,
+         lead(nb) over (order by tick)
+    from measures;
+\end{minted}
+
+\column{.35\textwidth}
+\begin{minted}{postgresql}
+ tick | nb | lead 
+------+----+------
+    1 |  0 |   10
+    2 | 10 |   20
+    3 | 20 |   30
+    4 | 30 |   40
+    5 | 40 |    0
+    6 |  0 |   20
+    7 | 20 |   30
+    8 | 30 |   60
+    9 | 60 |     
+(9 rows)
+\end{minted}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Window Functions and \texttt{CASE}}
+
+\begin{columns}
+\column{.65\textwidth}
+\begin{minted}{postgresql}
+  select tick, nb,
+         case when lead(nb) over w < nb
+              then nb
+
+              when lead(nb) over w is null
+              then nb
+
+              else null
+          end as max
+    from measures
+  window w as (order by tick);
+\end{minted}
+\column{.35\textwidth}
+\begin{minted}{postgresql}
+ tick | nb | max 
+------+----+-----
+    1 |  0 |    
+    2 | 10 |    
+    3 | 20 |    
+    4 | 30 |    
+    5 | 40 |  40
+    6 |  0 |    
+    7 | 20 |    
+    8 | 30 |    
+    9 | 60 |  60
+(9 rows)
+\end{minted}
+\end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Un histogramme tout en SQL}
+
+  \begin{center}
+    \includegraphics[height=1.8in]{histogram.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Histogramme tout en SQL}
+  
+  \begin{minted}{postgresql}
+with drb_stats as (
+    select min(drb) as min,
+           max(drb) as max
+      from team_stats
+),
+     histogram as (
+   select width_bucket(drb, min, max, 9) as bucket,
+          int4range(min(drb), max(drb), '[]') as range,
+          count(*) as freq
+     from team_stats, drb_stats
+ group by bucket
+ order by bucket
+)
+ select bucket, range, freq,
+        repeat('*', (freq::float / max(freq) over() * 30)::int) as bar
+   from histogram;
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Histogramme tout en SQL}
+  
+  \begin{minted}{postgresql}
+ bucket |  range  | freq  |              bar               
+--------+---------+-------+--------------------------------
+      1 | [10,15) |    52 | 
+      2 | [15,20) |  1363 | **
+      3 | [20,25) |  8832 | *************
+      4 | [25,30) | 20917 | ******************************
+      5 | [30,35) | 20681 | ******************************
+      6 | [35,40) |  9166 | *************
+      7 | [40,45) |  2093 | ***
+      8 | [45,50) |   247 | 
+      9 | [50,54) |    20 | 
+     10 | [54,55) |     1 | 
+(10 rows)
+
+Time: 53.570 ms
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Savoir contourner les ORMs avec les \texttt{wCTE}}
+  
+  \begin{minted}{postgresql}
+with queue as (
+   insert into queue (extension)
+        select id
+          from extension
+         where shortname = $1
+  returning id, extension
+)
+select q.id, e.id as ext_id,
+       e.fullname, e.uri, e.description
+  from      queue q
+       join extension e on q.extension = e.id;    
+  \end{minted}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Les Indexes dans PostgreSQL}
+
+  \begin{center}
+    \includegraphics[height=12em]{suffix-tree-banana.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Les Indexes dans PostgreSQL}
+
+  \begin{columns}
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=12em]{B_tree_insertion_example.png}
+    \end{center}
+
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=12em]{rtree.png}
+    \end{center}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Les Indexes dans PostgreSQL}
+
+  \begin{center}
+    \includegraphics[height=12em]{gin.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Les jointures avec PostgreSQL}
+
+  \begin{center}
+    \includegraphics[height=12em]{huge-full-outer-join.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Les jointures avec PostgreSQL}
+
+  \begin{minted}{postgresql}
+WITH upd AS (
+    UPDATE target t
+       SET counter = t.counter + s.counter,
+      FROM source s
+     WHERE t.id = s.id
+ RETURNING s.id
+)
+INSERT INTO target(id, counter)
+     SELECT id, sum(counter)
+       FROM source s LEFT JOIN upd t USING(id)
+      WHERE t.id IS NULL
+   GROUP BY s.id
+   RETURNING t.id
+  \end{minted}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Questions?}
+
+  \begin{center}
+    Now is the time to ask!
+    \vfill
+
+    \includegraphics[height=9em]{fly.png}
+  \end{center}
+\end{frame}
+
+\end{document}

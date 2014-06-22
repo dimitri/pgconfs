@@ -1,0 +1,49 @@
+* Utiliser PostgreSQL en 2014
+  23/06/2014 14:15 - 15:00
+  Amphi C 
+
+  À l'heure où le NoSQL passe de mode doucement, il est temps de se poser
+  les bonnes questions vis à vis des technologies de bases de données à
+  utiliser, comment et pourquoi. PostgreSQL entre de plein droit dans la
+  case des SGBD relationnels classiques, aussi nous commencerons par étudier
+  ce que de ces outils apportent. Puis nous ferons le tour des
+  fonctionnalités avancées de PostgreSQL, qui le positionnent comme un
+  élément clé de votre architecture d'application.
+
+** PostgreSQL is YeSQL
+
+** RDBMS, Concurrence, ACID
+
+   Atomicité, Durabilité
+   Disponibilité des données
+   ACID = backup consistents
+   ACID DDL
+
+** Cohérence des données et modélisation
+
+   Typage fort des données
+   Types de données inclus dans PostgreSQL et en extensions
+   Contraintes du modèle de données (NOT NULL, UNIQUE, PK, FK, EXCLUDE)
+   Contraintes applicatives (CHECK, DOMAIN, CONSTRAINT TRIGGERS)
+
+** Haute disponibilité
+
+   Services, données
+
+** SQL
+
+   psql, interactive console, feedback loop
+   CTE
+   window function
+   example : reset counter
+   example : histogram
+
+   wCTE, trick the ORM
+   
+   Indexing
+   JOINs
+   DML, Joins in DML
+   
+   LISTEN/NOTIFY
+
+** PostgreSQL is YeSQL !
