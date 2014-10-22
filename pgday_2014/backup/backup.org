@@ -1,0 +1,114 @@
+* PostgreSQL Conference Europe 2014, Madrid
+
+  A PostgreSQL data recovery tale from a true story, where we dig deeper and
+  deeper into the PostgreSQL internals in order to be able to get back some
+  data from a destroyed cluster.
+
+  If that story doesn't leave you wanting to check all your backups before
+  the talk has ended, I don't know what will.
+
+** Based on a a real story
+   /Users/dim/dev/tapoueh.org/blog/2013/09/16-PostgreSQL-data-recovery.muse
+
+** Backups
+   Are not interesting
+   Are not the problem you want to solve
+
+** Recovery
+   use barman
+   use something else, double check first
+
+** Automated testing of recovery
+   Or you just don't have backups
+   Plain and simple
+
+** The story now
+   The setup
+
+** Some words about shell scripts
+   Make it harder than it should to write proper error handling
+   Double Check all your assumptions
+   Including any env variable you depend upon
+   Before doing anything
+
+   Stop as soon as an error occurs
+   Clean-up the mess
+
+** In-house backup scripts
+   Must be battle tested
+   More than once
+
+** Can you spell data loss?
+   Backup script first cleanup old files
+   So that we have roon for the new backup
+   Did that in $PGDATA because of lack of setup and checking
+
+** Recovering some data
+
+** Don't do that at home kids
+   PostgreSQL resiliance is impressively awesome
+   We're going to live edit its binary files until it stops complaining
+
+** pg_control
+
+** pg_resetxlog
+
+** pg_filenode.map
+
+   od -j 8 -N $((512-8-8)) -td4 < $PGDATA/global/pg_filenode.map
+
+** pg_clog
+   (code-char #b01010101)
+   #\U
+
+   for c in 0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 000A 000B 000C
+   do
+       dd if=/dev/zero bs=256k count=1 | tr '\0' 'U' > $c
+   done
+
+** pg_database
+   Hack the server code. Only run the hacked version against a fesh copy of
+   a cluster, obviously, right?
+
+   Still copy in place the resulting file.
+
+   select oid, relname, pg_relation_filenode(oid)
+     from pg_class
+    where relname = 'pg_database';
+    oid  |   relname   | pg_relation_filenode 
+   ------+-------------+----------------------
+    1262 | pg_database |                12319
+   (1 row)
+
+** System indexes
+
+   FATAL:  database "dbname" does not exists
+   DETAIL:  Database OID 17838 now seems to belong to "otherdbname"
+
+    $ pg_ctl start -o "-P"
+    $ cat > $PGDATA/postgresql.conf <<EOF
+    	enable_indexscan = off
+    	enable_bitmapscan = off
+    	enable_indexonlyscan = off
+    EOF
+    $ pg_ctl reload
+
+** pg_proc, pg_operator, pg_cast, pg_aggregate, pg_amop and others
+
+   select oid, relname, pg_relation_filenode(oid)
+     from pg_class
+    where pg_relation_filenode(oid) = 12062;
+    oid  | relname | pg_relation_filenode 
+   ------+---------+----------------------
+    1255 | pg_proc |                12062
+   (1 row)
+
+** pg_namespace
+
+** pg_attributes and pg_attrdef
+
+** COPY out
+
+** Conclusion
+   BACKUPS
+   RECOVERY AUTOMATED TESTING
