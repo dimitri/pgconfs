@@ -1,0 +1,343 @@
+%%% Open World Forum 2014, 31/10/2014, Paris
+%%%
+%%% The PostgreSQL project organisation has been evolving several times in
+%%% the last 20 years to accommodate to an ever growing community of
+%%% contributors and users. In this talk, we will review the history of the
+%%% project organisation to better understand how this project is managed,
+%%% then detail the current state of things. Strengths and weaknesses will
+%%% get analyzed.
+
+\documentclass{beamer}
+
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+
+\usepackage{beamerthemesplit}
+\usepackage[utf8]{inputenc}
+%% \usetheme{AnnArbor}
+\usetheme{Boadilla}
+%% \usetheme{Pittsburgh}
+%% \usecolortheme{beaver}
+%% \beamertemplatetransparentcovered
+
+\title{The PostgreSQL Project}
+\subtitle{Open World Forum, 2014}
+\author{Dimitri Fontaine \linebreak \url{@tapoueh}}
+\date{Oct 31st, 2014}
+\logo{\includegraphics[height=0.4cm]{2ndQuadrant-cross.png}}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\begin{frame}[fragile]
+  \frametitle{Dimitri Fontaine}
+
+  \center{\Large \textsc{PostgreSQL Major Contributor}}
+  \vfill
+
+\begin{columns}[c]
+\column{.5\textwidth} 
+
+  \begin{itemize}
+   \item \texttt{pgloader}
+   \item \texttt{prefix}, \texttt{skytools}
+   \item \texttt{apt.postgresql.org}
+   \item \texttt{\textbf{CREATE EXTENSION}}
+   \item \texttt{\textbf{CREATE EVENT TRIGGER}}
+   \item \textit{Bi-Directional Réplication}
+   \item \texttt{pginstall}, \texttt{pgcharts}
+  \end{itemize}  
+
+\column{.5\textwidth}
+\begin{center}
+  \includegraphics[height=9em]{postgres-logo.png}
+\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{2ndQuadrant is a \textit{Platinum} sponsor}
+
+  \center{\Large \textsc{Principal Consultant at 2ndQuadrant}}
+  \begin{center}
+    \includegraphics[height=1.1in]{2ndquadrant_logo_full_color.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{\textsc{PostgreSQL}}
+
+  \begin{center}
+    \includegraphics[height=12em]{postgres-logo.png}
+  \end{center}
+\end{frame}
+
+\section{PostgreSQL History}
+
+\begin{frame}[fragile]
+  \frametitle{What is \textsc{PostgreSQL}?}
+
+  \center{\textsc{PostgreSQL} has roots in Database History}
+  \vfill
+
+\begin{columns}[c]
+\column{.55\textwidth} 
+
+  \begin{itemize}
+  \item \textbf{UC Berkeley}
+  \item 1973 INGRES
+  \item 1986 Postgres
+  \item 1996 PostgreSQL, Open Source BSD Licence
+  \end{itemize}
+
+\column{.45\textwidth}
+\begin{center}
+  \includegraphics[height=7em]{021909_Stonebraker_Michael_250_large.jpg}
+  \linebreak
+  Michael Stonebraker
+\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Project organisation}
+
+  \center{Core team, Committers, Contributors, Sponsors}
+  \vfill
+
+\begin{columns}[c]
+\column{.55\textwidth} 
+
+  \begin{itemize}
+  \item Contributors, Enterprises, Sponsors
+  \item Mailing lists
+  \item Release Model
+  \item Minor and Major Versions
+  \item Stable Versions, Current Versions
+  \end{itemize}
+
+\column{.45\textwidth}
+\begin{center}
+  \includegraphics[height=7em]{elite_contributors.jpg}
+\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\textsc{PostgreSQL} Contributors}
+
+  \center{Who does what?}
+  \vfill
+
+\begin{columns}[c]
+\column{.55\textwidth} 
+
+  \begin{itemize}
+  \item Core Team
+  \item Committers
+  \item Major Contributors
+  \item Contributors
+  \end{itemize}
+
+\column{.45\textwidth}
+\begin{center}
+  \includegraphics[height=12em]{in-core-replication.jpg}
+\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\textsc{PostgreSQL} Sponsors}
+
+  \center{Who owns PostgreSQL?}
+  \vfill
+
+\begin{columns}[c]
+\column{.45\textwidth} 
+
+  \begin{itemize}
+  \item No one.
+  \item {\Large \textsc{No One.}}
+  \item \textsc{The PostgresQL Development Group}
+  \item \url{http://www.postgresql.org/about/sponsors/}
+  \end{itemize}
+
+\column{.55\textwidth}
+\begin{center}
+  \includegraphics[height=9em]{corporate_sponsorship.jpg}
+\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Some \textsc{PostgreSQL} sponsors}
+
+  \begin{columns}[c]
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=4.2em]{logo_2q.png}
+    \end{center}
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=3.5em]{logo_edb.png}
+    \end{center}
+  \end{columns}
+  \vfill
+
+  \begin{columns}[c]
+    \column{.5\textwidth} 
+    \begin{center}
+      \includegraphics[height=4em]{logo_heroku.png}
+    \end{center}
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=4em]{logo_vmware.png}
+    \end{center}
+  \end{columns}
+  \vfill
+
+  \begin{columns}[c]
+    \column{.5\textwidth} 
+    \begin{center}
+      \includegraphics[height=6em]{logo_skype.png}
+    \end{center}
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=3em]{logo_rh.png}
+    \end{center}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Pace of development}
+
+  \center{Thanks to a very active \textbf{community}, PostgreSQL is moving \textit{real fast.}}
+  \vfill
+
+\begin{columns}[c]
+\column{.65\textwidth} 
+
+  \begin{itemize}
+  \item Catch-up with alternatives mainly has been done already
+  \item Too many patches: Commit Fests
+  \item Very fast innovation
+  \item Yearly release cycle
+  \end{itemize}
+
+\column{.35\textwidth}
+\begin{center}
+  \includegraphics[height=10em]{innovation.jpg}
+\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Mailing List Traffic}
+
+  \center{\texttt{pgsql-hackers} mailing list trafic, \url{http://markmail.com}}
+  
+  \begin{center}
+    \includegraphics[height=15em]{pgsql-hackers.pdf}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Commit Fests}
+
+  \center{Allow Commiters to also work on their own patches}
+  \vfill
+
+  \begin{columns}[c]
+    \column{.55\textwidth} 
+
+    \center{Current Commit Fest Status Summary:}
+    \vfill
+    \begin{itemize}
+    \item Needs Review: 48
+    \item Waiting on Author: 14
+    \item Ready for Committer: 15
+    \item Committed: 8
+    \item Rejected: 1
+    \item Total: 86
+    \end{itemize}
+    
+    \column{.45\textwidth}
+    \begin{center}
+      \includegraphics[height=15em]{git-push-and-carry-on.png}
+    \end{center}
+  \end{columns}
+\end{frame}
+
+\frame{
+  \frametitle{PostgreSQL releases}
+
+  \center{Early history}
+  \vfill
+  
+  \begin{tabular}{lllll}
+    Version & Current minor & Supported & \colorbox{green}{First release date} & EOL date \\
+    \hline
+6.3 & 6.3.2 & No & March 1998 & March 2003 \\
+6.4 & 6.4.2 & No & Oct 1998 & Oct 2003 \\
+6.5 & 6.5.3 & No & June 1999 & June 2004 \\
+7.0 & 7.0.3 & No & May 2000 & May 2005 \\
+7.1 & 7.1.3 & No & April 2001 & April 2006 \\
+7.2 & 7.2.8 & No & Feb 2002 & Feb 2007 \\
+7.3 & 7.3.21 & No & Nov 2002 & Nov 2007 \\
+  \end{tabular}
+}
+\frame{
+  \frametitle{PostgreSQL releases}
+
+  \center{The first phase of community growth}
+  \vfill
+
+  \begin{tabular}{lllll}
+    Version & Current minor & Supported & \colorbox{green}{First release date} & EOL date \\    
+    \hline
+7.4 & 7.4.30 & No & Nov 2003 & Oct 2010 \\
+8.0 & 8.0.26 & No & Jan 2005 & Oct 2010 \\
+8.1 & 8.1.23 & No & Nov 2005 & Nov 2010 \\
+8.2 & 8.2.23 & No & Dec 2006 & Dec 2011 \\
+8.3 & 8.3.23 & No & Feb 2008 & Feb 2013 \\
+8.4 & 8.4.22 & No & July 2009 & July 2014 \\
+  \end{tabular}
+}
+\frame{
+  \frametitle{PostgreSQL releases}
+
+  \center{Current organisation, still growing}
+  \vfill
+  
+  \begin{tabular}{lllll}
+    Version & Current minor & Supported & \colorbox{green}{First release date} & EOL date \\
+    \hline
+9.0 & 9.0.18 & Yes & Sept 2010 & Sept 2015 \\
+9.1 & 9.1.14 & Yes & Sept 2011 & Sept 2016 \\
+9.2 & 9.2.9 & Yes & Sept 2012 & Sept 2017 \\
+9.3 & 9.3.5 & Yes & Sept 2013 & Sept 2018 \\
+  \end{tabular}
+}
+
+\begin{frame}
+  \frametitle{The Next Organisation}
+
+  \begin{center}
+    Commit Fest were great to help us up to where we are
+    \vfill
+    \includegraphics[height=15em]{workflow.jpg}
+  \end{center}
+\end{frame}
+
+\frame{
+  \frametitle{Questions?}
+
+\begin{center}
+  Now is the time to ask!
+  \vfill
+
+  \includegraphics[height=9em]{fly.png}
+\end{center}
+}
+
+\end{document}

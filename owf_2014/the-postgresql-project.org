@@ -1,0 +1,27 @@
+* The PostgreSQL Project - An example of Open Source Project Management
+
+  The PostgreSQL project organisation has been evolving several times in the
+  last 20 years to accommodate to an ever growing community of contributors
+  and users. In this talk, we will review the history of the project
+  organisation to better understand how this project is managed, then detail
+  the current state of things. Strengths and weaknesses will get analyzed.
+
+** History of the PostgreSQL Project
+
+** Open Source
+   Products
+   Project
+
+** Project Organisation Chart
+   Core Team
+   Contributors
+   Major Contributors
+   Contributors
+
+** Mailing list only
+
+** Too many patches, not enough reviewers
+
+** Commit Fests
+
+** 
