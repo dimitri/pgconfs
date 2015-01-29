@@ -1,0 +1,532 @@
+%%% Migrating to PostgreSQL, the new story
+%%% 
+%%% Database migration projects are always articulated around the same
+%%% steps, methodology and costs. At least when properly done.
+%%%
+%%% pgloader is meant to be disruptive in that market and offers to
+%%% completely automate the "boring" parts. In this talk, we will explain
+%%% what pgloader is and how it can change the database migration market.
+
+\documentclass{beamer}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows,backgrounds,snakes,shadows}
+
+\usepackage{minted}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{beamerthemesplit}
+\usetheme{Boadilla}
+%\setbeamertemplate{itemize items}{\checkmark}
+\setbeamertemplate{itemize items}[circle]
+\beamertemplatetransparentcovered
+
+\usepackage{multicol}
+
+\title{\textsc{Migrating to PostgreSQL, \\ the new story}}
+\subtitle{FOSDEM PGDAY, 2015}
+\author{\textit{Dimitri Fontaine} \texttt{dimitri@2ndQuadrant.fr}
+  \linebreak
+  \url{@tapoueh}}
+\date{January 30, 2015}
+\logo{\includegraphics[height=0.4cm]{2ndQuadrant-cross.png}}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section{Introduction}
+
+\begin{frame}
+  \frametitle{Dimitri Fontaine}
+
+  \center{\Large \textsc{Principal Consultant at 2ndQuadrant}}
+  \begin{center}
+    \includegraphics[height=1.1in]{2ndquadrant_logo_full_color.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Dimitri Fontaine}
+
+  \begin{center}
+    {\Large \textsc{PostgreSQL Major Contributor}}
+  \end{center}
+
+  \begin{columns}[c]
+    \column{.5\textwidth} 
+
+    \begin{itemize}
+    \item \texttt{pgloader}
+    \item \texttt{prefix}, \texttt{skytools}
+    \item \texttt{apt.postgresql.org}
+    \item \texttt{\textbf{CREATE EXTENSION}}
+    \item \texttt{\textbf{CREATE EVENT TRIGGER}}
+    \item \textit{Bi-Directional Réplication}
+    \item \texttt{pginstall}
+    \end{itemize}  
+
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=9em]{postgres-logo.png}
+    \end{center}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    \textsc{\Huge PostgreSQL is YeSQL!}
+    \vfill
+
+    \includegraphics[height=9em]{postgres-logo.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Let's talk about MySQL for a minute}
+
+  \center{Just in the context of migrating from it, of course}
+  
+  \begin{center}
+    \includegraphics[height=2.1in]{postgresql_versus_mysql.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Why Migrating from MySQL to PostgreSQL?}
+  
+\begin{columns}[c]
+\column{.5\textwidth} 
+
+\center{\textbf{MySQL}}
+  \vfill
+
+  \begin{itemize}
+  \item Storage Engine
+  \item Single Application
+  \item Data Loss with Replication
+  \item Weak Data Types Validation
+  \item Either transactions or
+  \item Lack of
+  \end{itemize}
+
+\column{.5\textwidth} 
+
+  \center{\textbf{PostgreSQL}}
+  \vfill
+
+  \begin{itemize}
+  \item Data Access Service
+  \item Application Suite
+  \item Durability and Availability
+  \item Consistency
+  \item Full Text Search, PostGIS
+  \item Proper Documentation
+  \end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The migration budget}
+  
+  \center{What are the costs?}
+  \vfill
+
+\begin{columns}
+\column{.6\textwidth}
+
+  \begin{itemize}
+  \item Migrating the Data
+  \item Migrating the Code
+  \item Quality Assurance
+  \item Opportunity Cost
+  \end{itemize}  
+
+\column{.4\textwidth}
+\begin{center}
+  \includegraphics[height=7em]{Dollar-sign.jpg}
+\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The boring parts really are}
+
+  \center{MySQL used not to be so serious about data consistency... still is}
+  
+  \begin{center}
+    \includegraphics[height=2.1in]{type-casting-machine.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Difficulties when migrating MySQL data}
+  
+  \center{Dates and The \textit{Gregorian} Calendar}
+  \vfill
+
+\begin{verbatim}
+MariaDB [talk]> create table dates(d datetime);
+MariaDB [talk]> insert into dates
+   values('0000-00-00'), ('0000-10-31'), ('2013-10-00');
+
+MariaDB [talk]> select * from dates;
++---------------------+
+| d                   |
++---------------------+
+| 0000-00-00 00:00:00 |
+| 0000-10-31 00:00:00 |
+| 2013-10-00 00:00:00 |
++---------------------+
+3 rows in set (0.00 sec)
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The \textsc{God} algorithm}
+
+  \center{\Huge \textsc{Picture Here}}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The \textsc{God} algorithm}
+
+  \center{What you want to do instead}
+  \vfill
+
+\begin{verbatim}
+ $ createdb pagila
+ $ pgloader mysql://user@localhost/sakila
+            pgsql:///pagila
+\end{verbatim}
+\end{frame}
+
+\begin{frame}
+  \frametitle{pgloader: load data into PostgreSQL}
+
+  \center{\url{http://pgloader.io/}}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{pgloader.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{pgloader: Open Source, github}
+
+  \center{\url{https://github.com/dimitri/pgloader}}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{Octocat.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{pgloader: what about loading data?}
+
+  \center{\url{http://pgloader.io/}}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{elephant-loading.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{pgloader main features}
+
+  \center{\textit{pgloader} is built around \texttt{copy}}
+  \vfill
+  
+  \begin{itemize}
+  \item Error handling and reject files
+  \item On the fly data transformations
+  \item Very simple command line for simple use cases
+  \item Advanced command language for advanced use cases
+  \item Parallelism to benefit from async IO
+  \item Lots of input formats
+  \end{itemize}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{CSV}
+
+  \center{\url{http://pgloader.io/howto/csv.html}}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{csv_text.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{COPY}
+
+  \center{\url{http://pgloader.io/howto/quickstart.html}}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{postgres-logo.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{dBase III}
+
+  \center{\url{http://pgloader.io/howto/dBase.html}}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{dBase.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{SQLite}
+
+  \center{\url{http://pgloader.io/howto/sqlite.html}}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{SQLite.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{MySQL}
+
+  \center{\url{http://pgloader.io/howto/mysql.html}}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{mysql.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{MS SQL Server}
+
+  \center{\url{http://pgloader.io/}}
+
+  \begin{center}
+    \includegraphics[height=1.8in]{mssql.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{And more to come}
+
+  \center{File formats with on-the-fly normalisation}
+  
+  \begin{columns}[c]
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=9em]{xml.png}
+    \end{center}
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=9em]{logo-json.png}
+    \end{center}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Other database systems}
+
+  \begin{columns}[c]
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=4em]{oracle-logo.png}
+    \end{center}
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=2em]{Informix_d1323_450x450.png}
+    \end{center}
+  \end{columns}
+  \vfill
+
+  \begin{columns}[c]
+    \column{.5\textwidth} 
+    \begin{center}
+      \includegraphics[height=4em]{mssql.png}
+    \end{center}
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=3em]{sybase_logo.png}
+    \end{center}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{pgloader database migration process}
+
+  \center{The data migration process, step by step}
+  \vfill
+  
+  \begin{enumerate}
+  \item Fetch metadata from source database catalogs
+  \item Prepare PostgreSQL database
+  \item COPY data
+  \item Complete PostgreSQL database
+  \item Display summary (human readable, json, csv, copy)
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Fetching Metadata}
+
+  \center{Currently supported metadata}
+  \vfill
+
+  \begin{itemize}
+  \item Schemas
+  \item Tables
+  \item \textit{Columns}
+  \item Indexes
+  \item Constraints
+  \item Comments (mysql only)
+  \item \textit{Materializing} Views (mysql only)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Prepare PostgreSQL database}
+
+  \center{Prepare PostgreSQL for receiving the data}
+  \vfill
+
+  \begin{itemize}
+  \item Schemas
+  \item Tables
+  \item Columns
+  \item Rename indexes with table oids in memory
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Copy Data}
+
+  \center{Copy the data from the source to the target}
+  \vfill
+
+  \begin{itemize}
+  \item For each table, COPY data in
+  \item Two threads work in parallel (reader/writer)
+  \item Then for each table, create all indexes in parallel
+  \item Currently no cap on the number of threads
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Complete PostgreSQL Database}
+
+  \center{Install constraints}
+  \vfill
+
+  \begin{itemize}
+  \item Reset \textbf{Sequences}
+  \item Upgrade unique indexes into \textbf{Primary Keys} where required
+  \item \textbf{Foreign Keys}
+  \item \textbf{Comments}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Migrating columns}
+
+  \center{What do you mean \textbf{columns}?}
+  
+  \begin{center}
+    \includegraphics[height=2.1in]{type-casting-machine.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{A simple use case}
+
+  \center{Remember that example? we'll see a more detailed one...}
+  \vfill
+
+\begin{verbatim}
+ $ createdb pagila
+ $ pgloader mysql://user@localhost/sakila
+            pgsql:///pagila
+
+ $ pgloader migration.load
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{An avdanced use case 1/3}
+
+\begin{verbatim}
+LOAD DATABASE
+     FROM      mysql://root@unix:/tmp/mysql.sock:/goeuro
+     INTO postgresql://dim@unix:/tmp:/godollar
+
+ -- INCLUDING ONLY TABLE NAMES MATCHING ~/sizes/
+ EXCLUDING TABLE NAMES MATCHING ~/encoding/
+
+ DECODING TABLE NAMES
+            MATCHING ~/messed/,
+                     ~/encoding/
+                  AS utf-8
+
+ SET maintenance_work_mem to '1 GB'
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{An avdanced use case 2/3}
+
+\begin{verbatim}
+CAST type datetime to timestamptz
+                 drop default drop not null
+                using zero-dates-to-null,
+
+     column bools.a to boolean drop typemod
+                 using tinyint-to-boolean,
+
+     type char when (= precision 1)
+       to char keep typemod,
+
+     column ascii.s using byte-vector-to-bytea,
+
+     column enumerate.foo
+      using empty-string-to-null
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{An avdanced use case 3/3}
+
+\begin{verbatim}
+ WITH downcase identifiers,          -- quote idenfifiers
+      truncate,
+      -- data only,
+      -- schema only,
+      create tables,                 -- create no tables
+      include drop,                  -- include no drop
+      create indexes,                -- create no indexes
+      reset sequences,               -- reset no sequences
+      foreign keys;                  -- no foreign keys
+\end{verbatim}
+\end{frame}
+
+\begin{frame}
+  \frametitle{pgloader: load data into PostgreSQL}
+
+  \center{\url{http://pgloader.io/}}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{pgloader.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Questions?}
+
+  \begin{center}
+    Now is the time to ask!
+    \vfill
+
+    \includegraphics[height=9em]{fly.png}
+  \end{center}
+\end{frame}
+
+\end{document}
