@@ -10,6 +10,7 @@
 \documentclass{beamer}
 
 \usepackage{tikz}
+\usepackage{fancyvrb}
 \usetikzlibrary{arrows,backgrounds,snakes,shadows}
 
 \usepackage{minted}
@@ -200,6 +201,46 @@ MariaDB [talk]> select * from dates;
  $ pgloader mysql://user@localhost/sakila
             pgsql:///pagila
 \end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\small{\texttt{pgloader mysql://root@localhost/sakila pgsql:///pagila}}}
+
+\begin{Verbatim}[fontsize=\tiny]
+./build/bin/pgloader mysql://root@localhost/sakila pgsql:///pagila
+2015-01-30T12:49:09.030000+01:00 LOG Main logs in '/private/tmp/pgloader/pgloader.log'
+2015-01-30T12:49:09.034000+01:00 LOG Data errors in '/private/tmp/pgloader/'
+                    table name       read   imported     errors            time
+------------------------------  ---------  ---------  ---------  --------------
+               fetch meta data         43         43          0          0.358s
+                  create, drop          0         36          0          0.263s
+------------------------------  ---------  ---------  ---------  --------------
+                         actor        200        200          0          0.151s
+                       address        603        603          0          0.067s
+                      category         16         16          0          0.025s
+                          city        600        600          0          0.036s
+                       country        109        109          0          0.019s
+                      customer        599        599          0          0.040s
+                          film       1000       1000          0          0.106s
+                    film_actor       5462       5462          0          0.171s
+                 film_category       1000       1000          0          0.068s
+                     film_text       1000       1000          0          0.070s
+                     inventory       4581       4581          0          0.172s
+                      language          6          6          0          0.078s
+                       payment      16049      16049          0          0.470s
+                        rental      16044      16044          0          0.458s
+                         staff          2          2          0          0.103s
+                         store          2          2          0          0.035s
+        Index Build Completion          0          0          0          0.001s
+------------------------------  ---------  ---------  ---------  --------------
+                Create Indexes         41         41          0          0.291s
+               Reset Sequences          0         13          0          0.045s
+                  Primary Keys         16         16          0          0.014s
+                  Foreign Keys         22         22          0          0.079s
+                      Comments          0          0          0          0.000s
+------------------------------  ---------  ---------  ---------  --------------
+             Total import time      47273      47273          0          2.829s
+\end{Verbatim}
 \end{frame}
 
 \begin{frame}
