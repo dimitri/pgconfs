@@ -58,98 +58,6 @@
   \end{center}
 \end{frame}
 
-\begin{frame}[fragile]
-  \frametitle{Dimitri Fontaine}
-
-  \begin{center}
-    {\Large \textsc{PostgreSQL Major Contributor}}
-  \end{center}
-
-  \begin{columns}[c]
-    \column{.5\textwidth} 
-
-    \begin{itemize}
-    \item \texttt{\textbf{CREATE EXTENSION}}
-    \item \texttt{\textbf{CREATE EVENT TRIGGER}}
-    \item \textit{Bi-Directional Réplication}
-    \item \texttt{pgloader}
-    \item \texttt{prefix}, \texttt{skytools}
-    \item \texttt{apt.postgresql.org}
-    \item \texttt{pginstall}
-    \item \texttt{pgcharts}
-    \end{itemize}  
-
-    \column{.5\textwidth}
-    \begin{center}
-      \includegraphics[height=12em]{postgres-logo.eps}
-    \end{center}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \frametitle{pgloader}
-
-  \center{\url{http://pgloader.io/}}
-  
-  \begin{center}
-    \includegraphics[height=2.1in]{pgloader.jpg}
-  \end{center}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{From MySQL to PostgreSQL}
-
-  \center{\textbf{All} you have to do to migrate your database is type in
-    this command}
-  \vfill
-
-\begin{verbatim}
- $ createdb pagila
- $ pgloader mysql://user@localhost/sakila
-            pgsql:///pagila
-\end{verbatim}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{\small{\texttt{pgloader mysql://root@localhost/sakila pgsql:///pagila}}}
-
-\begin{Verbatim}[fontsize=\tiny]
-./build/bin/pgloader mysql://root@localhost/sakila pgsql:///pagila
-2015-01-30T12:49:09.030000+01:00 LOG Main logs in '/private/tmp/pgloader/pgloader.log'
-2015-01-30T12:49:09.034000+01:00 LOG Data errors in '/private/tmp/pgloader/'
-                    table name       read   imported     errors            time
-------------------------------  ---------  ---------  ---------  --------------
-               fetch meta data         43         43          0          0.358s
-                  create, drop          0         36          0          0.263s
-------------------------------  ---------  ---------  ---------  --------------
-                         actor        200        200          0          0.151s
-                       address        603        603          0          0.067s
-                      category         16         16          0          0.025s
-                          city        600        600          0          0.036s
-                       country        109        109          0          0.019s
-                      customer        599        599          0          0.040s
-                          film       1000       1000          0          0.106s
-                    film_actor       5462       5462          0          0.171s
-                 film_category       1000       1000          0          0.068s
-                     film_text       1000       1000          0          0.070s
-                     inventory       4581       4581          0          0.172s
-                      language          6          6          0          0.078s
-                       payment      16049      16049          0          0.470s
-                        rental      16044      16044          0          0.458s
-                         staff          2          2          0          0.103s
-                         store          2          2          0          0.035s
-        Index Build Completion          0          0          0          0.001s
-------------------------------  ---------  ---------  ---------  --------------
-                Create Indexes         41         41          0          0.291s
-               Reset Sequences          0         13          0          0.045s
-                  Primary Keys         16         16          0          0.014s
-                  Foreign Keys         22         22          0          0.079s
-                      Comments          0          0          0          0.000s
-------------------------------  ---------  ---------  ---------  --------------
-             Total import time      47273      47273          0          2.829s
-\end{Verbatim}
-\end{frame}
-
 \begin{frame}
   \frametitle{Relational Database Management System}
 
@@ -185,15 +93,61 @@
 \end{frame}
 
 \begin{frame}
+  \begin{center}
+    \textsc{\Huge PostgreSQL is YeSQL!}
+    \vfill
+
+    \includegraphics[height=9em]{postgres-logo.eps}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    \textsc{\Huge PostgreSQL is YeSQL!}
+    \vfill
+
+    \includegraphics[height=9em]{nosql-bigdata.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Relational Database Management System}
+
+  \begin{columns}[c]
+    \column{.5\textwidth} 
+    \begin{center}
+      \includegraphics[height=9em]{caution_acid.png}
+    \end{center}
+
+    \column{.5\textwidth}
+    \begin{center}
+      \includegraphics[height=12em]{sql.png}
+    \end{center}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
   \frametitle{Relational Database Management System}
 
   \begin{center}
-    \includegraphics[height=2.1in]{caution_acid.png}
+    \includegraphics[height=2.1in]{acid-details.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Relational Database Management System}
+
+  \center{\Huge D is for Durability}
+  
+  \begin{center}
+    \includegraphics[height=2.1in]{cord-unplugged.jpg}
   \end{center}
 \end{frame}
 
 \begin{frame}
   \frametitle{Transactions}
+
+  \center{\Huge A is for Atomic, that is, \textit{Transactions}}
 
   \begin{center}
     \includegraphics[height=1.6in]{rollback-wordmark.png}
@@ -205,28 +159,7 @@
 
   \begin{minted}{postgresql}
     BEGIN;
-      DROP TABLE donnees_critiques;
-    ROLLBACK;
-  \end{minted}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Transactions}
-
-  \begin{minted}{postgresql}
-    START TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-      DROP TABLE donnees_critiques;
-    ROLLBACK;
-  \end{minted}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Transactions}
-
-  \begin{minted}{postgresql}
-    BEGIN;
-      CREATE INDEX ... ON ...;
-      EXPLAIN ANALYZE SELECT ...;
+      DROP TABLE critical_data;
     ROLLBACK;
   \end{minted}
 \end{frame}
@@ -234,8 +167,36 @@
 \begin{frame}
   \frametitle{Consistent Hot Backups}
 
+  \center{\Huge I is for Isolated, that is, \textit{Transactions}}
+
   \begin{center}
     \includegraphics[height=2.1in]{online-backup.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{You don't want backups, you want data loss recovery!}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{Data-Recovery-Service-Icon.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Consistency}
+
+  \center{\Huge C is for Consistency}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{bits.jpeg}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Scaling: up or out?}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{KB_Scale_Out-Up.png}
   \end{center}
 \end{frame}
 
@@ -577,6 +538,51 @@
 \end{center}
 \end{columns}
 \end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{GIN indexes main use case}
+
+  \center{\Huge PostgreSQL Full Text Search}
+  \vfill
+
+  \begin{center}
+    \includegraphics[height=15em]{pg_doc_search.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Spaced Partition GiST}
+
+  \center{Unbalanced index, used for \Huge GIS}
+  \vfill
+
+  \begin{center}
+    \includegraphics[height=15em]{sp-gist.eps}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{BRIN}
+
+  \center{Block Range Index for Big Data}
+  \vfill
+  
+  \begin{center}
+    \includegraphics[height=15em]{brin.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Processing Data: declarative programming}
+
+  \center{Structured Query Language}
+  \vfill
+  
+    \begin{center}
+      \includegraphics[height=12em]{sql.png}
+    \end{center}
+\end{frame}
+
 
 \begin{frame}[fragile]
   \frametitle{IP Ranges, \texttt{ip4r}, Geolocation}
