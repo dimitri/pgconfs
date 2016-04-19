@@ -272,20 +272,10 @@ done
   \end{center}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Now \textsc{PostgreSQL} starts.}
-
-  \center{But is complaining about missing \texttt{pg\_database} mappings}
-  \vfill
-  
-  \begin{center}
-    \includegraphics[height=2.4in]{LRN-LNP-database.png}
-  \end{center}
-\end{frame}
-
 \begin{frame}[fragile]
   \frametitle{How to provide for your own mapping?}
 
+  \begin{center}
   \begin{minted}{postgresql}
 select oid, relname, pg_relation_filenode(oid)
   from pg_class
@@ -295,6 +285,7 @@ select oid, relname, pg_relation_filenode(oid)
  1262 | pg_database |                12319
 (1 row)
   \end{minted}  
+  \end{center}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -328,6 +319,19 @@ template1
   \begin{minted}{console}
 FATAL:  database "dbname" does not exists
 DETAIL:  Database OID 17838 now seems to belong to "otherdb"
+  \end{minted}  
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Start without the system indexes}
+  
+  \textit{Ignore system indexes when reading system tables, but still update
+    the indexes when modifying the tables. This is useful when recovering
+    from damaged system indexes.}
+  \vfill
+
+  \begin{minted}{console}
+$ pg_ctl start -o "-P"
   \end{minted}  
 \end{frame}
 
