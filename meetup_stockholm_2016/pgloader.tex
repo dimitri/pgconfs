@@ -73,6 +73,36 @@
 \end{frame}
 
 \begin{frame}
+  \frametitle{Load data into PostgreSQL. Fast.}
+
+  \center{\url{http://pgloader.io/}}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{pgloader.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Load data into PostgreSQL. Fast.}
+
+  \center{\url{http://pgloader.io/}}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{elephant-loading.jpg}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{pgloader: Open Source, github}
+
+  \center{\url{https://github.com/dimitri/pgloader}}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{Octocat.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
   \frametitle{Let's talk about MySQL for a minute}
 
   \center{Just in the context of migrating from it, of course}
@@ -249,26 +279,6 @@ MariaDB [talk]> select * from dates;
 \end{frame}
 
 \begin{frame}
-  \frametitle{pgloader: load data into PostgreSQL}
-
-  \center{\url{http://pgloader.io/}}
-
-  \begin{center}
-    \includegraphics[height=2.1in]{pgloader.jpg}
-  \end{center}
-\end{frame}
-
-\begin{frame}
-  \frametitle{pgloader: Open Source, github}
-
-  \center{\url{https://github.com/dimitri/pgloader}}
-
-  \begin{center}
-    \includegraphics[height=2.1in]{Octocat.png}
-  \end{center}
-\end{frame}
-
-\begin{frame}
   \frametitle{pgloader: what about loading data?}
 
   \center{\url{http://pgloader.io/}}
@@ -398,6 +408,14 @@ MariaDB [talk]> select * from dates;
   \end{columns}
 \end{frame}
 
+\begin{frame}
+  \frametitle{pgloader database migration process}
+
+  \begin{center}
+    \includegraphics[height=2.1in]{migration.jpg}
+  \end{center}
+\end{frame}
+
 \begin{frame}[fragile]
   \frametitle{pgloader database migration process}
 
@@ -419,15 +437,25 @@ MariaDB [talk]> select * from dates;
   \center{Currently supported metadata}
   \vfill
 
-  \begin{itemize}
-  \item Schemas
-  \item Tables
-  \item \textit{Columns}
-  \item Indexes
-  \item Constraints
-  \item Comments (mysql only)
-  \item \textit{Materializing} Views (mysql only)
-  \end{itemize}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}
+      \item Schemas
+      \item Tables
+      \item \textit{Columns}
+      \item Indexes
+      \item Constraints
+      \item Comments (mysql only)
+      \item \textit{Materializing} Views (mysql only)
+      \end{itemize}
+    \end{column}
+
+    \begin{column}{.5\textwidth}
+      \begin{center}
+        \includegraphics[height=12em]{metadata.png}
+      \end{center}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \begin{frame}
@@ -498,27 +526,54 @@ MariaDB [talk]> select * from dates;
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{An avdanced use case 1/3}
+  \frametitle{An avdanced use case 1/4}
 
 \begin{verbatim}
-LOAD DATABASE
-     FROM      mysql://root@unix:/tmp/mysql.sock:/goeuro
-     INTO postgresql://dim@unix:/tmp:/godollar
+load database
+     from      mysql://root@localhost/sakila
+     into postgresql:///sakila
 
- -- INCLUDING ONLY TABLE NAMES MATCHING ~/sizes/
- EXCLUDING TABLE NAMES MATCHING ~/encoding/
+ WITH concurrency = 1, workers = 6,
+      max parallel create index = 4
 
- DECODING TABLE NAMES
-            MATCHING ~/messed/,
-                     ~/encoding/
-                  AS utf-8
+      downcase identifiers,          -- quote idenfifiers
+      truncate,
+      -- data only, schema only,
+      -- create [ no ] tables, include [no ] drop,
+      -- create [ no ] indexes, reset [no ] sequences,
+      -- [ no ] foreign keys
 
- SET maintenance_work_mem to '1 GB'
+  SET maintenance_work_mem to '128MB',
+      work_mem to '12MB',
+      search_path to 'sakila, public, "$user"'
 \end{verbatim}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{An avdanced use case 2/3}
+  \frametitle{An avdanced use case 2/4}
+
+\begin{verbatim}
+ -- MATERIALIZE VIEWS film_list, staff_list
+ MATERIALIZE ALL VIEWS
+
+ ALTER TABLE NAMES MATCHING ~/_list$/,
+                            'sales_by_store',
+                            ~/sales_by/
+                 SET SCHEMA 'mv'
+
+ ALTER TABLE NAMES MATCHING 'sales_by_store'
+                  RENAME TO 'sales_by_store_list'
+
+ ALTER TABLE NAMES MATCHING 'film'
+                  RENAME TO 'films'
+
+ -- INCLUDING ONLY TABLE NAMES MATCHING ~/film/, 'actor'
+ -- EXCLUDING TABLE NAMES MATCHING ~<ory>
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{An avdanced use case 3/4}
 
 \begin{verbatim}
 CAST type datetime to timestamptz
@@ -539,18 +594,13 @@ CAST type datetime to timestamptz
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{An avdanced use case 3/3}
+  \frametitle{An avdanced use case 4/4}
 
 \begin{verbatim}
- WITH downcase identifiers,          -- quote idenfifiers
-      truncate,
-      -- data only,
-      -- schema only,
-      create tables,                 -- create no tables
-      include drop,                  -- include no drop
-      create indexes,                -- create no indexes
-      reset sequences,               -- reset no sequences
-      foreign keys;                  -- no foreign keys
+ BEFORE LOAD DO
+ $$ create schema if not exists sakila; $$,
+ $$ create schema if not exists mv; $$,
+ $$ alter database sakila set search_path to sakila, mv, public; $$;
 \end{verbatim}
 \end{frame}
 
