@@ -33,7 +33,7 @@
 
 \section{Introduction}
 
-\begin{frame}[fragile]
+\begin{frame}[plain,fragile]
   \frametitle{Dimitri Fontaine}
 
   \begin{center}
@@ -116,7 +116,7 @@
 \begin{frame}[fragile]
   \frametitle{Shell Script, ENV, missing setup}
 
-  \center{\texttt{find \$PGDATA -mtime +5 | xargs rm -f}}
+  \center{\texttt{find \$BACKUP\_DIR -mtime +5 | xargs rm -f}}
 
   \begin{center}
     \includegraphics[height=2.4in]{data_loss.png}
