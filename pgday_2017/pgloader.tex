@@ -14,7 +14,7 @@
 %%% run it into your CI environment and test your code everyday with a fresh
 %%% load of production's data.
 
-\documentclass{beamer}
+\documentclass[xcolor=dvipsnames]{beamer}
 
 \usepackage{minted}
 
@@ -25,7 +25,8 @@
 \usepackage{calligra}
 %% \usepackage{cfr-lm}
 \usepackage{tikz}
-\usepackage{xcolor}
+
+%% \usepackage{xcolor}
 
 \usepackage{pifont}
 \usepackage{newunicodechar}
@@ -739,6 +740,140 @@ load database
 \end{frame}
 
 \section{User Testimonials}
+
+{
+  \usebackgroundtemplate{
+    \includegraphics[width=\paperwidth,height=\paperheight]{Rating.jpg}
+  }
+  \setbeamercolor{frametitle}{fg=white}
+  \begin{frame}[plain]
+    \frametitle{Some User Testimonials}
+  \end{frame}
+}
+
+{
+  \usebackgroundtemplate{
+    \begin{tikzpicture}[remember picture,overlay]
+      \node[opacity=0.4] at (current page.center) {
+        \includegraphics {twitter-logo.png}
+      };
+    \end{tikzpicture}
+  }
+
+  \begin{frame}[fragile]
+    \frametitle{Feedback from Twitter}
+
+    \begin{center}
+      \begin{minipage}{0,6\textwidth}
+        \begin{minipage}{0,2\textwidth}
+          \includegraphics[height=3em]{tommasomatic.png}
+        \end{minipage}
+        \begin{minipage}{0,8\textwidth}
+          Tommaso Patrizi \newline
+          \texttt{@tommasomatic}
+        \end{minipage}
+      \end{minipage}
+      \rule[10pt]{0,6\textwidth}{1px}
+      
+      \begin{minipage}{0,6\textwidth}
+        \begin{Large}
+          @tapoueh \#pgloader is so good I'm almost crying! Say goodbye to
+          all mysql implementations! Thanks!
+        \end{Large}
+      \end{minipage}
+      \rule{0,6\textwidth}{1px}
+
+      \vfill
+      \url{https://twitter.com/tommasomatic/status/884181490724155392}
+    \end{center}
+  \end{frame}
+}
+
+{
+  \usebackgroundtemplate{
+    \begin{tikzpicture}[remember picture,overlay]
+      \node[opacity=0.4] at (current page.center) {
+        \includegraphics {twitter-logo.png}
+      };
+    \end{tikzpicture}
+  }
+
+  \begin{frame}[fragile]
+    \frametitle{Feedback from Twitter}
+
+    \begin{center}
+      \begin{minipage}{0,6\textwidth}
+        \begin{minipage}{0,2\textwidth}
+          \includegraphics[height=3em]{majid_hajian.jpg}
+        \end{minipage}
+        \begin{minipage}{0,8\textwidth}
+          Majid Hajian \newline
+          \texttt{@mhadaily}
+        \end{minipage}
+      \end{minipage}
+      \rule[10pt]{0,6\textwidth}{1px}
+      
+      \begin{minipage}{0,6\textwidth}
+        \begin{Large}
+          Successfully migrated from \#MySQL 5 to \#PostgreSQL 9.5, roughly
+          16GB data, thanks to \@tapoueh for a fantastic \#pgloader tool
+        \end{Large}
+      \end{minipage}
+      \rule{0,6\textwidth}{1px}
+
+      \vfill
+      \url{https://twitter.com/mhadaily/status/806763214092414976}
+    \end{center}
+    
+  \end{frame}
+}
+
+{
+  \usebackgroundtemplate{
+    \begin{tikzpicture}[remember picture,overlay]
+      \node[opacity=0.4] at (current page.center) {
+        \includegraphics {twitter-logo.png}
+      };
+    \end{tikzpicture}
+  }
+
+  \begin{frame}[fragile]
+    \frametitle{Feedback from Twitter}
+
+    \begin{center}
+      \begin{minipage}{0,6\textwidth}
+        \begin{minipage}{0,2\textwidth}
+          \includegraphics[height=3em]{whitequark.png}
+        \end{minipage}
+        \begin{minipage}{0,8\textwidth}
+          whitequark \newline
+          \texttt{@whitequark}
+        \end{minipage}
+      \end{minipage}
+      \rule[10pt]{0,6\textwidth}{1px}
+      
+      \begin{minipage}{0,6\textwidth}
+        \begin{Large}
+          so I need to migrate \~ 17 million rows from MySQL to Postgres. am I
+          in for pain or for a lot of pain?
+        \end{Large}
+      \end{minipage}
+      \rule[10pt]{0,6\textwidth}{1px}
+
+      \begin{minipage}{0,6\textwidth}
+        \begin{Large}
+          pgloader appears to be able to do it in \~ 1 hour, with 512MB of
+          RAM (probably faster with more RAM)
+        \end{Large}
+      \end{minipage}
+      \rule{0,6\textwidth}{1px}
+
+      \vfill
+      \url{https://twitter.com/whitequark/status/768208585503354881}
+    \end{center}
+    
+  \end{frame}
+}
 
 \section{Contributing}
 
