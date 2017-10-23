@@ -22,7 +22,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[english]{babel}
-%% \usepackage{calligra}
+\usepackage{calligra}
 %% \usepackage{cfr-lm}
 \usepackage{tikz}
 \usepackage{xcolor}
@@ -34,6 +34,7 @@
 
 \usetheme{Boadilla}
 \setbeamertemplate{itemize items}[square]
+\setbeamertemplate{enumerate items}[square]
 %\setbeamertemplate{itemize items}{\checkmark}
 \beamertemplatenavigationsymbolsempty
 
@@ -51,7 +52,9 @@
 
 \addtobeamertemplate{frametitle}{}{%
 \begin{tikzpicture}[remember picture,overlay]
-\node[anchor=north east,yshift=-4pt] at (current page.north east) {\includegraphics[height=0.4cm]{logo-r.png}};
+  \node[anchor=north east,yshift=-6pt] at (current page.north east) {
+    \includegraphics[height=0.4cm]{logo-r.png}
+  };
 \end{tikzpicture}}
 
 %\setbeamercolor{frametitle}{bg=beamer@blendedblue!30}
@@ -87,6 +90,31 @@
   \includegraphics[height=6em]{postgres-logo.png}
 \end{center}
 \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Mastering PostgreSQL in Application Development}
+
+  \begin{columns}[c]
+    \column{.5\textwidth}
+    \begin{minipage}[t][12em][t]{\textwidth}
+      \textcalligra{\LARGE Hey, I'm writing a book!}
+      
+      \vfill
+      
+      Register on the website to be the first to know when it launches…
+      maybe next week!
+
+      \vfill
+      \url{http://MasteringPostgreSQL.com}
+    \end{minipage}
+
+    \column{.5\textwidth} 
+    \begin{center}
+      \href{http://MasteringPostgreSQL.com}
+           {\includegraphics[height=18em]{MasteringPostgreSQLinAppDev-Cover.png}}
+    \end{center}
+  \end{columns}
 \end{frame}
 
 \begin{frame}
@@ -175,6 +203,7 @@
     \end{center}
 
     \column{.5\textwidth}
+    The migration budget split:
     \begin{itemize}
     \item Data
     \item Code
@@ -224,14 +253,14 @@
     \end{center}
 
     \column{.65\textwidth}
-    \begin{itemize}
+    \begin{enumerate}
     \item Setup a PostgreSQL instance
     \item Keep the default configuration
     \item Migrate the data over to PostgreSQL
     \item Manually
     \item In many steps, \textit{error, fix, rinse, repeat}
     \item Including \texttt{\$EDITOR}
-    \end{itemize}
+    \end{enumerate}
   \end{columns}
 \end{frame}
 
@@ -283,6 +312,14 @@
     \end{itemize}
   \end{columns}
 \end{frame}
+
+{
+  \usebackgroundtemplate {
+    \includegraphics[width=\paperwidth,height=\paperheight]{deploymentplaylist_logo.jpg}
+  }
+  \begin{frame}[plain]
+  \end{frame}
+}
 
 \section{A Better Methodology}
 
@@ -367,14 +404,6 @@ $ pgloader mysql://user@host/dbname \
   \end{center}
 \end{frame}
 
-\begin{frame}
-  \frametitle{pgLoader automates all the things}
-
-  \begin{center}
-    \includegraphics[height=2.1in]{TypeCaster.jpg}
-  \end{center}
-\end{frame}
-
 \begin{frame}[fragile]
   \frametitle{pgLoader automates all the things}
 
@@ -408,29 +437,6 @@ load database
       \end{minted}
     \end{minipage}
   \end{center}
-\end{frame}
-
-
-\begin{frame}[fragile]
-  \frametitle{pgLoader automates all the things}
-
-  \begin{minted}
-    [frame=lines,bgcolor=beamer@blendedblue!10,linenos]
-    {bash}
-load database
-     from      mysql://root@unix:/tmp/mysql.sock:3306/pgloader
-     into postgresql://dim@localhost/pgloader
-
- alter schema 'pgloader' rename to 'mysql'
-
- CAST column base64.id to uuid drop typemod,
-      column base64.data to jsonb using base64-decode,
-
-      type decimal when (and (= 18 precision) (= 6 scale))
-        to "double precision" drop typemod
-
- before load do $$ create schema if not exists mysql; $$;
-  \end{minted}
 \end{frame}
 
 \begin{frame}[plain,fragile]
@@ -552,25 +558,26 @@ f1db.constructorstandings       11806   247.3 kB          0.312s
 \begin{frame}[fragile]
   \frametitle{pgLoader Casting Rules}
 
-  In order to be fully automated, pgloader allows its users to overload any
-  default casting rule. The casting rules apply both to default values and
-  to data, on the fly.
-
+  In order to be fully automated, pgloader allows its users to redefine any
+  default casting rule.
   \vfill
-  
-  \begin{minted}[frame=lines,bgcolor=beamer@blendedblue!10,linenos]{sql}
- CAST column utilisateurs__Yvelines2013-06-28.sexe
-          to text
-             drop not null
-             using empty-string-to-null,
-             
-      column base64.id to uuid drop typemod,
+
+  \begin{minted}
+    [frame=lines,bgcolor=beamer@blendedblue!10,linenos]
+    {plpgsql}
+load database
+     from mysql://root@unix:/tmp/mysql.sock:3306/pgloader
+     into postgresql://dim@localhost/pgloader
+
+ alter schema 'pgloader' rename to 'mysql'
+
+ CAST column base64.id to uuid drop typemod drop not null,
       column base64.data to jsonb using base64-decode,
 
-        type decimal
-             when (and (= 18 precision) (= 6 scale))
-          to "double precision"
-             drop typemod
+      type decimal when (and (= 18 precision) (= 6 scale))
+        to "double precision" drop typemod
+
+ before load do $$ create schema if not exists mysql; $$;
   \end{minted}
 \end{frame}
 
@@ -607,32 +614,42 @@ ALTER TABLE NAMES MATCHING ...
   \end{columns}
 \end{frame}
 
-\begin{frame}[fragile]
-  \frametitle{pgLoader Parallelism and Concurrency}
+{
+  \usebackgroundtemplate{    
+    \begin{tikzpicture}[remember picture,overlay]
+      \node[opacity=0.45] at (current page.center) {
+        \includegraphics{Multi-Core-Processor00.jpg}
+      };
+    \end{tikzpicture}
+  }
 
-  Multiple operations are done in parallel in pgloader, in order to improve
-  its efficiency. Several parameters allow to control its parallel behavior.
-  
-  \begin{columns}[c]
-    \column{.5\textwidth}
-    \begin{center}
-      \includegraphics[height=12em]{multi-core-cpu.jpg}
-    \end{center}
+  \begin{frame}[fragile]
+    \frametitle{pgLoader Parallelism and Concurrency}
 
-    \column{.5\textwidth}
+    Multiple operations are done in parallel in pgloader, in order to
+    improve pgloader efficiency. Several parameters allow to control its
+    parallel behavior.
+
+    \vfill
+    
+    \begin{columns}[c]
+      \column{0.3\textwidth} 
+      \column{0.7\textwidth}
+      Parallel Operations cover:
       \begin{itemize}
       \item Reader/Writer
       \item \texttt{CREATE INDEX}
       \item Including \textsc{Primary Keys!}
       \item Multiple tables
       \item Same table with a key range
-    \end{itemize}
+      \end{itemize}
 
-  \end{columns}  
-\end{frame}
+    \end{columns}  
+  \end{frame}
+}
 
 \begin{frame}[fragile]
-  \frametitle{pgLoader Materialized Views}
+  \frametitle{pgLoader Materialize Views}
 
   Rather than copying plain table from MySQL to PostgreSQL, it is possible
   to copy the result of \texttt{SELECT * FROM view;} instead.
@@ -649,7 +666,7 @@ ALTER TABLE NAMES MATCHING ...
   
   \begin{minted}
     [frame=lines,bgcolor=beamer@blendedblue!10,linenos,fontsize=\small]
-    {bash}
+    {plpgsql}
 load database
      from '{{DBPATH}}'
      into postgresql:///pgloader
@@ -676,7 +693,7 @@ load database
   
   \begin{minted}
     [frame=lines,bgcolor=beamer@blendedblue!10,linenos,fontsize=\small]
-    {bash}
+    {plpgsql}
    BEFORE LOAD
      DO
        $$ create extension if not exists ip4r; $$,
@@ -684,6 +701,11 @@ load database
 
      EXECUTE 'geolite.sql'
 
+   -- WITH create no tables, include drop, truncate,
+           
+   --      include drop, create tables, no truncate,
+   --      create indexes, reset sequences, foreign keys
+     
    INCLUDING ONLY TABLE NAMES MATCHING ~/film/, 'actor'
    EXCLUDING TABLE NAMES MATCHING ~<ory>
 
@@ -746,17 +768,19 @@ load database
   learn, of course new APIs and ecosystems are not always easy to grasp.
   
   \begin{columns}[c]
-    \column{.5\textwidth}
+    \column{.4\textwidth}
     \begin{center}
       \includegraphics[height=12em]{lisplogo_warning2_256.png}
     \end{center}
 
-    \column{.5\textwidth}
+    \column{.6\textwidth}
     Ideas of areas where to contribute:
       \begin{itemize}
-      \item Windows™ Support
+      \item Windows™ Automatic Builds
+      \item Keep Build Artefacts from Travis
       \item More tests coverage
       \item Documentation: tutorials
+      \item From issues to the wiki
       \item Other Feature Requests
     \end{itemize}
   \end{columns}  
@@ -764,15 +788,19 @@ load database
 
 {
   \usebackgroundtemplate{
-    \includegraphics[width=\paperwidth,height=\paperheight]{piggy.png}
+    \tikz\node[opacity=0.6] {
+      \includegraphics[width=\paperwidth,height=\paperheight]{piggy.png}
+    };
   }
   \begin{frame}
     \frametitle{The pgLoader Moral Licence}
 
     \begin{Large}
       \begin{center}
-        Buy a pgloader Moral Licence online at
-        \newline
+        To contribute financially to the project, buy a
+        \vfill
+        pgloader Moral Licence
+        \vfill
         \url{http://pgloader.io/pgloader-moral-license.html}
       \end{center}
     \end{Large}
@@ -783,14 +811,13 @@ load database
 {
   \usebackgroundtemplate{
     \begin{tikzpicture}[remember picture,overlay]
-      \node at (current page.center) {\includegraphics[width=0.8\paperwidth,height=0.8\paperheight]{fly.png}};
+      \node[opacity=0.4] at (current page.center) {
+        \includegraphics[width=0.8\paperwidth,height=0.8\paperheight]{fly.png}
+      };
     \end{tikzpicture}
   }
  
   \begin{frame}
-    \setbeamercolor{normal text}{fg=white}
-    \usebeamercolor[fg]{normal text}
-    
     \frametitle{Questions?}
 
     \begin{center}
