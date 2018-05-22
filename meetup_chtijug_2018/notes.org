@@ -1,0 +1,21 @@
+* Review the MESSAGE, and story
+
+** Handling data properly: it's all about trade-offs
+
+   PostgreSQL default tradeoffs
+
+   Did you know you can tweak them? On a per-transaction basis?
+
+** ACID: D is for Durability
+
+   Do you pass the wall socket test?
+
+** PostgreSQL Scaling story
+
+   Scale-up then Scale-out
+
+** Schemaless does not exists
+
+   One schema to bind them all
+
+   Denormalisation support
